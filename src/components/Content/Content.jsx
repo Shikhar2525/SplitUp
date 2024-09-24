@@ -25,7 +25,6 @@ function Content() {
       }}
     >
       <BreadCrumbs />
-
       <Routes>
         <Route index element={<HomeTab />} />
         <Route path="groups" element={<GroupsTab />} />

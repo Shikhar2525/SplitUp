@@ -17,9 +17,10 @@ function MainContainer() {
         justifyContent: "center",
         overflow: "auto", // Prevents content overflow with scrolling
         borderRadius: "30px",
-        border: "1px solid white",
-        backgroundColor: "#BACCFD",
-        boxShadow: "5px 5px 15px rgba(0, 0, 0, 0.2)",
+
+        border: "2px solid white", // Solid white border for strong contrast
+        backgroundColor: "#BACCFD", // Darker color for more aggression
+        boxShadow: "0 4px 20px rgba(255, 255, 255, 0.7)", // More prominent shadow
       }}
     >
       <Navigation />

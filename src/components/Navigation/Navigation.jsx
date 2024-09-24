@@ -18,11 +18,13 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import "./Navigration.scss";
 import { useNavigate } from "react-router";
+import { useCurrentTab } from "../contexts/CurrentTabContext";
 
 function Navigation() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = useScreenSize();
+  const { setCurrentTab } = useCurrentTab();
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
@@ -33,14 +35,26 @@ function Navigation() {
       <List
         sx={{ display: "flex", flexDirection: "column", marginTop: 5, gap: 2 }}
       >
-        <ListItem button onClick={() => navigate("/")}>
+        <ListItem
+          button
+          onClick={() => {
+            navigate("/");
+            setCurrentTab("Home");
+          }}
+        >
           <ListItemIcon>
             <HomeIcon />
           </ListItemIcon>
           <ListItemText primary="Home" />
         </ListItem>
 
-        <ListItem button onClick={() => navigate("/groups")}>
+        <ListItem
+          button
+          onClick={() => {
+            setCurrentTab("Groups");
+            navigate("/groups");
+          }}
+        >
           <ListItemIcon>
             <Diversity3Icon />
           </ListItemIcon>

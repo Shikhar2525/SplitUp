@@ -16,6 +16,14 @@ function OverViewCard({ title, amount, backgroundStyle }) {
         alignItems: "center",
         fontFamily: "SF Pro Display",
         padding: 1, // Add padding to content area
+        zIndex: 0,
+        transition:
+          "transform 0.3s ease, box-shadow 0.3s ease, z-index 0s 0.3s", // Initial transition
+        "&:hover": {
+          transform: "scale(1.05)", // Scale up the card on hover
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)", // Add shadow on hover
+          zIndex: 1, // Bring the card to the front on hover
+        },
         ...backgroundStyle,
       }}
     >
@@ -57,12 +65,19 @@ function OverViewCard({ title, amount, backgroundStyle }) {
         <Typography
           variant="h6"
           component="div"
-          sx={{ textAlign: "left", fontSize: 18 }}
+          sx={{
+            fontFamily: "Poppins, sans serif",
+            textAlign: "left",
+            fontSize: 18,
+          }}
         >
           {title}
         </Typography>
         {amount && (
-          <Typography variant="h5" sx={{ textAlign: "left" }}>
+          <Typography
+            variant="h5"
+            sx={{ fontFamily: "Poppins, sans serif", textAlign: "left" }}
+          >
             {amount} Rs
           </Typography>
         )}

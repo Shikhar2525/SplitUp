@@ -6,9 +6,11 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
+import { useCurrentTab } from "../contexts/CurrentTabContext";
 
 function BreadCrumbs() {
   const isMobile = useScreenSize();
+  const { currentTab } = useCurrentTab();
   const iconStyles = {
     color: "#3C3F88",
   };
@@ -51,7 +53,7 @@ function BreadCrumbs() {
           variant="h6"
           color="initial"
         >
-          Home
+          {currentTab}
         </Typography>
       </Box>
       <Box
