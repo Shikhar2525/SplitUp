@@ -1,5 +1,5 @@
-import "./App.css";
-import { Box, Container, CssBaseline } from "@mui/material";
+import { Container, CssBaseline } from "@mui/material";
+import MainContainer from "./components/MainContainer/MainContainer";
 function App() {
   return (
     <>
@@ -13,20 +13,7 @@ function App() {
           flexDirection: "column",
         }}
       >
-        <Box
-          sx={{
-            flex: 1, // Makes Box grow to fill remaining height
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "auto", // Prevents content overflow with scrolling
-          }}
-        >
-          <div
-            style={{ height: "10px", backgroundColor: "red", width: "100%" }}
-          ></div>
-        </Box>
+        <MainContainer />
       </Container>
     </>
   );
