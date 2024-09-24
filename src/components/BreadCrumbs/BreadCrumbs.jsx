@@ -23,7 +23,7 @@ function BreadCrumbs() {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "flex-start",
-        ...(isMobile ? { alignItems: "flex-start" } : {}),
+        ...(isMobile ? { alignItems: "flex-start", maxHeight: "30px" } : {}),
       }}
     >
       <Box

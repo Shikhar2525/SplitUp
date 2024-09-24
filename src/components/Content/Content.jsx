@@ -2,8 +2,11 @@ import { Box } from "@mui/material";
 import React from "react";
 import BreadCrumbs from "../BreadCrumbs/BreadCrumbs";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
+import { Route, Routes } from "react-router-dom";
+import HomeTab from "../HomeTab/Home";
+import GroupsTab from "../GroupsTab/GroupsTab";
 
-function DashBoard() {
+function Content() {
   const isMobile = useScreenSize();
   return (
     <Box
@@ -22,8 +25,13 @@ function DashBoard() {
       }}
     >
       <BreadCrumbs />
+
+      <Routes>
+        <Route index element={<HomeTab />} />
+        <Route path="groups" element={<GroupsTab />} />
+      </Routes>
     </Box>
   );
 }
 
-export default DashBoard;
+export default Content;

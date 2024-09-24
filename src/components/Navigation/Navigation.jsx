@@ -17,9 +17,11 @@ import Diversity3Icon from "@mui/icons-material/Diversity3";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import "./Navigration.scss";
+import { useNavigate } from "react-router";
 
 function Navigation() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const navigate = useNavigate();
   const isMobile = useScreenSize();
 
   const toggleDrawer = (open) => () => {
@@ -31,14 +33,14 @@ function Navigation() {
       <List
         sx={{ display: "flex", flexDirection: "column", marginTop: 5, gap: 2 }}
       >
-        <ListItem button>
+        <ListItem button onClick={() => navigate("/")}>
           <ListItemIcon>
             <HomeIcon />
           </ListItemIcon>
           <ListItemText primary="Home" />
         </ListItem>
 
-        <ListItem button>
+        <ListItem button onClick={() => navigate("/groups")}>
           <ListItemIcon>
             <Diversity3Icon />
           </ListItemIcon>

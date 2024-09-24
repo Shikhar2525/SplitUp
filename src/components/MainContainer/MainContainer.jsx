@@ -2,7 +2,7 @@ import React from "react";
 import { Box } from "@mui/material";
 import Navigation from "../Navigation/Navigation";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
-import DashBoard from "../Dashboard/DashBoard";
+import DashBoard from "../Content/Content";
 
 function MainContainer() {
   const isMobile = useScreenSize();
