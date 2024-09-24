@@ -54,16 +54,20 @@ function Navigation() {
       sx={{
         flex: 1,
         display: "flex",
+        height: "100%",
         overflow: "auto",
         backgroundColor: "#FFF5D9",
-        width: "25%",
+        flexBasis: "25%", // Fixed width for Navigation to 25%
+        flexShrink: 0, // Prevents it from shrinking
         padding: 4,
         ...(isMobile
           ? {
-              gap: "30px",
+              gap: "40px",
               flexDirection: "row-reverse",
               alignItems: "center",
               justifyContent: "flex-end",
+              width: "100%",
+              flexBasis: "10%",
             }
           : {
               flexDirection: "column",
@@ -102,7 +106,17 @@ function Navigation() {
             </Toolbar>
           </AppBar>
 
-          <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
+          <Drawer
+            sx={{
+              "& .MuiDrawer-paper": {
+                backgroundColor: "white", // Background color for the Drawer
+                padding: "25px", // Padding for the Drawer content
+              },
+            }}
+            anchor="left"
+            open={drawerOpen}
+            onClose={toggleDrawer(false)}
+          >
             {list()}
           </Drawer>
         </>

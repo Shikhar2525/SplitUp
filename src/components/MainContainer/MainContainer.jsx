@@ -2,6 +2,7 @@ import React from "react";
 import { Box } from "@mui/material";
 import Navigation from "../Navigation/Navigation";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
+import DashBoard from "../Dashboard/DashBoard";
 
 function MainContainer() {
   const isMobile = useScreenSize();
@@ -11,16 +12,18 @@ function MainContainer() {
       sx={{
         flex: 1, // Makes Box grow to fill remaining height
         display: "flex",
-        flexDirection: isMobile ? "row" : "column",
+        flexDirection: isMobile ? "column" : "row",
         alignItems: "flex-start",
         justifyContent: "center",
         overflow: "auto", // Prevents content overflow with scrolling
-        backgroundColor: "#BACCFD",
         borderRadius: "30px",
-        border: "1px solid ligtgrey",
+        border: "1px solid white",
+        backgroundColor: "#BACCFD",
+        boxShadow: "5px 5px 15px rgba(0, 0, 0, 0.2)",
       }}
     >
       <Navigation />
+      <DashBoard />
     </Box>
   );
 }

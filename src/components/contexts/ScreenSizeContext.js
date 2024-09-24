@@ -5,7 +5,7 @@ import { useMediaQuery } from "@mui/material";
 const ScreenSizeContext = createContext();
 
 export const ScreenSizeProvider = ({ children }) => {
-  const isMobile = useMediaQuery("(max-width:600px)"); // Adjust breakpoint as needed
+  const isMobile = useMediaQuery("(max-width:700px)"); // Adjust breakpoint as needed
 
   return (
     <ScreenSizeContext.Provider value={isMobile}>
