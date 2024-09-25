@@ -45,7 +45,6 @@ function BreadCrumbs() {
         <KeyboardBackspaceIcon sx={{ color: "#3C3F88" }} />
         <Typography
           sx={{
-            fontFamily: "Poppins, sans-serif",
             fontSize: "20px",
             color: "#3C3F88",
             letterSpacing: "0.05em",

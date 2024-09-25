@@ -20,7 +20,8 @@ function Content() {
         flexDirection: "column",
         alignItems: "flex-start",
         justifyContent: "flex-start",
-        backgroundColor: "#BACCFD",
+        backgroundColor: "#f8f4f4",
+        borderRadius: "30px",
         ...(isMobile ? { width: "100%" } : {}),
       }}
     >

@@ -1,76 +1,103 @@
-import { Box, Card, CardContent, Typography } from "@mui/material";
+import { Box, Card, CardContent, CardMedia, Typography } from "@mui/material";
 import React from "react";
 
-function GroupCard({ title, amount, backgroundStyle, leftImage, rightImage }) {
+function GroupCard({ title, subtitle }) {
   return (
     <Card
       sx={{
-        position: "relative",
-        width: 250,
-        height: 120,
-        borderRadius: 2,
-        overflow: "hidden",
-        color: "white",
         display: "flex",
         alignItems: "center",
-        fontFamily: "SF Pro Display",
-        padding: 1,
-        ...backgroundStyle,
+        borderRadius: "30px",
+        height: "100%",
+        paddingLeft: 1,
+        paddingRight: 2,
+        position: "relative",
+        boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.05)",
+        overflow: "hidden",
+        transition:
+          "transform 0.3s ease, box-shadow 0.3s ease, z-index  0s 0.3s", // Initial transition
+        "&:hover": {
+          transform: "scale(1.05)", // Scale up the card on hover
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)", // Add shadow on hover
+        },
       }}
     >
-      {/* Left Image */}
-      {leftImage && (
-        <Box
-          component="img"
-          src={leftImage}
-          alt="Left Icon"
-          sx={{
-            position: "absolute",
-            width: 50, // Set the desired width
-            height: 50, // Set the desired height
-            left: 10, // Adjust the left position
-            zIndex: 1,
-          }}
-        />
-      )}
+      {/* Image Background */}
+      <CardMedia
+        component="img"
+        src="/assets/img/plane.png" // Ensure this path is correct
+        alt={title}
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          objectFit: "cover",
+          zIndex: 1,
+          opacity: 0.7,
+          filter: "blur(0.5px)",
+        }}
+      />
 
-      {/* Right Image */}
-      {rightImage && (
-        <Box
-          component="img"
-          src={rightImage}
-          alt="Right Icon"
-          sx={{
-            position: "absolute",
-            width: 50, // Set the desired width
-            height: 50, // Set the desired height
-            right: 10, // Adjust the right position
-            zIndex: 1,
-          }}
-        />
-      )}
+      {/* Overlay for Better Text Contrast */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          zIndex: 1,
+        }}
+      />
 
-      <CardContent sx={{ padding: 2, zIndex: 1 }}>
-        <Typography
-          variant="h6"
-          component="div"
+      <Box
+        sx={{ display: "flex", flexDirection: "column", flex: 1, zIndex: 2 }}
+      >
+        <CardContent
           sx={{
-            fontFamily: "Poppins, sans-serif",
-            textAlign: "left",
-            fontSize: 18,
+            flex: "1 0 auto",
+            zIndex: 3,
+            borderRadius: "30px",
+            padding: 2,
           }}
         >
-          {title}
-        </Typography>
-        {amount && (
           <Typography
-            variant="h5"
-            sx={{ fontFamily: "Poppins, sans-serif", textAlign: "left" }}
+            component="div"
+            variant="h6"
+            sx={{ fontWeight: "bold", color: "white" }}
           >
-            {amount} Rs
+            {title}
           </Typography>
-        )}
-      </CardContent>
+          <Typography
+            variant="caption"
+            component="div"
+            sx={{
+              color: "white",
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical",
+              lineClamp: 2,
+              textOverflow: "ellipsis",
+            }}
+          >
+            {subtitle}
+          </Typography>
+          <Typography
+            variant="subtitle2"
+            component="div"
+            sx={{
+              fontSize: 12,
+              color: "white",
+              textDecoration: "underline",
+            }}
+          >
+            Details
+          </Typography>
+        </CardContent>
+      </Box>
     </Card>
   );
 }

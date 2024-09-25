@@ -3,6 +3,8 @@ import React from "react";
 import OverViewCard from "../OverViewCard/OverViewCard";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import GroupCard from "../GroupCard/GroupCard";
+import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
+import Activity from "../Activity/Activity";
 
 function HomeTab() {
   const isMobile = useScreenSize();
@@ -11,7 +13,7 @@ function HomeTab() {
       sx={{
         flex: 1,
         display: "flex",
-        overflow: "auto",
+
         width: "100%",
         flexDirection: "column",
         alignItems: "flex-start",
@@ -20,11 +22,7 @@ function HomeTab() {
         ...(isMobile ? { alignItems: "flex-start" } : {}),
       }}
     >
-      <Typography
-        variant="subtitle1"
-        margin={0.5}
-        sx={{ color: "#353E6C", fontFamily: "Poppins, sans serif" }}
-      >
+      <Typography variant="subtitle1" margin={0.5} sx={{ color: "#353E6C" }}>
         Summary
       </Typography>
       <Grid container spacing={3} justifyContent="center">
@@ -64,44 +62,54 @@ function HomeTab() {
         marginTop={3}
         marginLeft={0.5}
         marginBottom={0.5}
-        sx={{ color: "#353E6C", fontFamily: "Poppins, sans serif" }}
+        sx={{ color: "#353E6C" }}
       >
-        Groups
+        Recent Groups
       </Typography>
       <Grid container spacing={3} justifyContent="center">
         <Grid item xs={12} sm={6} md={4}>
           <GroupCard
-            title={"You get"}
-            rightImage={
-              "https://pixabay.com/photos/lake-nature-travel-exploration-6701636/"
-            }
-            amount={100}
-            backgroundStyle={{
-              background: "linear-gradient(135deg, #f36, #f08)",
-            }}
+            title={"Trip to Mumbai"}
+            subtitle={"Carl added 460 to breakfast"}
           />
         </Grid>
 
         <Grid item xs={12} sm={6} md={4}>
-          <GroupCard
-            title={"You give"}
-            amount={100}
-            backgroundStyle={{
-              background: "linear-gradient(135deg, #FF9A3E, #FF6F20)",
-            }}
-          />
+          <GroupCard title={"School Picnic"} subtitle={"All Settled !"} />
         </Grid>
 
         <Grid item xs={12} sm={6} md={4}>
-          <GroupCard
-            title={"Balance"}
-            amount={100}
-            backgroundStyle={{
-              background: "linear-gradient(135deg, #332A7C, #5A4B9A)",
-            }}
-          />
+          <GroupCard title={"Get together"} subtitle={"You owe 251 to joe"} />
         </Grid>
       </Grid>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          alignItems: "flex-end",
+        }}
+      >
+        <Typography
+          variant="subtitle1"
+          marginTop={1}
+          marginRight={1}
+          sx={{
+            display: "flex",
+            width: "9%",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flex: 1,
+            color: "#353E6C",
+            fontSize: 12,
+            textDecoration: "underline",
+            ...(isMobile ? { marginRight: 6 } : {}),
+          }}
+        >
+          Groups <ArrowRightAltIcon />
+        </Typography>
+      </Box>
+      <Activity></Activity>
     </Box>
   );
 }

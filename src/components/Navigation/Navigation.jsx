@@ -71,11 +71,14 @@ function Navigation() {
         flex: 1,
         display: "flex",
         height: "100%",
-        overflow: "auto",
-        backgroundColor: "#FFF5D9",
-        flexBasis: "25%", // Fixed width for Navigation to 25%
+        overflow: "hidden",
+        backgroundColor: "white",
+        flexBasis: "20%", // Fixed width for Navigation to 25%
         flexShrink: 0, // Prevents it from shrinking
+        borderTopLeftRadius: "30px",
+        borderBottomLeftRadius: "30px",
         padding: 4,
+        zIndex: 100,
         ...(isMobile
           ? {
               gap: "40px",
@@ -84,17 +87,18 @@ function Navigation() {
               justifyContent: "flex-end",
               width: "100%",
               flexBasis: "10%",
+              boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.1)", // Shadow at the bottom
             }
           : {
               flexDirection: "column",
               alignItems: "flex-start",
               justifyContent: "flex-start",
+              boxShadow: "10px 10px 30px rgba(0, 0, 0, 0.1)",
             }),
       }}
     >
       <Typography
         sx={{
-          fontFamily: "Poppins, sans-serif",
           fontWeight: 600, // Semi-bold
           fontSize: "25px",
           color: "#4D4D4D",

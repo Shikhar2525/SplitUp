@@ -7,8 +7,8 @@ function App() {
       <Container
         maxWidth="lg"
         sx={{
+          height: "100vh",
           padding: 2,
-          height: "100vh", // Make the container take up full viewport height
           display: "flex",
           flexDirection: "column",
         }}
