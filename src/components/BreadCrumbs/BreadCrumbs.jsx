@@ -1,5 +1,5 @@
-import { Box, Typography } from "@mui/material";
-import React from "react";
+import { Box, Button, Typography } from "@mui/material";
+import React, { useState } from "react";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -7,10 +7,17 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { useCurrentTab } from "../contexts/CurrentTabContext";
+import AddExpenseButton from "../AddExpense/AddExpenseModal";
 
 function BreadCrumbs() {
   const isMobile = useScreenSize();
   const { currentTab } = useCurrentTab();
+  const [modelOpen, setModelOpen] = useState(false);
+
+  const handleClose = () => {
+    setModelOpen(false);
+  };
+
   const iconStyles = {
     color: "#3C3F88",
   };
@@ -20,12 +27,12 @@ function BreadCrumbs() {
       sx={{
         flex: 1,
         display: "flex",
-        overflow: "auto",
+        flexWrap: "wrap",
         width: "100%",
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "flex-start",
-        ...(isMobile ? { alignItems: "flex-start", maxHeight: "30px" } : {}),
+        ...(isMobile ? { maxHeight: "30px" } : {}),
       }}
     >
       <Box
@@ -34,7 +41,7 @@ function BreadCrumbs() {
           flex: 1,
           display: "flex",
           overflow: "auto",
-          flexBasis: "25%",
+
           flexShrink: 0,
           flexDirection: "row",
           alignItems: "center",
@@ -55,12 +62,13 @@ function BreadCrumbs() {
           {currentTab}
         </Typography>
       </Box>
+
       <Box
         className="rightSideButton"
         sx={{
           flex: 1,
           display: "flex",
-          flexBasis: "25%",
+          flexBasis: "35%",
           flexShrink: 0,
           overflow: "auto",
           width: "100%",
@@ -70,11 +78,25 @@ function BreadCrumbs() {
           gap: 1.5,
         }}
       >
+        <Button
+          size="small"
+          variant="contained"
+          onClick={() => setModelOpen(true)}
+          sx={{
+            backgroundColor: "#8675FF",
+            borderRadius: "20px",
+            color: "#FFF",
+            "&:hover": { backgroundColor: "#FD7289" },
+          }}
+        >
+          Add {!isMobile && "Expense"}
+        </Button>
         <SearchIcon sx={{ ...iconStyles }} />
         <SettingsIcon sx={{ ...iconStyles }} />
         <NotificationsIcon sx={{ ...iconStyles }} />
         <AccountCircleIcon sx={{ ...iconStyles }} />
       </Box>
+      <AddExpenseButton open={modelOpen} handleClose={() => handleClose()} />
     </Box>
   );
 }
