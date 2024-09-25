@@ -10,6 +10,7 @@ import {
   Toolbar,
   Drawer,
   IconButton,
+  useMediaQuery,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 
@@ -25,6 +26,7 @@ function Navigation() {
   const navigate = useNavigate();
   const isMobile = useScreenSize();
   const { setCurrentTab } = useCurrentTab();
+  const isNineundredPixel = useMediaQuery("(max-width:900px)");
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
@@ -33,29 +35,31 @@ function Navigation() {
   const list = () => {
     return (
       <List
-        sx={{ display: "flex", flexDirection: "column", marginTop: 5, gap: 2 }}
+        sx={{ display: "flex", flexDirection: "column", marginTop: 5, gap: 1 }}
       >
         <ListItem
+          sx={{ padding: 0 }}
           button
           onClick={() => {
             navigate("/");
             setCurrentTab("Home");
           }}
         >
-          <ListItemIcon>
+          <ListItemIcon sx={{ minWidth: 30 }}>
             <HomeIcon />
           </ListItemIcon>
           <ListItemText primary="Home" />
         </ListItem>
 
         <ListItem
+          sx={{ padding: 0 }}
           button
           onClick={() => {
             setCurrentTab("Groups");
             navigate("/groups");
           }}
         >
-          <ListItemIcon>
+          <ListItemIcon sx={{ minWidth: 30 }}>
             <Diversity3Icon />
           </ListItemIcon>
           <ListItemText primary="Groups" />
@@ -70,13 +74,12 @@ function Navigation() {
       sx={{
         flex: 1,
         display: "flex",
-        height: "100%",
+        height: isNineundredPixel ? "122vh" : "100%",
         overflow: "hidden",
         backgroundColor: "white",
-        flexBasis: "20%", // Fixed width for Navigation to 25%
+        flexBasis: "10%", // Fixed width for Navigation to 25%
         flexShrink: 0, // Prevents it from shrinking
-        borderTopLeftRadius: "30px",
-        borderBottomLeftRadius: "30px",
+
         padding: 4,
         zIndex: 100,
         ...(isMobile
@@ -94,6 +97,8 @@ function Navigation() {
               alignItems: "flex-start",
               justifyContent: "flex-start",
               boxShadow: "10px 10px 30px rgba(0, 0, 0, 0.1)",
+              borderTopLeftRadius: "30px",
+              borderBottomLeftRadius: "30px",
             }),
       }}
     >

@@ -37,7 +37,6 @@ const Activity = () => {
     <Box sx={{ width: "100%" }}>
       <Typography
         variant="subtitle1"
-        marginTop={0.5}
         marginLeft={0.5}
         sx={{ color: "#353E6C" }}
       >

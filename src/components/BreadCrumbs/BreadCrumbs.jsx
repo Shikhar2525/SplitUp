@@ -4,10 +4,10 @@ import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { useCurrentTab } from "../contexts/CurrentTabContext";
 import AddExpenseButton from "../AddExpense/AddExpenseModal";
+import AccountMenu from "../AccountMenu/AccountMenu";
 
 function BreadCrumbs() {
   const isMobile = useScreenSize();
@@ -46,7 +46,7 @@ function BreadCrumbs() {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "flex-start",
-          gap: 2,
+          gap: 1,
         }}
       >
         <KeyboardBackspaceIcon sx={{ color: "#3C3F88" }} />
@@ -70,7 +70,7 @@ function BreadCrumbs() {
           display: "flex",
           flexBasis: "35%",
           flexShrink: 0,
-          overflow: "auto",
+          overflow: "hidden",
           width: "100%",
           flexDirection: "row",
           alignItems: "center",
@@ -94,7 +94,7 @@ function BreadCrumbs() {
         <SearchIcon sx={{ ...iconStyles }} />
         <SettingsIcon sx={{ ...iconStyles }} />
         <NotificationsIcon sx={{ ...iconStyles }} />
-        <AccountCircleIcon sx={{ ...iconStyles }} />
+        <AccountMenu />
       </Box>
       <AddExpenseButton open={modelOpen} handleClose={() => handleClose()} />
     </Box>

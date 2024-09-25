@@ -5,9 +5,13 @@ import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { Route, Routes } from "react-router-dom";
 import HomeTab from "../HomeTab/Home";
 import GroupsTab from "../GroupsTab/GroupsTab";
+import { useAuth0 } from "@auth0/auth0-react";
+import Welcome from "../Welcome/Welcome";
 
 function Content() {
   const isMobile = useScreenSize();
+  const { isAuthenticated } = useAuth0();
+
   return (
     <Box
       sx={{
@@ -16,19 +20,23 @@ function Content() {
         overflow: "auto",
         flexBasis: "75%", // Fixed width for Navigation to 25%
         flexShrink: 0, // Prevents it from shrinking
-        padding: 3,
+        padding: isAuthenticated ? 3 : 1,
         flexDirection: "column",
         alignItems: "flex-start",
         justifyContent: "flex-start",
         backgroundColor: "#f8f4f4",
         borderRadius: "30px",
+        position: "relative", // Set position to relative for absolute children
         ...(isMobile ? { width: "100%" } : {}),
       }}
     >
-      <BreadCrumbs />
+      {isAuthenticated && <BreadCrumbs />}
       <Routes>
-        <Route index element={<HomeTab />} />
-        <Route path="groups" element={<GroupsTab />} />
+        <Route index element={isAuthenticated ? <HomeTab /> : <Welcome />} />
+        <Route
+          path="groups"
+          element={isAuthenticated ? <GroupsTab /> : <Welcome />}
+        />
       </Routes>
     </Box>
   );
