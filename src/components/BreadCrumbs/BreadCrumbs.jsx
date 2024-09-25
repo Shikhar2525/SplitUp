@@ -1,8 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
 import React, { useState } from "react";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
-import SearchIcon from "@mui/icons-material/Search";
-import SettingsIcon from "@mui/icons-material/Settings";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { useCurrentTab } from "../contexts/CurrentTabContext";
@@ -91,8 +89,6 @@ function BreadCrumbs() {
         >
           Add {!isMobile && "Expense"}
         </Button>
-        <SearchIcon sx={{ ...iconStyles }} />
-        <SettingsIcon sx={{ ...iconStyles }} />
         <NotificationsIcon sx={{ ...iconStyles }} />
         <AccountMenu />
       </Box>

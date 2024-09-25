@@ -28,7 +28,7 @@ function MainContainer() {
       }}
     >
       {/* Progress Loader */}
-      {!isLoading && ( // Show loader when loading
+      {isLoading && ( // Show loader when loading
         <LinearProgress
           sx={{
             position: "absolute",
@@ -36,6 +36,12 @@ function MainContainer() {
             left: 0,
             width: "100%",
             zIndex: 1000, // Ensure it appears on top
+            "& .MuiLinearProgress-bar": {
+              backgroundColor: "#F44771", // Color for the progress bar
+            },
+            "& .MuiLinearProgress-root": {
+              backgroundColor: "#62FFFF", // Optional: color for the track background
+            },
           }}
         />
       )}
