@@ -15,6 +15,7 @@ import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
 
 const TransactionCard = ({ transaction }) => {
@@ -114,29 +115,11 @@ const TransactionCard = ({ transaction }) => {
           >
             {transaction.amount} Rs {/* Removed dollar sign */}
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 2,
-            }}
-          >
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                fontSize: "10px",
-              }}
-            >
-              Transacion done by
-            </Typography>
-            <Avatar
-              src={`https://mui.com/static/images/avatar/2.jpg`} // Placeholder, adjust as needed
-            />
-          </Box>
+
+          <Avatar
+            sx={{ width: 25, height: 25 }}
+            src={`https://mui.com/static/images/avatar/2.jpg`} // Placeholder, adjust as needed
+          />
         </Box>
       </AccordionSummary>
 
@@ -152,7 +135,15 @@ const TransactionCard = ({ transaction }) => {
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ display: "flex", alignItems: "center" }}
+            sx={{ display: "flex", alignItems: "center", marginTop: 0.5 }}
+          >
+            <ReceiptIcon sx={{ marginRight: 1 }} />
+            Transaction done by: Shikhar
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ display: "flex", alignItems: "center", marginTop: 0.5 }}
           >
             <AccessTimeIcon sx={{ marginRight: 1 }} />
             Date Created: {new Date(transaction.date).toLocaleDateString()}
@@ -160,7 +151,7 @@ const TransactionCard = ({ transaction }) => {
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ display: "flex", alignItems: "center", marginTop: 1 }}
+            sx={{ display: "flex", alignItems: "center", marginTop: 0.5 }}
           >
             <MonetizationOnIcon sx={{ marginRight: 1 }} />
             {`Spent Amount: ${transaction.amount} Rs`}
@@ -168,7 +159,7 @@ const TransactionCard = ({ transaction }) => {
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ display: "flex", alignItems: "center", marginTop: 1 }}
+            sx={{ display: "flex", alignItems: "center", marginTop: 0.5 }}
           >
             <AltRouteIcon sx={{ marginRight: 1 }} />
             Split Between: {transaction.splitBetween?.join(", ")}{" "}
