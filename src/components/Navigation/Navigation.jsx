@@ -42,7 +42,6 @@ function Navigation() {
           button
           onClick={() => {
             navigate("/");
-            setCurrentTab("Home");
           }}
         >
           <ListItemIcon sx={{ minWidth: 30 }}>
@@ -55,7 +54,6 @@ function Navigation() {
           sx={{ padding: 0 }}
           button
           onClick={() => {
-            setCurrentTab("Groups");
             navigate("/groups");
           }}
         >

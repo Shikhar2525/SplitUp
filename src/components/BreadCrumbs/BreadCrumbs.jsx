@@ -6,9 +6,11 @@ import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { useCurrentTab } from "../contexts/CurrentTabContext";
 import AddExpenseButton from "../AddExpense/AddExpenseModal";
 import AccountMenu from "../AccountMenu/AccountMenu";
+import { useCurrentGroup } from "../contexts/CurrentGroup";
 
 function BreadCrumbs() {
   const isMobile = useScreenSize();
+  const { currentGroup } = useCurrentGroup();
   const { currentTab } = useCurrentTab();
   const [modelOpen, setModelOpen] = useState(false);
 
@@ -39,25 +41,35 @@ function BreadCrumbs() {
           flex: 1,
           display: "flex",
           overflow: "auto",
-
+          flexBasis: "20%",
           flexShrink: 0,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "flex-start",
           gap: 1,
+          ...(isMobile && { flexBasis: "8%" }),
         }}
       >
-        <KeyboardBackspaceIcon sx={{ color: "#3C3F88" }} />
+        {currentTab === "Groups" && (
+          <KeyboardBackspaceIcon sx={{ color: "#3C3F88" }} />
+        )}
         <Typography
           sx={{
             fontSize: "20px",
+
             color: "#3C3F88",
             letterSpacing: "0.05em",
+            ...(currentTab === "Groups"
+              ? {}
+              : {
+                  marginLeft: 0.6,
+                }),
+            ...(isMobile ? { fontSize: 14 } : {}),
           }}
           variant="h6"
           color="initial"
         >
-          {currentTab}
+          {currentTab === "Groups" ? `Group / ${currentGroup}` : currentTab}
         </Typography>
       </Box>
 

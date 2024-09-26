@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState } from "react";
+import { useLocation } from "react-router";
 
 const CurrentTabContext = createContext();
 
 export const CurrentTabProvider = ({ children }) => {
-  const [currentTab, setCurrentTab] = useState("Home");
+  const [currentTab, setCurrentTab] = useState();
   return (
     <CurrentTabContext.Provider value={{ currentTab, setCurrentTab }}>
       {children}

@@ -21,6 +21,9 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CategoryIcon from "@mui/icons-material/Category"; // Import category icon
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import Expenses from "../Expenses/Expenses";
+import AddExpenseModal from "../AddExpense/AddExpenseModal";
+import AddGroupModal from "../AddGroup/AddGroupModal";
+import { useCurrentGroup } from "../contexts/CurrentGroup";
 
 // Custom styled Select component with reduced height
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -55,9 +58,14 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 
 const GroupTab = () => {
   const isMobile = useScreenSize();
+  const [modelOpen, setModelOpen] = useState(false);
+  const handleClose = () => {
+    setModelOpen(false);
+  };
+  const { currentGroup, setCurrentGroup } = useCurrentGroup();
   const groups = [
     {
-      name: "Group 1",
+      name: "Trip to mumbai",
       description: "This is group 1",
       members: ["Alice", "Bob"],
       createdDate: "2024-01-01", // Example date
@@ -80,11 +88,11 @@ const GroupTab = () => {
   ];
 
   // State for selected group and tab
-  const [selectedGroup, setSelectedGroup] = useState(groups[0].name);
+
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleGroupChange = (event) => {
-    setSelectedGroup(event.target.value);
+    setCurrentGroup(event.target.value);
   };
 
   const handleTabChange = (event, newValue) => {
@@ -92,7 +100,7 @@ const GroupTab = () => {
   };
 
   const selectedGroupDetails = groups.find(
-    (group) => group.name === selectedGroup
+    (group) => group.name === currentGroup
   );
 
   return (
@@ -118,7 +126,7 @@ const GroupTab = () => {
           sx={{ width: isMobile ? "50%" : "20%" }}
         >
           <CustomSelect
-            value={selectedGroup}
+            value={currentGroup}
             onChange={handleGroupChange}
             IconComponent={KeyboardArrowDownIcon}
             displayEmpty
@@ -165,7 +173,6 @@ const GroupTab = () => {
           </AvatarGroup>
         </Box>
       </Box>
-
       {/* Small Bar for Group Name, Date Created, and Category */}
       <Box
         sx={{
@@ -177,24 +184,12 @@ const GroupTab = () => {
           alignItems: "center",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <CategoryIcon sx={{ marginRight: 1 }} />
-
-          <Typography
-            variant="body1"
-            sx={{ fontWeight: "bold", marginRight: 1, marginTop: -0.5 }}
-          >
-            {selectedGroupDetails.name}
-          </Typography>
-        </Box>
         <Typography variant="body2" color="text.secondary">
           Created on:{" "}
           {new Date(selectedGroupDetails.createdDate).toLocaleDateString()}
         </Typography>
       </Box>
-
       <Divider />
-
       {/* Tabs Section */}
       <AppBar
         position="static"
@@ -218,7 +213,6 @@ const GroupTab = () => {
           <Tab label="Totals" icon={<AddCircleIcon />} iconPosition="start" />
         </Tabs>
       </AppBar>
-
       {/* Tab Panel Section */}
       <Box sx={{ p: 2 }}>
         {tabIndex === 0 && <Expenses />}
@@ -233,6 +227,7 @@ const GroupTab = () => {
           </Typography>
         )}
       </Box>
+      <AddGroupModal open={modelOpen} handleClose={handleClose} />
     </Box>
   );
 };
