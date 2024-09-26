@@ -192,7 +192,7 @@ const GroupTab = () => {
 
       {/* Tabs Section */}
       <AppBar position="static" color="transparent">
-        <Tabs value={tabIndex} onChange={handleTabChange}>
+        <Tabs value={tabIndex} onChange={handleTabChange} variant="scrollable">
           <Tab label="Expenses" icon={<PaidIcon />} iconPosition="start" />
           <Tab label="Balances" icon={<BalanceIcon />} iconPosition="start" />
           <Tab label="Totals" icon={<AddCircleIcon />} iconPosition="start" />
