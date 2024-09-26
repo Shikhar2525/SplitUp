@@ -8,7 +8,7 @@ const Expenses = () => {
   const isMobile = useScreenSize();
   return (
     <Box
-      sx={{ height: "49vh", overflow: "auto", paddingRight: isMobile ? 0 : 2 }}
+      sx={{ height: "49vh", overflow: "auto", paddingRight: isMobile ? 1 : 2 }}
     >
       <ExpenseCard
         transaction={{
