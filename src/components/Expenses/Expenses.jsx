@@ -2,10 +2,14 @@ import React from "react";
 import { Box } from "@mui/material";
 
 import ExpenseCard from "../ExpenseCard/ExpenseCard";
+import { useScreenSize } from "../contexts/ScreenSizeContext";
 
 const Expenses = () => {
+  const isMobile = useScreenSize();
   return (
-    <Box sx={{ height: "49vh", overflow: "auto", paddingRight: 2 }}>
+    <Box
+      sx={{ height: "49vh", overflow: "auto", paddingRight: isMobile ? 0 : 2 }}
+    >
       <ExpenseCard
         transaction={{
           id: 1,

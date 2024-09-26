@@ -20,7 +20,7 @@ function Content() {
         overflow: "auto",
         flexBasis: "75%", // Fixed width for Navigation to 25%
         flexShrink: 0, // Prevents it from shrinking
-        padding: isMobile ? 0.5 : isAuthenticated ? 3 : 1,
+        padding: isMobile ? 1 : isAuthenticated ? 3 : 1,
         flexDirection: "column",
         alignItems: "flex-start",
         justifyContent: "flex-start",
