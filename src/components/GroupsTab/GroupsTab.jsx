@@ -192,8 +192,23 @@ const GroupTab = () => {
       <Divider />
 
       {/* Tabs Section */}
-      <AppBar position="static" color="transparent">
-        <Tabs value={tabIndex} onChange={handleTabChange} variant="scrollable">
+      <AppBar
+        position="static"
+        color="transparent"
+        sx={{ minHeight: "40px" }} // Reduced height
+      >
+        <Tabs
+          value={tabIndex}
+          onChange={handleTabChange}
+          variant="scrollable"
+          sx={{
+            minHeight: "45px", // Reduced tab height
+            "& .MuiTab-root": {
+              padding: "6px 12px", // Reduced padding for tabs
+              minHeight: "45px", // Reduced tab button height
+            },
+          }}
+        >
           <Tab label="Expenses" icon={<PaidIcon />} iconPosition="start" />
           <Tab label="Balances" icon={<BalanceIcon />} iconPosition="start" />
           <Tab label="Totals" icon={<AddCircleIcon />} iconPosition="start" />
