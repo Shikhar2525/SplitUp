@@ -24,7 +24,11 @@ const AccountMenu = () => {
   };
 
   const handleClose = async () => {
-    await logout();
+    await logout({
+      logoutParams: {
+        returnTo: window.location.origin,
+      },
+    });
     setAnchorEl(null);
   };
 
