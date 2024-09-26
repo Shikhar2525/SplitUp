@@ -77,7 +77,7 @@ function Navigation() {
         height: isNineundredPixel ? "122vh" : "100%",
         overflow: "hidden",
         backgroundColor: "white",
-        flexBasis: "10%", // Fixed width for Navigation to 25%
+        flexBasis: isMobile ? 0 : "10%", // Fixed width for Navigation to 25%
         flexShrink: 0, // Prevents it from shrinking
 
         padding: 4,

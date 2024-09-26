@@ -18,7 +18,7 @@ function Content() {
         flex: 1,
         display: "flex",
         overflow: "auto",
-        flexBasis: "75%", // Fixed width for Navigation to 25%
+        flexBasis: isMobile ? "90%" : "75%", // Fixed width for Navigation to 25%
         flexShrink: 0, // Prevents it from shrinking
         padding: isMobile ? 1 : isAuthenticated ? 3 : 1,
         flexDirection: "column",
