@@ -8,6 +8,7 @@ import {
   Grid,
   IconButton,
   Box,
+  Avatar,
 } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
@@ -81,29 +82,62 @@ const TransactionCard = ({ transaction }) => {
             28
           </Typography>
         </Box>
-        <Typography
-          variant="subtitle1"
-          color="text.secondary"
-          component="div"
-          sx={{
-            fontFamily: "Poppins, sans-serif !important",
-            marginLeft: 8, // Add margin to avoid overlap with the box
-          }}
-        >
-          {transaction.title}
-        </Typography>
-        <Typography
-          variant="body1"
-          color="text.primary"
+
+        {/* Flex container for title and amount */}
+        <Box
           sx={{
             display: "flex",
-            alignItems: "center",
-            marginLeft: 1,
-            color: "#353E6C ",
+            justifyContent: "space-between",
+            flexGrow: 1,
+            marginLeft: 8,
           }}
         >
-          {transaction.amount} Rs {/* Removed dollar sign */}
-        </Typography>
+          <Typography
+            variant="subtitle1"
+            color="text.secondary"
+            component="div"
+            sx={{
+              fontFamily: "Poppins, sans-serif !important",
+            }}
+          >
+            {transaction.title}
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.primary"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              color: "#353E6C ",
+            }}
+          >
+            {transaction.amount} Rs {/* Removed dollar sign */}
+          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 2,
+            }}
+          >
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                fontSize: "10px",
+              }}
+            >
+              Transacion done by
+            </Typography>
+            <Avatar
+              src={`https://mui.com/static/images/avatar/2.jpg`} // Placeholder, adjust as needed
+            />
+          </Box>
+        </Box>
       </AccordionSummary>
 
       <AccordionDetails>
