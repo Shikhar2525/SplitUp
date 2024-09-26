@@ -22,16 +22,13 @@ import CategoryIcon from "@mui/icons-material/Category"; // Import category icon
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import Expenses from "../Expenses/Expenses";
 
-// Custom styled Select component with responsive styles
+// Custom styled Select component with reduced height
 const CustomSelect = styled(Select)(({ theme }) => ({
   "& .MuiSelect-select": {
-    padding: "12px 24px",
+    padding: "7px 12px", // Reduced padding for the select to decrease height
     borderRadius: "8px",
     backgroundColor: theme.palette.background.paper,
     transition: "background-color 0.3s ease",
-    [theme.breakpoints.down("sm")]: {
-      padding: "8px 16px", // Reduced padding for mobile
-    },
   },
   "& .MuiSelect-icon": {
     right: 12,
@@ -109,13 +106,17 @@ const GroupTab = () => {
     >
       <Box
         sx={{
-          p: 2,
+          p: 1, // Reduced padding for the container holding the select
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        <FormControl fullWidth variant="outlined" sx={{ width: "35%" }}>
+        <FormControl
+          fullWidth
+          variant="outlined"
+          sx={{ width: isMobile ? "50%" : "20%" }}
+        >
           <CustomSelect
             value={selectedGroup}
             onChange={handleGroupChange}
@@ -123,6 +124,7 @@ const GroupTab = () => {
             displayEmpty
             renderValue={(value) => (
               <Chip
+                size="small"
                 label={selectedGroupDetails?.name}
                 variant="outlined"
                 color="primary"
@@ -143,13 +145,15 @@ const GroupTab = () => {
             alignItems: "center",
           }}
         >
-          <Typography
-            variant="subtitle1"
-            margin={0.5}
-            sx={{ color: "#353E6C" }}
-          >
-            Members:
-          </Typography>
+          {!isMobile && (
+            <Typography
+              variant="subtitle1"
+              margin={0.5}
+              sx={{ color: "#353E6C" }}
+            >
+              Members:
+            </Typography>
+          )}
           <AvatarGroup max={4}>
             {selectedGroupDetails.members.map((member, index) => (
               <Avatar
