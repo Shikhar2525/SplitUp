@@ -13,7 +13,9 @@ import {
   Avatar,
   Tabs,
   Tab,
+  Button,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PaidIcon from "@mui/icons-material/Paid";
 import BalanceIcon from "@mui/icons-material/Balance";
@@ -146,6 +148,26 @@ const GroupTab = () => {
             ))}
           </CustomSelect>
         </FormControl>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setModelOpen(true)}
+          sx={{
+            backgroundColor: "#8675FF",
+            color: "#FFF",
+            "&:hover": {
+              backgroundColor: "#FD7289",
+            },
+            borderRadius: "8px",
+            padding: isMobile ? 0 : "2px 8px",
+            display: "flex", // Using flex to align items
+            alignItems: "center", // Centering items vertically
+            ...(isMobile && { minWidth: "38px" }),
+          }}
+        >
+          <AddIcon /> {/* Adding the plus icon */}
+          {!isMobile && "New Group"}
+        </Button>
         <Box
           sx={{
             display: "flex",
