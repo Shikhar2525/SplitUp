@@ -20,6 +20,7 @@ import BalanceIcon from "@mui/icons-material/Balance";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CategoryIcon from "@mui/icons-material/Category"; // Import category icon
 import { useScreenSize } from "../contexts/ScreenSizeContext";
+import Expenses from "../Expenses/Expenses";
 
 // Custom styled Select component with responsive styles
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -201,16 +202,7 @@ const GroupTab = () => {
 
       {/* Tab Panel Section */}
       <Box sx={{ p: 2 }}>
-        {tabIndex === 0 && (
-          <>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              {selectedGroupDetails.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              {selectedGroupDetails.description}
-            </Typography>
-          </>
-        )}
+        {tabIndex === 0 && <Expenses />}
         {tabIndex === 1 && (
           <Typography variant="body2" color="text.secondary">
             {selectedGroupDetails.members.join(", ")}
