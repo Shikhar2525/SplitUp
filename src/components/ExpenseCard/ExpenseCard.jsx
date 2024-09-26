@@ -31,6 +31,7 @@ const TransactionCard = ({ transaction }) => {
         marginBottom: 1.5,
         borderRadius: 2,
         boxShadow: 3,
+
         width: "100%", // Full width
         fontFamily: "Poppins, sans-serif", // Apply Poppins font
       }}
