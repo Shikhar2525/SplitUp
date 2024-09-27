@@ -10,6 +10,7 @@ import { Auth0Provider } from "@auth0/auth0-react";
 import { CurrentGroupProvider } from "./components/contexts/CurrentGroup";
 import { CurrentUserProvider } from "./components/contexts/CurrentUser";
 import { TopSnackBarProvider } from "./components/contexts/TopSnackBar";
+import { LinerProgressProvider } from "./components/contexts/LinearProgress";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -26,11 +27,13 @@ root.render(
           <CurrentGroupProvider>
             <CurrentUserProvider>
               <TopSnackBarProvider>
-                <BrowserRouter>
-                  <ThemeProvider theme={theme}>
-                    <App />
-                  </ThemeProvider>
-                </BrowserRouter>
+                <LinerProgressProvider>
+                  <BrowserRouter>
+                    <ThemeProvider theme={theme}>
+                      <App />
+                    </ThemeProvider>
+                  </BrowserRouter>
+                </LinerProgressProvider>
               </TopSnackBarProvider>
             </CurrentUserProvider>
           </CurrentGroupProvider>

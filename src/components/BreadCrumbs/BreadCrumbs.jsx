@@ -69,7 +69,11 @@ function BreadCrumbs() {
           variant="h6"
           color="initial"
         >
-          {currentTab === "Groups" ? `Group / ${currentGroup}` : currentTab}
+          {currentTab === "Groups"
+            ? currentGroup
+              ? `Group / ${currentGroup}`
+              : "Group"
+            : currentTab}
         </Typography>
       </Box>
 

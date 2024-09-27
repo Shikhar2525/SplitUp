@@ -5,12 +5,14 @@ import { useScreenSize } from "../contexts/ScreenSizeContext"; // Ensure this is
 import DashBoard from "../Content/Content";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
+import { useLinearProgress } from "../contexts/LinearProgress";
 
 function MainContainer() {
   const isMobile = useScreenSize();
   const isNineHundredPixels = useMediaQuery("(max-width:900px)");
   const { isAuthenticated, isLoading } = useAuth0();
   const { snackBar, setSnackBar } = useTopSnackBar();
+  const { isLinearProgress } = useLinearProgress();
 
   useEffect(() => {
     if (snackBar?.isOpen) {
@@ -38,7 +40,7 @@ function MainContainer() {
         position: "relative",
       }}
     >
-      {isLoading && (
+      {(isLoading || isLinearProgress) && (
         <LinearProgress
           sx={{
             position: "absolute",

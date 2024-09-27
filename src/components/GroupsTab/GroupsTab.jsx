@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Box,
@@ -20,12 +20,13 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PaidIcon from "@mui/icons-material/Paid";
 import BalanceIcon from "@mui/icons-material/Balance";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import CategoryIcon from "@mui/icons-material/Category"; // Import category icon
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import Expenses from "../Expenses/Expenses";
-import AddExpenseModal from "../AddExpense/AddExpenseModal";
 import AddGroupModal from "../AddGroup/AddGroupModal";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
+import GroupService from "../services/group.service";
+import { useCurrentUser } from "../contexts/CurrentUser";
+import { useLinearProgress } from "../contexts/LinearProgress";
 
 // Custom styled Select component with reduced height
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -65,31 +66,24 @@ const GroupTab = () => {
     setModelOpen(false);
   };
   const { currentGroup, setCurrentGroup } = useCurrentGroup();
-  const groups = [
-    {
-      name: "Trip to mumbai",
-      description: "This is group 1",
-      members: ["Alice", "Bob"],
-      createdDate: "2024-01-01", // Example date
-      category: "Food", // Example category
-    },
-    {
-      name: "Group 2",
-      description: "This is group 2",
-      members: ["Charlie", "David"],
-      createdDate: "2024-01-02", // Example date
-      category: "Travel", // Example category
-    },
-    {
-      name: "Group 3",
-      description: "This is group 3",
-      members: ["Eve", "Frank"],
-      createdDate: "2024-01-03", // Example date
-      category: "Shopping", // Example category
-    },
-  ];
+  const { currentUser } = useCurrentUser();
+  const [groups, setGroups] = useState([]);
+  const { setLinearProgress } = useLinearProgress();
 
-  // State for selected group and tab
+  const fetchGroups = async () => {
+    setLinearProgress(true);
+    try {
+      const groups = await GroupService.fetchGroupsByAdminEmail(
+        currentUser.email
+      );
+      setGroups(groups);
+      setCurrentGroup(groups[0]?.title);
+      setLinearProgress(false);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+      setLinearProgress(false);
+    }
+  };
 
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -97,13 +91,17 @@ const GroupTab = () => {
     setCurrentGroup(event.target.value);
   };
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (newValue) => {
     setTabIndex(newValue);
   };
 
-  const selectedGroupDetails = groups.find(
-    (group) => group.name === currentGroup
+  const selectedGroupDetails = groups?.find(
+    (group) => group.title === currentGroup || groups[0]
   );
+
+  useEffect(() => {
+    fetchGroups();
+  }, [currentUser]);
 
   return (
     <Box
@@ -135,15 +133,15 @@ const GroupTab = () => {
             renderValue={(value) => (
               <Chip
                 size="small"
-                label={selectedGroupDetails?.name}
+                label={selectedGroupDetails?.title}
                 variant="outlined"
                 color="primary"
               />
             )}
           >
-            {groups.map((group, index) => (
-              <MenuItem key={index} value={group.name}>
-                <Typography variant="body1">{group.name}</Typography>
+            {groups?.map((group, index) => (
+              <MenuItem key={index} value={group.title}>
+                <Typography variant="body1">{group.title}</Typography>
               </MenuItem>
             ))}
           </CustomSelect>
@@ -185,7 +183,7 @@ const GroupTab = () => {
             </Typography>
           )}
           <AvatarGroup max={4}>
-            {selectedGroupDetails.members.map((member, index) => (
+            {selectedGroupDetails?.members?.map((member, index) => (
               <Avatar
                 key={index}
                 alt={member}
@@ -208,7 +206,7 @@ const GroupTab = () => {
       >
         <Typography variant="body2" color="text.secondary">
           Created on:{" "}
-          {new Date(selectedGroupDetails.createdDate).toLocaleDateString()}
+          {new Date(selectedGroupDetails?.createdDate).toLocaleDateString()}
         </Typography>
       </Box>
       <Divider />
@@ -240,7 +238,7 @@ const GroupTab = () => {
         {tabIndex === 0 && <Expenses />}
         {tabIndex === 1 && (
           <Typography variant="body2" color="text.secondary">
-            {selectedGroupDetails.members.join(", ")}
+            {selectedGroupDetails?.members?.join(", ")}
           </Typography>
         )}
         {tabIndex === 2 && (

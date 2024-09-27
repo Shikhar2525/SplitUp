@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from "react";
 const CurrentGroupContext = createContext();
 
 export const CurrentGroupProvider = ({ children }) => {
-  const [currentGroup, setCurrentGroup] = useState("Trip to mumbai");
+  const [currentGroup, setCurrentGroup] = useState();
   return (
     <CurrentGroupContext.Provider value={{ currentGroup, setCurrentGroup }}>
       {children}
