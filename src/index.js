@@ -11,6 +11,7 @@ import { CurrentGroupProvider } from "./components/contexts/CurrentGroup";
 import { CurrentUserProvider } from "./components/contexts/CurrentUser";
 import { TopSnackBarProvider } from "./components/contexts/TopSnackBar";
 import { LinerProgressProvider } from "./components/contexts/LinearProgress";
+import { AllGroupsProvider } from "./components/contexts/AllGroups";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -28,11 +29,13 @@ root.render(
             <CurrentUserProvider>
               <TopSnackBarProvider>
                 <LinerProgressProvider>
-                  <BrowserRouter>
-                    <ThemeProvider theme={theme}>
-                      <App />
-                    </ThemeProvider>
-                  </BrowserRouter>
+                  <AllGroupsProvider>
+                    <BrowserRouter>
+                      <ThemeProvider theme={theme}>
+                        <App />
+                      </ThemeProvider>
+                    </BrowserRouter>
+                  </AllGroupsProvider>
                 </LinerProgressProvider>
               </TopSnackBarProvider>
             </CurrentUserProvider>

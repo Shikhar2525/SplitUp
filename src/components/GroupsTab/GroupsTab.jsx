@@ -29,6 +29,7 @@ import { useCurrentUser } from "../contexts/CurrentUser";
 import { useLinearProgress } from "../contexts/LinearProgress";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
 import { formatDate, sortByDate } from "../utils";
+import { useAllGroups } from "../contexts/AllGroups";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -66,7 +67,7 @@ const GroupTab = () => {
   const [modelOpen, setModelOpen] = useState(false);
   const { currentGroup, setCurrentGroup } = useCurrentGroup();
   const { currentUser } = useCurrentUser();
-  const [groups, setGroups] = useState([]);
+  const { allGroups, setAllGroups } = useAllGroups();
   const { setLinearProgress } = useLinearProgress();
   const [refresh, setRefresh] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
@@ -80,7 +81,7 @@ const GroupTab = () => {
       );
       // Sort the fetched groups by date
       const sortedGroups = sortByDate(fetchedGroups);
-      setGroups(sortedGroups);
+      setAllGroups(sortedGroups);
 
       // Set the first group in the sorted list as the default
       if (sortedGroups.length > 0) {
@@ -100,8 +101,8 @@ const GroupTab = () => {
 
   // Memoized group details
   const selectedGroupDetails = useMemo(
-    () => groups.find((group) => group.title === currentGroup),
-    [groups, currentGroup]
+    () => allGroups.find((group) => group.title === currentGroup),
+    [allGroups, currentGroup]
   );
 
   const handleGroupChange = useCallback(
@@ -133,7 +134,7 @@ const GroupTab = () => {
           alignItems: "center",
         }}
       >
-        {groups.length > 0 ? (
+        {allGroups.length > 0 ? (
           <FormControl
             fullWidth
             variant="outlined"
@@ -153,7 +154,7 @@ const GroupTab = () => {
                 />
               )}
             >
-              {groups.map((group, index) => (
+              {allGroups.map((group, index) => (
                 <MenuItem key={index} value={group.title}>
                   <Typography variant="body1">{group.title}</Typography>
                 </MenuItem>
@@ -187,12 +188,12 @@ const GroupTab = () => {
           <AddIcon />
           {!isMobile && "New Group"}
         </Button>
-        {groups.length > 0 && (
+        {allGroups.length > 0 && (
           <AvatarGroupSection members={selectedGroupDetails?.members} />
         )}
       </Box>
 
-      {groups.length > 0 ? (
+      {allGroups.length > 0 ? (
         <>
           <GroupInfoBar selectedGroupDetails={selectedGroupDetails} />
           <Divider />

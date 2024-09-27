@@ -19,6 +19,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import { useAllGroups } from "../contexts/AllGroups";
 
 const styles = {
   modalBox: {
@@ -60,6 +61,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const [paidBy, setPaidBy] = useState("");
   const [splitOptions, setSplitOptions] = useState([]);
   const [selectedDate, setSelectedDate] = useState(dayjs());
+  const { allGroups } = useAllGroups();
 
   const users = ["User 1", "User 2", "User 3", "User 4"];
 
@@ -99,8 +101,11 @@ const AddExpenseModal = ({ open, handleClose }) => {
               onChange={(e) => setGroup(e.target.value)}
               required
             >
-              <MenuItem value={"Group 1"}>Group 1</MenuItem>
-              <MenuItem value={"Group 2"}>Group 2</MenuItem>
+              {allGroups.map((group, index) => (
+                <MenuItem key={index} value={group.title}>
+                  <Typography variant="body1">{group.title}</Typography>
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
