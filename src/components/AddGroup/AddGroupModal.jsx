@@ -53,7 +53,7 @@ const styles = {
   },
 };
 
-const AddGroupModal = ({ open, handleClose }) => {
+const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
   const [category, setCategory] = useState(""); // New state for category
@@ -122,6 +122,7 @@ const AddGroupModal = ({ open, handleClose }) => {
         isOpen: true,
         message: "Group created",
       });
+      refreshGroups();
     } catch (error) {
       setError("Failed to create group. Please try again.");
     } finally {

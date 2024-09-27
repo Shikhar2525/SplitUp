@@ -28,6 +28,7 @@ import GroupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useLinearProgress } from "../contexts/LinearProgress";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
+import { sortByDate, sortBydate } from "../utils";
 
 // Custom styled Select component with reduced height
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -70,6 +71,7 @@ const GroupTab = () => {
   const { currentUser } = useCurrentUser();
   const [groups, setGroups] = useState([]);
   const { setLinearProgress } = useLinearProgress();
+  const [refresh, setRefresh] = useState(false);
 
   const fetchGroups = async () => {
     setLinearProgress(true);
@@ -102,7 +104,7 @@ const GroupTab = () => {
 
   useEffect(() => {
     fetchGroups();
-  }, [currentUser]);
+  }, [currentUser, refresh]);
 
   return (
     <Box
@@ -141,7 +143,7 @@ const GroupTab = () => {
                 />
               )}
             >
-              {groups?.map((group, index) => (
+              {sortByDate(groups)?.map((group, index) => (
                 <MenuItem key={index} value={group.title}>
                   <Typography variant="body1">{group.title}</Typography>
                 </MenuItem>
@@ -276,7 +278,11 @@ const GroupTab = () => {
         <NoDataScreen message="No groups" />
       )}
 
-      <AddGroupModal open={modelOpen} handleClose={handleClose} />
+      <AddGroupModal
+        open={modelOpen}
+        handleClose={handleClose}
+        refreshGroups={() => setRefresh(!refresh)}
+      />
     </Box>
   );
 };
