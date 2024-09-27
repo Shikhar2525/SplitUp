@@ -3,11 +3,33 @@ import MainContainer from "./components/MainContainer/MainContainer";
 import { useLocation } from "react-router";
 import { useEffect } from "react";
 import { useCurrentTab } from "./components/contexts/CurrentTabContext";
+import userService from "./components/services/user.service";
+import { useAuth0 } from "@auth0/auth0-react";
+import { v4 as uuidv4 } from "uuid";
+
 function App() {
   const location = useLocation();
+  const { isAuthenticated, user, isLoading } = useAuth0();
   const { setCurrentTab } = useCurrentTab();
   let currentPath = window.location.pathname.replace(/^\/+/, "");
   currentPath = currentPath ? currentPath : "home";
+
+  //Create user in db
+  const createUser = async () => {
+    await userService.addUniqueUser({
+      id: uuidv4(),
+      firstName: user.given_name,
+      lastName: user.family_name,
+      joinedDate: new Date(),
+      profilePicture: user.picture,
+      email: user.email,
+      groups: [],
+    });
+  };
+  useEffect(() => {
+    user && isAuthenticated && !isLoading && createUser();
+  }, [user, isAuthenticated, isLoading]);
+
   useEffect(() => {
     setCurrentTab(currentPath.charAt(0).toUpperCase() + currentPath.slice(1));
   }, [location]);
