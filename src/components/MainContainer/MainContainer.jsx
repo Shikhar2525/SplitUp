@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Box, LinearProgress, Snackbar, useMediaQuery } from "@mui/material";
 import Navigation from "../Navigation/Navigation";
 import { useScreenSize } from "../contexts/ScreenSizeContext"; // Ensure this is correct
@@ -13,10 +13,13 @@ function MainContainer() {
   const { snackBar, setSnackBar } = useTopSnackBar();
 
   useEffect(() => {
-    setTimeout(() => {
-      snackBar && setSnackBar(false);
-    }, 3000);
-  }, [snackBar]);
+    if (snackBar?.isOpen) {
+      const timer = setTimeout(() => {
+        setSnackBar({ ...snackBar, isOpen: false });
+      }, 3000);
+      return () => clearTimeout(timer); // Cleanup timer on unmount
+    }
+  }, [snackBar, setSnackBar]);
 
   return (
     <Box
@@ -58,7 +61,19 @@ function MainContainer() {
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
         open={snackBar?.isOpen}
+        onClose={() => setSnackBar({ ...snackBar, isOpen: false })}
         message={snackBar?.message}
+        ContentProps={{
+          sx: {
+            backgroundColor:
+              snackBar?.type === "success"
+                ? "#16DBCC"
+                : snackBar?.type === "error"
+                ? "#FD7289"
+                : "#FF9A3E",
+            color: "#FFF", // Text color
+          },
+        }}
       />
     </Box>
   );
