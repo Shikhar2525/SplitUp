@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   AppBar,
   Box,
@@ -28,12 +28,12 @@ import GroupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useLinearProgress } from "../contexts/LinearProgress";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
-import { sortByDate, sortBydate } from "../utils";
+import { formatDate, sortByDate } from "../utils";
 
-// Custom styled Select component with reduced height
+// Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
   "& .MuiSelect-select": {
-    padding: "7px 12px", // Reduced padding for the select to decrease height
+    padding: "7px 12px",
     borderRadius: "8px",
     backgroundColor: theme.palette.background.paper,
     transition: "background-color 0.3s ease",
@@ -64,47 +64,57 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 const GroupTab = () => {
   const isMobile = useScreenSize();
   const [modelOpen, setModelOpen] = useState(false);
-  const handleClose = () => {
-    setModelOpen(false);
-  };
   const { currentGroup, setCurrentGroup } = useCurrentGroup();
   const { currentUser } = useCurrentUser();
   const [groups, setGroups] = useState([]);
   const { setLinearProgress } = useLinearProgress();
   const [refresh, setRefresh] = useState(false);
-
-  const fetchGroups = async () => {
-    setLinearProgress(true);
-    try {
-      const groups = await GroupService.fetchGroupsByAdminEmail(
-        currentUser.email
-      );
-      setGroups(groups);
-      setCurrentGroup(groups[0]?.title);
-      setLinearProgress(false);
-    } catch (error) {
-      console.error("Error fetching groups:", error);
-      setLinearProgress(false);
-    }
-  };
-
   const [tabIndex, setTabIndex] = useState(0);
 
-  const handleGroupChange = (event) => {
-    setCurrentGroup(event.target.value);
-  };
+  // Memoized fetch function to reduce unnecessary re-renders
+  const fetchGroups = useCallback(async () => {
+    setLinearProgress(true);
+    try {
+      const fetchedGroups = await GroupService.fetchGroupsByAdminEmail(
+        currentUser?.email ?? ""
+      );
+      // Sort the fetched groups by date
+      const sortedGroups = sortByDate(fetchedGroups);
+      setGroups(sortedGroups);
 
-  const handleTabChange = (newValue) => {
-    setTabIndex(newValue);
-  };
+      // Set the first group in the sorted list as the default
+      if (sortedGroups.length > 0) {
+        setCurrentGroup(sortedGroups[0]?.title);
+      }
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+    } finally {
+      setLinearProgress(false);
+    }
+  }, [currentUser?.email, setCurrentGroup, setLinearProgress]);
 
-  const selectedGroupDetails = groups?.find(
-    (group) => group.title === currentGroup
-  );
-
+  // Fetch groups on mount or refresh
   useEffect(() => {
     fetchGroups();
-  }, [currentUser, refresh]);
+  }, [fetchGroups, refresh]);
+
+  // Memoized group details
+  const selectedGroupDetails = useMemo(
+    () => groups.find((group) => group.title === currentGroup),
+    [groups, currentGroup]
+  );
+
+  const handleGroupChange = useCallback(
+    (event) => setCurrentGroup(event.target.value),
+    [setCurrentGroup]
+  );
+
+  const handleTabChange = useCallback(
+    (_, newValue) => setTabIndex(newValue),
+    []
+  );
+
+  const toggleModal = useCallback(() => setModelOpen((prev) => !prev), []);
 
   return (
     <Box
@@ -112,18 +122,18 @@ const GroupTab = () => {
         width: "100%",
         boxShadow: 3,
         borderRadius: 2,
-        marginTop: isMobile ? 5 : 1,
+        mt: isMobile ? 5 : 1,
       }}
     >
       <Box
         sx={{
-          p: 1, // Reduced padding for the container holding the select
+          p: 1,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        {groups?.length > 0 ? (
+        {groups.length > 0 ? (
           <FormControl
             fullWidth
             variant="outlined"
@@ -134,16 +144,16 @@ const GroupTab = () => {
               onChange={handleGroupChange}
               IconComponent={KeyboardArrowDownIcon}
               displayEmpty
-              renderValue={(value) => (
+              renderValue={() => (
                 <Chip
                   size="small"
-                  label={selectedGroupDetails?.title}
+                  label={selectedGroupDetails?.title ?? "Select Group"}
                   variant="outlined"
                   color="primary"
                 />
               )}
             >
-              {sortByDate(groups)?.map((group, index) => (
+              {groups.map((group, index) => (
                 <MenuItem key={index} value={group.title}>
                   <Typography variant="body1">{group.title}</Typography>
                 </MenuItem>
@@ -162,88 +172,42 @@ const GroupTab = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => setModelOpen(true)}
+          onClick={toggleModal}
           sx={{
             backgroundColor: "#8675FF",
             color: "#FFF",
-            "&:hover": {
-              backgroundColor: "#FD7289",
-            },
+            "&:hover": { backgroundColor: "#FD7289" },
             borderRadius: "8px",
-            padding: isMobile ? 0 : "2px 8px",
-            display: "flex", // Using flex to align items
-            alignItems: "center", // Centering items vertically
+            p: isMobile ? 0 : "2px 8px",
+            display: "flex",
+            alignItems: "center",
             ...(isMobile && { minWidth: "38px" }),
           }}
         >
-          <AddIcon /> {/* Adding the plus icon */}
+          <AddIcon />
           {!isMobile && "New Group"}
         </Button>
-        {groups?.length > 0 && (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            {!isMobile && (
-              <Typography
-                variant="subtitle1"
-                margin={0.5}
-                sx={{ color: "#353E6C" }}
-              >
-                Members:
-              </Typography>
-            )}
-            <AvatarGroup max={4}>
-              {selectedGroupDetails?.members?.map((member, index) => (
-                <Avatar
-                  key={index}
-                  alt={member}
-                  src={`https://mui.com/static/images/avatar/${index + 1}.jpg`} // Placeholder, adjust as needed
-                />
-              ))}
-            </AvatarGroup>
-          </Box>
+        {groups.length > 0 && (
+          <AvatarGroupSection members={selectedGroupDetails?.members} />
         )}
       </Box>
-      {groups?.length > 0 ? (
+
+      {groups.length > 0 ? (
         <>
-          {" "}
-          {/* Small Bar for Group Name, Date Created, and Category */}
-          <Box
-            sx={{
-              p: 2,
-              backgroundColor: "#f0f0f0",
-              borderRadius: "0 0 8px 8px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              Created on:{" "}
-              {new Date(selectedGroupDetails?.createdDate).toLocaleDateString()}
-            </Typography>
-          </Box>
+          <GroupInfoBar selectedGroupDetails={selectedGroupDetails} />
           <Divider />
-          {/* Tabs Section */}
           <AppBar
             position="static"
             color="transparent"
-            sx={{ minHeight: "40px" }} // Reduced height
+            sx={{ minHeight: "40px" }}
           >
             <Tabs
               value={tabIndex}
               onChange={handleTabChange}
               variant="scrollable"
               sx={{
-                minHeight: "45px", // Reduced tab height
-                "& .MuiTab-root": {
-                  padding: "6px 12px", // Reduced padding for tabs
-                  minHeight: "45px", // Reduced tab button height
-                },
+                minHeight: "45px",
+                "& .MuiTab-root": { padding: "6px 12px", minHeight: "45px" },
               }}
             >
               <Tab label="Expenses" icon={<PaidIcon />} iconPosition="start" />
@@ -259,12 +223,13 @@ const GroupTab = () => {
               />
             </Tabs>
           </AppBar>
-          {/* Tab Panel Section */}
           <Box sx={{ p: 2 }}>
             {tabIndex === 0 && <Expenses />}
             {tabIndex === 1 && (
               <Typography variant="body2" color="text.secondary">
-                {selectedGroupDetails?.members?.join(", ")}
+                {selectedGroupDetails?.members
+                  ?.map((member) => member.email)
+                  .join(", ") ?? "No members available"}
               </Typography>
             )}
             {tabIndex === 2 && (
@@ -280,11 +245,50 @@ const GroupTab = () => {
 
       <AddGroupModal
         open={modelOpen}
-        handleClose={handleClose}
+        handleClose={toggleModal}
         refreshGroups={() => setRefresh(!refresh)}
       />
     </Box>
   );
 };
+
+// Memoized AvatarGroup section to prevent re-rendering
+const AvatarGroupSection = React.memo(({ members }) => (
+  <Box sx={{ display: "flex", alignItems: "center" }}>
+    <Typography variant="subtitle1" margin={0.5} sx={{ color: "#353E6C" }}>
+      Members:
+    </Typography>
+    <AvatarGroup max={4}>
+      {members?.map((member, index) => (
+        <Avatar
+          key={index}
+          alt={member?.email ?? "Anonymous"}
+          src={`https://mui.com/static/images/avatar/${index + 1}.jpg`}
+        />
+      )) ?? <Typography variant="body2">No members available</Typography>}
+    </AvatarGroup>
+  </Box>
+));
+
+// Memoized group info bar
+const GroupInfoBar = React.memo(({ selectedGroupDetails }) => (
+  <Box
+    sx={{
+      p: 2,
+      backgroundColor: "#f0f0f0",
+      borderRadius: "8px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    <Typography variant="h6">
+      {selectedGroupDetails?.title ?? "Group Title"}
+    </Typography>
+    <Typography variant="subtitle2" color="textSecondary">
+      Created on: {formatDate(selectedGroupDetails?.createdDate) ?? "N/A"}
+    </Typography>
+  </Box>
+));
 
 export default GroupTab;
