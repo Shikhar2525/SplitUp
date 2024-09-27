@@ -27,6 +27,7 @@ import { useCurrentGroup } from "../contexts/CurrentGroup";
 import GroupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useLinearProgress } from "../contexts/LinearProgress";
+import NoDataScreen from "../NoDataScreen/NoDataScreen";
 
 // Custom styled Select component with reduced height
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -96,7 +97,7 @@ const GroupTab = () => {
   };
 
   const selectedGroupDetails = groups?.find(
-    (group) => group.title === currentGroup || groups[0]
+    (group) => group.title === currentGroup
   );
 
   useEffect(() => {
@@ -120,32 +121,42 @@ const GroupTab = () => {
           alignItems: "center",
         }}
       >
-        <FormControl
-          fullWidth
-          variant="outlined"
-          sx={{ width: isMobile ? "50%" : "20%" }}
-        >
-          <CustomSelect
-            value={currentGroup}
-            onChange={handleGroupChange}
-            IconComponent={KeyboardArrowDownIcon}
-            displayEmpty
-            renderValue={(value) => (
-              <Chip
-                size="small"
-                label={selectedGroupDetails?.title}
-                variant="outlined"
-                color="primary"
-              />
-            )}
+        {groups?.length > 0 ? (
+          <FormControl
+            fullWidth
+            variant="outlined"
+            sx={{ width: isMobile ? "50%" : "20%" }}
           >
-            {groups?.map((group, index) => (
-              <MenuItem key={index} value={group.title}>
-                <Typography variant="body1">{group.title}</Typography>
-              </MenuItem>
-            ))}
-          </CustomSelect>
-        </FormControl>
+            <CustomSelect
+              value={currentGroup}
+              onChange={handleGroupChange}
+              IconComponent={KeyboardArrowDownIcon}
+              displayEmpty
+              renderValue={(value) => (
+                <Chip
+                  size="small"
+                  label={selectedGroupDetails?.title}
+                  variant="outlined"
+                  color="primary"
+                />
+              )}
+            >
+              {groups?.map((group, index) => (
+                <MenuItem key={index} value={group.title}>
+                  <Typography variant="body1">{group.title}</Typography>
+                </MenuItem>
+              ))}
+            </CustomSelect>
+          </FormControl>
+        ) : (
+          <Typography
+            variant="subtitle2"
+            color="textSecondary"
+            sx={{ marginLeft: 1 }}
+          >
+            No active Group
+          </Typography>
+        )}
         <Button
           variant="contained"
           color="primary"
@@ -166,87 +177,105 @@ const GroupTab = () => {
           <AddIcon /> {/* Adding the plus icon */}
           {!isMobile && "New Group"}
         </Button>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          {!isMobile && (
-            <Typography
-              variant="subtitle1"
-              margin={0.5}
-              sx={{ color: "#353E6C" }}
-            >
-              Members:
+        {groups?.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            {!isMobile && (
+              <Typography
+                variant="subtitle1"
+                margin={0.5}
+                sx={{ color: "#353E6C" }}
+              >
+                Members:
+              </Typography>
+            )}
+            <AvatarGroup max={4}>
+              {selectedGroupDetails?.members?.map((member, index) => (
+                <Avatar
+                  key={index}
+                  alt={member}
+                  src={`https://mui.com/static/images/avatar/${index + 1}.jpg`} // Placeholder, adjust as needed
+                />
+              ))}
+            </AvatarGroup>
+          </Box>
+        )}
+      </Box>
+      {groups?.length > 0 ? (
+        <>
+          {" "}
+          {/* Small Bar for Group Name, Date Created, and Category */}
+          <Box
+            sx={{
+              p: 2,
+              backgroundColor: "#f0f0f0",
+              borderRadius: "0 0 8px 8px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Created on:{" "}
+              {new Date(selectedGroupDetails?.createdDate).toLocaleDateString()}
             </Typography>
-          )}
-          <AvatarGroup max={4}>
-            {selectedGroupDetails?.members?.map((member, index) => (
-              <Avatar
-                key={index}
-                alt={member}
-                src={`https://mui.com/static/images/avatar/${index + 1}.jpg`} // Placeholder, adjust as needed
+          </Box>
+          <Divider />
+          {/* Tabs Section */}
+          <AppBar
+            position="static"
+            color="transparent"
+            sx={{ minHeight: "40px" }} // Reduced height
+          >
+            <Tabs
+              value={tabIndex}
+              onChange={handleTabChange}
+              variant="scrollable"
+              sx={{
+                minHeight: "45px", // Reduced tab height
+                "& .MuiTab-root": {
+                  padding: "6px 12px", // Reduced padding for tabs
+                  minHeight: "45px", // Reduced tab button height
+                },
+              }}
+            >
+              <Tab label="Expenses" icon={<PaidIcon />} iconPosition="start" />
+              <Tab
+                label="Balances"
+                icon={<BalanceIcon />}
+                iconPosition="start"
               />
-            ))}
-          </AvatarGroup>
-        </Box>
-      </Box>
-      {/* Small Bar for Group Name, Date Created, and Category */}
-      <Box
-        sx={{
-          p: 2,
-          backgroundColor: "#f0f0f0",
-          borderRadius: "0 0 8px 8px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          Created on:{" "}
-          {new Date(selectedGroupDetails?.createdDate).toLocaleDateString()}
-        </Typography>
-      </Box>
-      <Divider />
-      {/* Tabs Section */}
-      <AppBar
-        position="static"
-        color="transparent"
-        sx={{ minHeight: "40px" }} // Reduced height
-      >
-        <Tabs
-          value={tabIndex}
-          onChange={handleTabChange}
-          variant="scrollable"
-          sx={{
-            minHeight: "45px", // Reduced tab height
-            "& .MuiTab-root": {
-              padding: "6px 12px", // Reduced padding for tabs
-              minHeight: "45px", // Reduced tab button height
-            },
-          }}
-        >
-          <Tab label="Expenses" icon={<PaidIcon />} iconPosition="start" />
-          <Tab label="Balances" icon={<BalanceIcon />} iconPosition="start" />
-          <Tab label="Totals" icon={<AddCircleIcon />} iconPosition="start" />
-        </Tabs>
-      </AppBar>
-      {/* Tab Panel Section */}
-      <Box sx={{ p: 2 }}>
-        {tabIndex === 0 && <Expenses />}
-        {tabIndex === 1 && (
-          <Typography variant="body2" color="text.secondary">
-            {selectedGroupDetails?.members?.join(", ")}
-          </Typography>
-        )}
-        {tabIndex === 2 && (
-          <Typography variant="body2" color="text.secondary">
-            Settings content goes here.
-          </Typography>
-        )}
-      </Box>
+              <Tab
+                label="Totals"
+                icon={<AddCircleIcon />}
+                iconPosition="start"
+              />
+            </Tabs>
+          </AppBar>
+          {/* Tab Panel Section */}
+          <Box sx={{ p: 2 }}>
+            {tabIndex === 0 && <Expenses />}
+            {tabIndex === 1 && (
+              <Typography variant="body2" color="text.secondary">
+                {selectedGroupDetails?.members?.join(", ")}
+              </Typography>
+            )}
+            {tabIndex === 2 && (
+              <Typography variant="body2" color="text.secondary">
+                Settings content goes here.
+              </Typography>
+            )}
+          </Box>
+        </>
+      ) : (
+        <NoDataScreen message="No groups" />
+      )}
+
       <AddGroupModal open={modelOpen} handleClose={handleClose} />
     </Box>
   );
