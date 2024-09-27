@@ -9,6 +9,7 @@ import theme from "./theme";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { CurrentGroupProvider } from "./components/contexts/CurrentGroup";
 import { CurrentUserProvider } from "./components/contexts/CurrentUser";
+import { TopSnackBarProvider } from "./components/contexts/TopSnackBar";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -24,11 +25,13 @@ root.render(
         <CurrentTabProvider>
           <CurrentGroupProvider>
             <CurrentUserProvider>
-              <BrowserRouter>
-                <ThemeProvider theme={theme}>
-                  <App />
-                </ThemeProvider>
-              </BrowserRouter>
+              <TopSnackBarProvider>
+                <BrowserRouter>
+                  <ThemeProvider theme={theme}>
+                    <App />
+                  </ThemeProvider>
+                </BrowserRouter>
+              </TopSnackBarProvider>
             </CurrentUserProvider>
           </CurrentGroupProvider>
         </CurrentTabProvider>

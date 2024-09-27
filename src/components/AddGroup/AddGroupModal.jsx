@@ -14,6 +14,10 @@ import {
   InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { v4 as uuidv4 } from "uuid";
+import GroupService from "../services/group.service";
+import { useCurrentUser } from "../contexts/CurrentUser";
+import { useTopSnackBar } from "../contexts/TopSnackBar";
 
 const styles = {
   modalBox: {
@@ -55,6 +59,8 @@ const AddGroupModal = ({ open, handleClose }) => {
   const [emails, setEmails] = useState([]);
   const [inputEmail, setInputEmail] = useState("");
   const [error, setError] = useState("");
+  const { currentUser } = useCurrentUser();
+  const { setSnackBar } = useTopSnackBar();
 
   const handleEmailAdd = (e) => {
     if (e.key === "Enter") {
@@ -88,15 +94,40 @@ const AddGroupModal = ({ open, handleClose }) => {
     return regex.test(email);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({
-      groupName,
-      groupDescription,
-      category,
-      emails,
-    });
-    // Add your group creation logic here
+
+    // Prepare the group data
+    const newGroup = {
+      id: uuidv4(),
+      title: groupName,
+      description: groupDescription,
+      category: category,
+      members: emails,
+      createdDate: new Date(),
+      isAllSettled: false,
+      expenses: [],
+      admin: currentUser?.email,
+    };
+
+    try {
+      await GroupService.createGroup(newGroup);
+
+      // Clear all fields after successful submission
+      setGroupName("");
+      setGroupDescription("");
+      setCategory("");
+      setEmails([]);
+      setInputEmail("");
+
+      handleClose();
+      setSnackBar({
+        isOpen: true,
+        message: "Group created",
+      });
+    } catch (error) {
+      setError("Failed to create group. Please try again.");
+    }
   };
 
   return (

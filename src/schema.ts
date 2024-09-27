@@ -15,7 +15,6 @@ interface Group {
   createdDate: Date;
   expenses: Expense[];
   isAllSettled: boolean;
-  lastUpdatedDate: Date;
   admin: User;
 }
 
