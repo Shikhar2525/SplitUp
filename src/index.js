@@ -7,10 +7,8 @@ import { CurrentTabProvider } from "./components/contexts/CurrentTabContext";
 import { ThemeProvider } from "@mui/material";
 import theme from "./theme";
 import { Auth0Provider } from "@auth0/auth0-react";
-import {
-  CurrentGroupContext,
-  CurrentGroupProvider,
-} from "./components/contexts/CurrentGroup";
+import { CurrentGroupProvider } from "./components/contexts/CurrentGroup";
+import { CurrentUserProvider } from "./components/contexts/CurrentUser";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -25,11 +23,13 @@ root.render(
       <ScreenSizeProvider>
         <CurrentTabProvider>
           <CurrentGroupProvider>
-            <BrowserRouter>
-              <ThemeProvider theme={theme}>
-                <App />
-              </ThemeProvider>
-            </BrowserRouter>
+            <CurrentUserProvider>
+              <BrowserRouter>
+                <ThemeProvider theme={theme}>
+                  <App />
+                </ThemeProvider>
+              </BrowserRouter>
+            </CurrentUserProvider>
           </CurrentGroupProvider>
         </CurrentTabProvider>
       </ScreenSizeProvider>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Menu,
   MenuItem,
@@ -13,11 +13,13 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import { useAuth0 } from "@auth0/auth0-react";
+import { useCurrentUser } from "../contexts/CurrentUser";
 
 const AccountMenu = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const { user, logout } = useAuth0();
+  const { logout } = useAuth0();
+  const { currentUser } = useCurrentUser();
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -45,8 +47,8 @@ const AccountMenu = () => {
       >
         <Avatar sx={{ bgcolor: "#8675FF", width: 45, height: 45 }}>
           <Avatar
-            alt={user?.name} // Alt text for accessibility
-            src={user?.picture}
+            alt={currentUser?.firstName + " " + currentUser?.lastName}
+            src={currentUser?.profilePicture}
             sx={{ width: 40, height: 40 }}
           />
         </Avatar>
@@ -69,12 +71,12 @@ const AccountMenu = () => {
         {/* Display User's Name */}
         <MenuItem sx={{ display: "flex", alignItems: "center" }}>
           <Avatar
-            alt={user?.name} // Alt text for accessibility
-            src={user?.picture}
+            alt={currentUser?.firstName + " " + currentUser?.lastName} // Alt text for accessibility
+            src={currentUser?.profilePicture}
             sx={{ width: 30, height: 30, marginRight: 1 }}
           />
           <Typography sx={{ color: "#353E6C" }}>
-            {user?.name || "User"}
+            {currentUser?.firstName + " " + currentUser?.lastName || "User"}
           </Typography>
         </MenuItem>
         <Divider />
