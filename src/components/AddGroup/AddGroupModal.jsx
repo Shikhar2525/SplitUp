@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import GroupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const styles = {
   modalBox: {
@@ -59,6 +60,7 @@ const AddGroupModal = ({ open, handleClose }) => {
   const [emails, setEmails] = useState([]);
   const [inputEmail, setInputEmail] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // State to track loading
   const { currentUser } = useCurrentUser();
   const { setSnackBar } = useTopSnackBar();
 
@@ -66,19 +68,15 @@ const AddGroupModal = ({ open, handleClose }) => {
     if (e.key === "Enter") {
       e.preventDefault();
 
-      // Check if the email is valid
       if (!validateEmail(inputEmail)) {
         setError("Email is wrong");
       } else if (emails.includes(inputEmail)) {
-        // Check if the email is already added
         setError("This email is already added.");
       } else {
-        // If valid and not already in the list, add the email
         setEmails((prevEmails) => [...prevEmails, inputEmail]);
-        setError(""); // Clear any previous error
+        setError("");
       }
 
-      // Clear the input after either adding or showing the error
       setInputEmail("");
     }
   };
@@ -96,8 +94,8 @@ const AddGroupModal = ({ open, handleClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Set loading to true before API call
 
-    // Prepare the group data
     const newGroup = {
       id: uuidv4(),
       title: groupName,
@@ -113,7 +111,6 @@ const AddGroupModal = ({ open, handleClose }) => {
     try {
       await GroupService.createGroup(newGroup);
 
-      // Clear all fields after successful submission
       setGroupName("");
       setGroupDescription("");
       setCategory("");
@@ -127,6 +124,8 @@ const AddGroupModal = ({ open, handleClose }) => {
       });
     } catch (error) {
       setError("Failed to create group. Please try again.");
+    } finally {
+      setLoading(false); // Set loading to false after API call
     }
   };
 
@@ -162,11 +161,8 @@ const AddGroupModal = ({ open, handleClose }) => {
             required
           />
 
-          {/* Category dropdown */}
           <FormControl fullWidth sx={styles.formControl}>
             <InputLabel id="category-label" shrink={!!category}>
-              {" "}
-              {/* Use shrink prop */}
               Category
             </InputLabel>
             <Select
@@ -183,7 +179,6 @@ const AddGroupModal = ({ open, handleClose }) => {
             </Select>
           </FormControl>
 
-          {/* Multi-select email input with chips */}
           <FormControl fullWidth sx={styles.formControl}>
             <div>
               {emails.map((email) => (
@@ -213,8 +208,16 @@ const AddGroupModal = ({ open, handleClose }) => {
             variant="contained"
             sx={styles.button}
             fullWidth
+            disabled={loading} // Disable button when loading
           >
             Create Group
+            {loading && (
+              <CircularProgress
+                color="success"
+                size={20}
+                sx={{ marginLeft: 2 }}
+              />
+            )}
           </Button>
         </form>
       </Box>
