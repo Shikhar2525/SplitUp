@@ -13,6 +13,7 @@ import {
   IconButton,
   ListItemText,
   Avatar,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckBox from "@mui/material/Checkbox";
@@ -21,6 +22,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { useAllGroups } from "../contexts/AllGroups";
+import GroupService from "../services/group.service"; // Import the GroupService
+import { useTopSnackBar } from "../contexts/TopSnackBar";
 
 const styles = {
   modalBox: {
@@ -63,8 +66,10 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const [splitOptions, setSplitOptions] = useState([]);
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const { allGroups } = useAllGroups();
-
+  const { setSnackBar } = useTopSnackBar();
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { refreshAllGroups } = useAllGroups();
 
   useEffect(() => {
     if (group) {
@@ -76,6 +81,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
               ? `${member?.firstName} ${member?.lastName}`
               : member?.email,
             avatar: member?.profilePicture,
+            email: member?.email, // Add the email here
             firstInitial: member?.firstName ? member?.firstName[0] : "",
           }))
         );
@@ -86,25 +92,43 @@ const AddExpenseModal = ({ open, handleClose }) => {
   }, [group, allGroups]);
 
   const handleSplitChange = (event) => {
-    const value = event.target.value;
-    // Remove the "paidBy" user from the split options if they are selected
-    setSplitOptions(
-      typeof value === "string"
-        ? value.split(",").filter((user) => user !== paidBy)
-        : value.filter((user) => user !== paidBy)
-    );
+    const email = event.target.value;
+    setSplitOptions(typeof email === "string" ? email.split(",") : email);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({
-      group,
+
+    const expense = {
       description,
-      amount,
+      amount: Number(amount), // Convert to a number
       paidBy,
-      splitOptions,
-      selectedDate,
-    });
+      splitBetween: splitOptions, // Now stores emails
+      date: selectedDate.toISOString(), // Format the date as needed
+    };
+    try {
+      setLoading(true);
+      const selectedGroupID = allGroups.find(
+        (item) => item?.title === group
+      )?.id;
+      await GroupService.addExpenseToGroup(selectedGroupID, expense);
+      console.log("Expense added successfully:", expense);
+      handleClose(); // Close the modal after successful submission
+      setSnackBar({
+        isOpen: true,
+        message: "Expense added",
+      });
+      setDescription("");
+      setAmount("");
+      setPaidBy("");
+      setSplitOptions([]);
+      setSelectedDate(dayjs());
+      refreshAllGroups();
+    } catch (error) {
+      console.error("Failed to add expense:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -173,7 +197,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
               disabled={!group} // Disable until group is selected
             >
               {users.map((user) => (
-                <MenuItem key={user.name} value={user.name}>
+                <MenuItem key={user.email} value={user.email}>
                   <Typography variant="body1">{user.name}</Typography>
                 </MenuItem>
               ))}
@@ -189,15 +213,15 @@ const AddExpenseModal = ({ open, handleClose }) => {
               renderValue={(selected) => (
                 <div>
                   {selected.length > 2
-                    ? selected.slice(0, 2).map((value) => {
-                        const user = users.find((u) => u.name === value);
+                    ? selected.slice(0, 2).map((email) => {
+                        const user = users.find((u) => u.email === email);
                         return (
                           <Chip
-                            key={value}
-                            label={value}
+                            key={email}
+                            label={user?.name}
                             avatar={
                               user?.avatar ? (
-                                <Avatar src={user.avatar} alt={value} />
+                                <Avatar src={user.avatar} alt={user.name} />
                               ) : (
                                 <Avatar>{user?.firstInitial}</Avatar>
                               )
@@ -206,15 +230,15 @@ const AddExpenseModal = ({ open, handleClose }) => {
                           />
                         );
                       })
-                    : selected.map((value) => {
-                        const user = users.find((u) => u.name === value);
+                    : selected.map((email) => {
+                        const user = users.find((u) => u.email === email);
                         return (
                           <Chip
-                            key={value}
-                            label={value}
+                            key={email}
+                            label={user?.name}
                             avatar={
                               user?.avatar ? (
-                                <Avatar src={user.avatar} alt={value} />
+                                <Avatar src={user.avatar} alt={user.name} />
                               ) : (
                                 <Avatar>{user?.firstInitial}</Avatar>
                               )
@@ -231,10 +255,10 @@ const AddExpenseModal = ({ open, handleClose }) => {
               disabled={!paidBy} // Disable until paidBy is selected
             >
               {users
-                .filter((user) => user.name !== paidBy) // Filter out the user selected in "Paid By"
+                .filter((user) => user.email !== paidBy) // Filter out the user selected in "Paid By"
                 .map((user) => (
-                  <MenuItem key={user.name} value={user.name}>
-                    <CheckBox checked={splitOptions.indexOf(user.name) > -1} />
+                  <MenuItem key={user.email} value={user.email}>
+                    <CheckBox checked={splitOptions.indexOf(user.email) > -1} />
                     <ListItemText
                       primary={
                         <div style={{ display: "flex", alignItems: "center" }}>
@@ -265,22 +289,25 @@ const AddExpenseModal = ({ open, handleClose }) => {
                   {...params}
                   fullWidth
                   sx={styles.formControl}
-                  disabled={!group} // Disable until group is selected
+                  required
                 />
               )}
-              required
-              disabled={!group} // Disable the DatePicker until a group is selected
             />
           </LocalizationProvider>
 
           <Button
             type="submit"
             variant="contained"
-            sx={styles.button}
-            fullWidth
-            disabled={!group || !paidBy} // Disable until group and paidBy are selected
+            sx={{ ...styles.button, marginTop: "15px" }}
           >
             Add Expense
+            {loading && (
+              <CircularProgress
+                color="success"
+                size={20}
+                sx={{ marginLeft: 2 }}
+              />
+            )}
           </Button>
         </form>
       </Box>

@@ -125,6 +125,35 @@ class GroupService {
       throw error;
     }
   };
+
+  addExpenseToGroup = async (groupIdField, expense) => {
+    try {
+      // Change the field name here to match the property name in your document that holds the group ID
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField) // Assuming 'id' is the field storing the group ID
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("No document found with ID:", groupIdField);
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      const groupDocRef = querySnapshot.docs[0].ref;
+
+      // Add the expense to the expenses array
+      await updateDoc(groupDocRef, {
+        expenses: arrayUnion(expense),
+      });
+
+      console.log(`Expense added successfully to group ID ${groupIdField}.`);
+    } catch (error) {
+      console.error("Error adding expense to group: ", error);
+      throw error;
+    }
+  };
 }
 
 export default new GroupService();

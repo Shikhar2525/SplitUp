@@ -9,6 +9,13 @@ import {
   IconButton,
   Box,
   Avatar,
+  Chip,
+  TableContainer,
+  TableBody,
+  Table,
+  TableCell,
+  TableRow,
+  Paper,
 } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
@@ -126,58 +133,156 @@ const TransactionCard = ({ transaction }) => {
 
       <AccordionDetails>
         <CardContent sx={{ padding: "0 !important" }}>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ marginBottom: 1 }}
-          >
-            {transaction.description}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: "flex", alignItems: "center", marginTop: 0.5 }}
-          >
-            <ReceiptIcon sx={{ marginRight: 1 }} />
-            Transaction done by: Shikhar
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: "flex", alignItems: "center", marginTop: 0.5 }}
-          >
-            <AccessTimeIcon sx={{ marginRight: 1 }} />
-            Date Created: {new Date(transaction.date).toLocaleDateString()}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: "flex", alignItems: "center", marginTop: 0.5 }}
-          >
-            <MonetizationOnIcon sx={{ marginRight: 1 }} />
-            {`Spent Amount: ${transaction.amount} Rs`}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: "flex", alignItems: "center", marginTop: 0.5 }}
-          >
-            <AltRouteIcon sx={{ marginRight: 1 }} />
-            Split Between: {transaction.splitBetween?.join(", ")}{" "}
-            {/* Assuming splitBetween is an array */}
-          </Typography>
-          <Grid container spacing={1} sx={{ marginTop: 1 }}>
-            <Grid item>
-              <IconButton color="primary" aria-label="edit">
-                <EditIcon />
-              </IconButton>
-            </Grid>
-            <Grid item>
-              <IconButton color="error" aria-label="delete">
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
-          </Grid>
+          <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
+            <Table
+              aria-label="transaction details table"
+              size="small"
+              sx={{ border: "1px solid rgba(224, 224, 224, 1)" }}
+            >
+              <TableBody>
+                <TableRow
+                  sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
+                >
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    sx={{
+                      padding: "8px",
+                      borderRight: "1px solid rgba(224, 224, 224, 1)",
+                    }}
+                  >
+                    Description
+                  </TableCell>
+                  <TableCell sx={{ padding: "8px" }}>
+                    {transaction.description}
+                  </TableCell>
+                </TableRow>
+                <TableRow
+                  sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
+                >
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    sx={{
+                      padding: "8px",
+                      borderRight: "1px solid rgba(224, 224, 224, 1)",
+                    }}
+                  >
+                    <ReceiptIcon sx={{ marginRight: 1 }} />
+                    Transaction done by
+                  </TableCell>
+                  <TableCell sx={{ padding: "8px" }}>
+                    <Chip
+                      key={transaction?.nameOrEmail}
+                      label={transaction?.nameOrEmail}
+                      sx={{ margin: "0.2rem" }}
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow
+                  sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
+                >
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    sx={{
+                      padding: "8px",
+                      borderRight: "1px solid rgba(224, 224, 224, 1)",
+                    }}
+                  >
+                    <AccessTimeIcon sx={{ marginRight: 1 }} />
+                    Date Created
+                  </TableCell>
+                  <TableCell sx={{ padding: "8px" }}>
+                    <Chip
+                      sx={{ marginLeft: 1 }}
+                      label={new Date(transaction.date).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
+                      variant="outlined"
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow
+                  sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
+                >
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    sx={{
+                      padding: "8px",
+                      borderRight: "1px solid rgba(224, 224, 224, 1)",
+                    }}
+                  >
+                    <MonetizationOnIcon sx={{ marginRight: 1 }} />
+                    Spent Amount
+                  </TableCell>
+                  <TableCell
+                    sx={{ padding: "8px" }}
+                  >{`${transaction.amount} Rs`}</TableCell>
+                </TableRow>
+                <TableRow
+                  sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
+                >
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    sx={{
+                      padding: "8px",
+                      borderRight: "1px solid rgba(224, 224, 224, 1)",
+                    }}
+                  >
+                    <AltRouteIcon sx={{ marginRight: 1 }} />
+                    Split Between
+                  </TableCell>
+                  <TableCell sx={{ padding: "8px" }}>
+                    <Box>
+                      {transaction.splitBetween?.map((item) => (
+                        <Chip
+                          key={item}
+                          label={item}
+                          sx={{ margin: "0.2rem" }}
+                        />
+                      ))}
+                    </Box>
+                  </TableCell>
+                </TableRow>
+                <TableRow
+                  sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
+                >
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    sx={{
+                      padding: "8px",
+                      borderRight: "1px solid rgba(224, 224, 224, 1)",
+                    }}
+                  >
+                    Actions:
+                  </TableCell>
+                  <TableCell sx={{ padding: "8px" }}>
+                    <Grid container spacing={1}>
+                      <Grid item>
+                        <IconButton color="primary" aria-label="edit">
+                          <EditIcon />
+                        </IconButton>
+                      </Grid>
+                      <Grid item>
+                        <IconButton color="error" aria-label="delete">
+                          <DeleteIcon />
+                        </IconButton>
+                      </Grid>
+                    </Grid>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
         </CardContent>
       </AccordionDetails>
     </Accordion>
