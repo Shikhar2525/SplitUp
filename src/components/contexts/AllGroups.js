@@ -29,7 +29,7 @@ export const AllGroupsProvider = ({ children }) => {
       const sortedGroups = sortByDate(fetchedGroups);
       setAllGroups(sortedGroups);
 
-      if (sortedGroups.length > 0) {
+      if (sortedGroups?.length > 0) {
         setCurrentGroupID(sortedGroups[0]?.id);
       }
     } catch (error) {

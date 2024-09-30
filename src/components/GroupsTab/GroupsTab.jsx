@@ -130,7 +130,7 @@ const GroupTab = () => {
           alignItems: "center",
         }}
       >
-        {allGroups.length > 0 ? (
+        {allGroups?.length > 0 ? (
           <FormControl
             fullWidth
             variant="outlined"
@@ -150,7 +150,7 @@ const GroupTab = () => {
                 />
               )}
             >
-              {allGroups.map((group, index) => (
+              {allGroups?.map((group, index) => (
                 <MenuItem key={index} value={group.id}>
                   <Typography variant="body1">{group.title}</Typography>
                 </MenuItem>
@@ -184,7 +184,7 @@ const GroupTab = () => {
           <AddIcon />
           {!isMobile && "New Group"}
         </Button>
-        {allGroups.length > 0 && (
+        {allGroups?.length > 0 && (
           <Box
             sx={{
               display: "flex",
@@ -203,7 +203,7 @@ const GroupTab = () => {
         )}
       </Box>
 
-      {allGroups.length > 0 ? (
+      {allGroups?.length > 0 ? (
         <>
           <GroupInfoBar selectedGroupDetails={selectedGroupDetails} />
           <Divider />
@@ -274,7 +274,7 @@ const GroupTab = () => {
 // Memoized AvatarGroup section to prevent re-rendering
 const AvatarGroupSection = React.memo(({ members }) => {
   // Get the names of members for tooltip display
-  const memberNames = members.map((member) => ({
+  const memberNames = members?.map((member) => ({
     name: member?.firstName
       ? `${member.firstName} ${member.lastName}`
       : member?.email ?? "Anonymous",
@@ -284,7 +284,7 @@ const AvatarGroupSection = React.memo(({ members }) => {
   // Create tooltip content with new lines and avatars
   const tooltipContent = (
     <div>
-      {memberNames.map((member, index) => (
+      {memberNames?.map((member, index) => (
         <Box
           key={index}
           sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}
@@ -305,11 +305,11 @@ const AvatarGroupSection = React.memo(({ members }) => {
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
       <Typography variant="subtitle1" margin={0.5} sx={{ color: "#353E6C" }}>
-        {members.length > 0 ? "Members :" : "No members"}
+        {members?.length > 0 ? "Members :" : "No members"}
       </Typography>
       <Tooltip title={tooltipContent} arrow>
         <AvatarGroup max={4}>
-          {members.slice(0, 4).map((member, index) => (
+          {members?.slice(0, 4)?.map((member, index) => (
             <Avatar
               key={index}
               alt={member?.email ?? "Anonymous"}

@@ -128,7 +128,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
       title: groupName,
       description: groupDescription,
       category: category,
-      members: members, // Send the complete members array
+      members: [adminUserObject, ...members], // Send the complete members array
       createdDate: new Date(),
       isAllSettled: false,
       expenses: [],
@@ -207,7 +207,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
           </FormControl>
           <FormControl fullWidth sx={styles.formControl}>
             <div>
-              {members.map((member, index) => (
+              {members?.map((member, index) => (
                 <Chip
                   key={index} // Using index as key since email might not be unique now
                   label={member.email}

@@ -140,7 +140,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
     e.preventDefault();
     setLoading(true);
 
-    if (members.length === 0) {
+    if (members?.length === 0) {
       setError("Please add at least one member.");
       setLoading(false);
       return; // Prevent submitting if no members are added
@@ -288,7 +288,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
             variant="contained"
             type="submit"
             sx={styles.button}
-            disabled={loading || members.length === 0}
+            disabled={loading || members?.length === 0}
           >
             {loading || emailLoading ? (
               <CircularProgress size={24} />
