@@ -192,7 +192,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
           />
           <FormControl fullWidth sx={styles.formControl}>
             <InputLabel id="category-label" shrink={!!category}>
-              Category
+              Category *
             </InputLabel>
             <Select
               labelId="category-label"

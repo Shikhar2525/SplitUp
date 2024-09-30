@@ -79,11 +79,24 @@ const GroupTab = () => {
   useEffect(() => {
     setLinearProgress(true);
     const storedGroup = JSON.parse(localStorage.getItem("currentGroupID"));
+
     if (storedGroup) {
-      setCurrentGroupID(storedGroup);
+      // Check if the stored group ID exists in the current groups
+      const isGroupValid = allGroups.some((group) => group.id === storedGroup);
+
+      if (isGroupValid) {
+        setCurrentGroupID(storedGroup);
+      } else if (allGroups.length > 0) {
+        // If the stored group is not valid, set to the first group
+        setCurrentGroupID(allGroups[0].id);
+      } else {
+        // If no groups exist, clear the current group ID
+        setCurrentGroupID(null);
+      }
     } else if (allGroups.length > 0) {
       setCurrentGroupID(allGroups[0].id);
     }
+
     setLinearProgress(false);
   }, [allGroups, setCurrentGroupID]);
 
