@@ -290,7 +290,11 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
             sx={styles.button}
             disabled={loading || members.length === 0}
           >
-            {loading ? <CircularProgress size={24} /> : "Add Members"}
+            {loading || emailLoading ? (
+              <CircularProgress size={24} />
+            ) : (
+              "Add Members"
+            )}
           </Button>
         </form>
 
