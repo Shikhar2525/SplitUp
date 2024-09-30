@@ -74,7 +74,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
 
       if (!validateEmail(inputEmail)) {
         setError("Email is invalid.");
-      } else if (members.some((member) => member.email === inputEmail)) {
+      } else if (members?.some((member) => member?.email === inputEmail)) {
         setError("This email is already added.");
       } else {
         setEmailLoading(true);
@@ -106,7 +106,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   const handleChipDelete = (member) => {
     // Directly remove the member from the local state
     setMembers((prevMembers) =>
-      prevMembers.filter((m) => m.email !== member.email)
+      prevMembers.filter((m) => m.email !== member?.email)
     );
   };
 
@@ -120,7 +120,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
       setLinearProgress(true);
       await GroupService.removeMemberFromGroup(
         currentGroupID,
-        selectedMember.email
+        selectedMember?.email
       ); // Call API to remove member
       refreshAllGroups(); // Refresh groups after deletion
       setError(""); // Clear any errors
@@ -207,7 +207,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                   >
                     <Avatar
                       sx={{ width: 25, height: 25, marginRight: 1 }}
-                      src={member.profilePicture}
+                      src={member?.profilePicture}
                     >
                       {nameOrEmail.charAt(0)}
                     </Avatar>
@@ -267,13 +267,13 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
             helperText="Press 'Enter' to add a member"
           />
           <div style={{ marginTop: "0.8rem", marginBottom: "0.8rem" }}>
-            {members.map((member, index) => (
+            {members?.map((member, index) => (
               <Chip
                 key={index} // Using index as key since member object can change
-                label={member.email}
+                label={member?.email}
                 avatar={
-                  <Avatar alt={member.email} src={member.profilePicture}>
-                    {member.email.charAt(0)}
+                  <Avatar alt={member?.email} src={member?.profilePicture}>
+                    {member?.email.charAt(0)}
                   </Avatar>
                 }
                 onDelete={() => handleChipDelete(member)} // Directly remove the chip
