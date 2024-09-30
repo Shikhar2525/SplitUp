@@ -63,6 +63,10 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   const { currentGroupID } = useCurrentGroup(); // Use currentGroup to display its title
   const { setLinearProgress } = useLinearProgress();
   const { refreshAllGroups } = useAllGroups();
+  const { allGroups } = useAllGroups();
+  const currentGroupObj = allGroups.find(
+    (group) => group?.id === currentGroupID
+  );
 
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -129,20 +133,25 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   };
 
   const handleConfirmDelete = async () => {
-    try {
-      setLinearProgress(true);
-      await GroupService.removeMemberFromGroup(
-        currentGroupID,
-        selectedMember?.email
-      ); // Call API to remove member
-      refreshAllGroups(); // Refresh groups after deletion
-      setError(""); // Clear any errors
-    } catch (err) {
-      setError("Failed to delete member. Please try again.");
-    } finally {
-      setConfirmationOpen(false); // Close the confirmation dialog
-      setSelectedMember(null); // Clear the selected member
-      setLinearProgress(false);
+    if (selectedMember?.email === currentGroupObj?.admin?.email) {
+      setConfirmationOpen(false);
+      setError("Cannot remove admin");
+    } else {
+      try {
+        setLinearProgress(true);
+        await GroupService.removeMemberFromGroup(
+          currentGroupID,
+          selectedMember?.email
+        ); // Call API to remove member
+        refreshAllGroups(); // Refresh groups after deletion
+        setError(""); // Clear any errors
+      } catch (err) {
+        setError("Failed to delete member. Please try again.");
+      } finally {
+        setConfirmationOpen(false); // Close the confirmation dialog
+        setSelectedMember(null); // Clear the selected member
+        setLinearProgress(false);
+      }
     }
   };
 
@@ -171,7 +180,13 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal
+      open={open}
+      onClose={() => {
+        handleClose();
+        setError("");
+      }}
+    >
       <Box sx={styles.modalBox}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <Typography variant="h6" component="h2" gutterBottom>
@@ -226,18 +241,28 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                     </Avatar>
                     {/* Tooltip for the email */}
                     <Tooltip title={nameOrEmail} arrow>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: "#353E6C",
-                          maxWidth: "150px", // Set a max width for ellipsis to take effect
-                          whiteSpace: "nowrap", // Prevents text from wrapping
-                          overflow: "hidden", // Hides the overflow
-                          textOverflow: "ellipsis", // Shows ellipsis when the text overflows
-                        }}
-                      >
-                        {nameOrEmail}
-                      </Typography>
+                      <Box sx={{ display: "flex", flexDirection: "column" }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "#353E6C",
+                            maxWidth: "150px", // Set a max width for ellipsis to take effect
+                            whiteSpace: "nowrap", // Prevents text from wrapping
+                            overflow: "hidden", // Hides the overflow
+                            textOverflow: "ellipsis", // Shows ellipsis when the text overflows
+                          }}
+                        >
+                          {nameOrEmail}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="textSecondary"
+                          fontSize={10}
+                        >
+                          {member?.email === currentGroupObj?.admin?.email &&
+                            "Admin"}
+                        </Typography>
+                      </Box>
                     </Tooltip>
                   </Box>
                   {/* Delete icon button */}

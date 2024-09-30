@@ -79,13 +79,15 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
         setError("Email is wrong");
       } else if (members.some((member) => member.email === inputEmail)) {
         setError("This email is already added.");
+      } else if (inputEmail === currentUser?.email) {
+        setError("Admin cannot be added as a member.");
       } else {
         setEmailLoading(true);
 
         try {
-          const user = await userService.getUserByEmail(inputEmail);
-          if (user) {
-            setMembers((prevMembers) => [...prevMembers, user]);
+          const fetchedUser = await userService.getUserByEmail(inputEmail);
+          if (fetchedUser) {
+            setMembers((prevMembers) => [...prevMembers, fetchedUser]);
             setError("");
           } else {
             setMembers((prevMembers) => [
