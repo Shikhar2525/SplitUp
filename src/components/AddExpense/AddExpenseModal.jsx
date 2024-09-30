@@ -24,6 +24,7 @@ import dayjs from "dayjs";
 import { useAllGroups } from "../contexts/AllGroups";
 import GroupService from "../services/group.service"; // Import the GroupService
 import { useTopSnackBar } from "../contexts/TopSnackBar";
+import { useCurrentUser } from "../contexts/CurrentUser";
 
 const styles = {
   modalBox: {
@@ -70,6 +71,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const { refreshAllGroups } = useAllGroups();
+  const { currentUser } = useCurrentUser();
 
   useEffect(() => {
     if (group) {
@@ -105,6 +107,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
       paidBy,
       splitBetween: splitOptions, // Now stores emails
       date: selectedDate.toISOString(), // Format the date as needed
+      createdBy: currentUser?.email,
     };
     try {
       setLoading(true);

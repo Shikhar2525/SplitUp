@@ -25,6 +25,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
 import { formatTransactionDate } from "../utils";
+import { useCurrentUser } from "../contexts/CurrentUser";
 
 const TransactionCard = ({ transaction, index }) => {
   const [expanded, setExpanded] = useState(false);
@@ -32,6 +33,7 @@ const TransactionCard = ({ transaction, index }) => {
   const handleAccordionChange = () => {
     setExpanded(!expanded);
   };
+  const { currentUser } = useCurrentUser();
   const colors = ["#FFBB38", "#F44771", "#332A7C", "#16DBCC"];
   return (
     <Accordion
@@ -134,8 +136,10 @@ const TransactionCard = ({ transaction, index }) => {
 
           <Avatar
             sx={{ width: 25, height: 25 }}
-            src={`https://mui.com/static/images/avatar/2.jpg`} // Placeholder, adjust as needed
-          />
+            src={transaction?.profilePicture} // Placeholder, adjust as needed
+          >
+            {transaction?.nameOrEmail?.charAt(0)}
+          </Avatar>
         </Box>
       </AccordionSummary>
 
@@ -258,34 +262,36 @@ const TransactionCard = ({ transaction, index }) => {
                     </Box>
                   </TableCell>
                 </TableRow>
-                <TableRow
-                  sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
-                >
-                  <TableCell
-                    component="th"
-                    scope="row"
-                    sx={{
-                      padding: "8px",
-                      borderRight: "1px solid rgba(224, 224, 224, 1)",
-                    }}
+                {transaction?.createdBy === currentUser?.email && (
+                  <TableRow
+                    sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
                   >
-                    Actions:
-                  </TableCell>
-                  <TableCell sx={{ padding: "8px" }}>
-                    <Grid container spacing={1}>
-                      <Grid item>
-                        <IconButton color="primary" aria-label="edit">
-                          <EditIcon />
-                        </IconButton>
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      sx={{
+                        padding: "8px",
+                        borderRight: "1px solid rgba(224, 224, 224, 1)",
+                      }}
+                    >
+                      Actions:
+                    </TableCell>
+                    <TableCell sx={{ padding: "8px" }}>
+                      <Grid container spacing={1}>
+                        <Grid item>
+                          <IconButton color="primary" aria-label="edit">
+                            <EditIcon />
+                          </IconButton>
+                        </Grid>
+                        <Grid item>
+                          <IconButton color="error" aria-label="delete">
+                            <DeleteIcon />
+                          </IconButton>
+                        </Grid>
                       </Grid>
-                      <Grid item>
-                        <IconButton color="error" aria-label="delete">
-                          <DeleteIcon />
-                        </IconButton>
-                      </Grid>
-                    </Grid>
-                  </TableCell>
-                </TableRow>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>

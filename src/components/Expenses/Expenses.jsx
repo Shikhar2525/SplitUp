@@ -25,6 +25,7 @@ const Expenses = () => {
               currency: "USD",
               date: expense?.date,
               splitBetween: expense?.splitBetween,
+              createdBy: expense?.createdBy,
             }}
             index={index}
           />
