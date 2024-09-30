@@ -24,14 +24,15 @@ import EditIcon from "@mui/icons-material/Edit";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
+import { formatTransactionDate } from "../utils";
 
-const TransactionCard = ({ transaction }) => {
+const TransactionCard = ({ transaction, index }) => {
   const [expanded, setExpanded] = useState(false);
-
+  const dateShort = formatTransactionDate(transaction?.date);
   const handleAccordionChange = () => {
     setExpanded(!expanded);
   };
-
+  const colors = ["#FFBB38", "#F44771", "#332A7C", "#16DBCC"];
   return (
     <Accordion
       sx={{
@@ -58,7 +59,7 @@ const TransactionCard = ({ transaction }) => {
       >
         <Box
           sx={{
-            backgroundColor: "#F44771",
+            backgroundColor: colors[index % colors.length],
             height: "100%", // Cover entire height of accordion
             width: 50,
             position: "absolute", // Position the box absolutely
@@ -78,7 +79,7 @@ const TransactionCard = ({ transaction }) => {
               color: "white",
             }}
           >
-            Sept
+            {dateShort?.month}
           </Typography>
           <Typography
             variant="subtitle2"
@@ -88,7 +89,7 @@ const TransactionCard = ({ transaction }) => {
               color: "white",
             }}
           >
-            28
+            {dateShort?.day}
           </Typography>
         </Box>
 

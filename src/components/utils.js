@@ -26,3 +26,34 @@ export const sortByDate = (arr) => {
     return dateB.getTime() - dateA.getTime(); // Use getTime() for comparison
   });
 };
+
+export function formatTransactionDate(dateString) {
+  const date = new Date(dateString);
+
+  // Array of month abbreviations
+  const monthAbbreviations = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const month = monthAbbreviations[date.getMonth()]; // Get the month abbreviation
+  const day = date.getDate(); // Get the day of the month
+
+  // Add leading zero to single-digit days
+  const formattedDay = day < 10 ? `0${day}` : day;
+
+  return {
+    month,
+    day: formattedDay, // Use the formatted day with leading zero
+  };
+}

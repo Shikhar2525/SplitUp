@@ -15,7 +15,7 @@ const Expenses = () => {
     <Box
       sx={{ height: "53vh", overflow: "auto", paddingRight: isMobile ? 1 : 2 }}
     >
-      {currentGroup?.expenses?.map((expense) => {
+      {currentGroup?.expenses?.map((expense, index) => {
         return (
           <ExpenseCard
             transaction={{
@@ -26,6 +26,7 @@ const Expenses = () => {
               date: expense?.date,
               splitBetween: expense?.splitBetween,
             }}
+            index={index}
           />
         );
       })}
