@@ -23,6 +23,7 @@ import { useCurrentGroup } from "../contexts/CurrentGroup";
 import GroupService from "../services/group.service";
 import userService from "../services/user.service";
 import { useAllGroups } from "../contexts/AllGroups";
+import { useLinearProgress } from "../contexts/LinearProgress";
 
 const styles = {
   modalBox: {
@@ -52,13 +53,14 @@ const styles = {
 
 const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   const [inputEmail, setInputEmail] = useState("");
-  const [members, setMembers] = useState([]);
+  const [members, setMembers] = useState([]); // Store both email and avatar
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null); // To store selected member for deletion
   const [confirmationOpen, setConfirmationOpen] = useState(false); // To handle confirmation dialog
-  const { currentGroupID, currentGroup } = useCurrentGroup(); // Use currentGroup to display its title
+  const { currentGroupID } = useCurrentGroup(); // Use currentGroup to display its title
+  const { setLinearProgress } = useLinearProgress();
   const { refreshAllGroups } = useAllGroups();
 
   const validateEmail = (email) => {
@@ -80,12 +82,16 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
         try {
           const user = await userService.getUserByEmail(inputEmail);
           if (user) {
-            setMembers((prevMembers) => [...prevMembers, user]);
+            // Add avatar along with email
+            setMembers((prevMembers) => [
+              ...prevMembers,
+              { email: user.email, profilePicture: user.profilePicture },
+            ]);
             setError("");
           } else {
             setMembers((prevMembers) => [
               ...prevMembers,
-              { email: inputEmail },
+              { email: inputEmail, profilePicture: "" }, // No avatar if user not found
             ]);
             setError("User not found, but email added.");
           }
@@ -100,6 +106,13 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
     }
   };
 
+  const handleChipDelete = (member) => {
+    // Directly remove the member from the local state
+    setMembers((prevMembers) =>
+      prevMembers.filter((m) => m.email !== member.email)
+    );
+  };
+
   const handleDeleteClick = (member) => {
     setSelectedMember(member); // Store the selected member for confirmation
     setConfirmationOpen(true); // Open the confirmation dialog
@@ -107,13 +120,11 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
 
   const handleConfirmDelete = async () => {
     try {
+      setLinearProgress(true);
       await GroupService.removeMemberFromGroup(
         currentGroupID,
         selectedMember.email
       ); // Call API to remove member
-      setMembers((prevMembers) =>
-        prevMembers.filter((member) => member.email !== selectedMember.email)
-      );
       refreshAllGroups(); // Refresh groups after deletion
       setError(""); // Clear any errors
     } catch (err) {
@@ -121,6 +132,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
     } finally {
       setConfirmationOpen(false); // Close the confirmation dialog
       setSelectedMember(null); // Clear the selected member
+      setLinearProgress(false);
     }
   };
 
@@ -139,7 +151,6 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
         await GroupService.addMemberToGroup(currentGroupID, member);
       }
       setMembers([]); // Reset members after submission
-      handleClose();
       refreshAllGroups(); // Refresh the group members
     } catch (error) {
       setError("Failed to add member(s). Please try again.");
@@ -240,7 +251,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
             gutterBottom
             sx={{ marginBottom: 2 }}
           >
-            No members , add new
+            No members, add new
           </Typography>
         )}
         {error && (
@@ -258,49 +269,48 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
             onKeyDown={handleEmailAdd}
             helperText="Press 'Enter' to add a member"
           />
-          <div style={{ marginTop: "0.8rem" }}>
+          <div style={{ marginTop: "0.8rem", marginBottom: "0.8rem" }}>
             {members.map((member, index) => (
               <Chip
-                key={index} // Using index as key since email might not be unique now
+                key={index} // Using index as key since member object can change
                 label={member.email}
-                onDelete={() => handleDeleteClick(member)} // Open confirmation before deleting a new member
-                sx={{ marginBottom: 1.2 }}
+                avatar={
+                  <Avatar alt={member.email} src={member.profilePicture}>
+                    {member.email.charAt(0)}
+                  </Avatar>
+                }
+                onDelete={() => handleChipDelete(member)} // Directly remove the chip
+                sx={{ marginRight: 1, marginTop: 1 }}
               />
             ))}
           </div>
-          {emailLoading && (
-            <Typography variant="body2" sx={styles.searchingMessage}>
-              Searching user...
-            </Typography>
-          )}
           <Button
-            type="submit"
             variant="contained"
+            type="submit"
             sx={styles.button}
-            disabled={loading}
+            disabled={loading || members.length === 0}
           >
-            {loading ? <CircularProgress size={20} /> : "Add Members"}
+            {loading ? <CircularProgress size={24} /> : "Add Members"}
           </Button>
         </form>
 
-        {/* Confirmation dialog */}
+        {/* Confirmation dialog for deletion of existing members */}
         <Dialog
           open={confirmationOpen}
           onClose={() => setConfirmationOpen(false)}
         >
-          <DialogTitle>Confirm Deletion</DialogTitle>
+          <DialogTitle>Confirm Delete</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Are you sure you want to delete <b>{selectedMember?.email}</b>{" "}
-              from the group <b>{currentGroup?.title}</b>?
+              Are you sure you want to delete this member?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setConfirmationOpen(false)} color="primary">
               Cancel
             </Button>
-            <Button onClick={handleConfirmDelete} color="error">
-              Confirm
+            <Button onClick={handleConfirmDelete} color="secondary" autoFocus>
+              Delete
             </Button>
           </DialogActions>
         </Dialog>
