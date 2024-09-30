@@ -7,12 +7,16 @@ import { useCurrentTab } from "../contexts/CurrentTabContext";
 import AddExpenseButton from "../AddExpense/AddExpenseModal";
 import AccountMenu from "../AccountMenu/AccountMenu";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
+import { useAllGroups } from "../contexts/AllGroups";
 
 function BreadCrumbs() {
   const isMobile = useScreenSize();
-  const { currentGroup } = useCurrentGroup();
+  const { currentGroupID } = useCurrentGroup();
   const { currentTab } = useCurrentTab();
   const [modelOpen, setModelOpen] = useState(false);
+  const { allGroups } = useAllGroups();
+
+  const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
 
   const handleClose = () => {
     setModelOpen(false);
@@ -70,8 +74,8 @@ function BreadCrumbs() {
           color="initial"
         >
           {currentTab === "Groups"
-            ? currentGroup?.title
-              ? `Group / ${currentGroup?.title}`
+            ? title
+              ? `Group / ${title}`
               : "Group"
             : currentTab}
         </Typography>

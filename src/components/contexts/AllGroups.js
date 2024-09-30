@@ -14,7 +14,7 @@ import { useLinearProgress } from "./LinearProgress";
 const AllGroupsContext = createContext();
 
 export const AllGroupsProvider = ({ children }) => {
-  const { setCurrentGroup } = useCurrentGroup();
+  const { setCurrentGroupID } = useCurrentGroup();
   const { currentUser } = useCurrentUser();
   const [allGroups, setAllGroups] = useState([]);
   const { setLinearProgress } = useLinearProgress();
@@ -30,17 +30,14 @@ export const AllGroupsProvider = ({ children }) => {
       setAllGroups(sortedGroups);
 
       if (sortedGroups.length > 0) {
-        setCurrentGroup({
-          title: sortedGroups[0]?.title,
-          id: sortedGroups[0]?.id,
-        });
+        setCurrentGroupID(sortedGroups[0]?.id);
       }
     } catch (error) {
       console.error("Error fetching groups:", error);
     } finally {
       setLinearProgress(false);
     }
-  }, [currentUser?.email, setCurrentGroup, setLinearProgress]);
+  }, [currentUser?.email, setCurrentGroupID, setLinearProgress]);
 
   useEffect(() => {
     fetchGroups();

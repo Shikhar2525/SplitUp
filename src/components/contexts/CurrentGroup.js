@@ -3,9 +3,9 @@ import React, { createContext, useContext, useState } from "react";
 const CurrentGroupContext = createContext();
 
 export const CurrentGroupProvider = ({ children }) => {
-  const [currentGroup, setCurrentGroup] = useState();
+  const [currentGroupID, setCurrentGroupID] = useState();
   return (
-    <CurrentGroupContext.Provider value={{ currentGroup, setCurrentGroup }}>
+    <CurrentGroupContext.Provider value={{ currentGroupID, setCurrentGroupID }}>
       {children}
     </CurrentGroupContext.Provider>
   );

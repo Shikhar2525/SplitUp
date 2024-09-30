@@ -48,7 +48,7 @@ const AddMemberModal = ({ open, handleClose }) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
-  const { currentGroup } = useCurrentGroup();
+  const { currentGroupID } = useCurrentGroup();
   const { refreshAllGroups } = useAllGroups();
 
   const validateEmail = (email) => {
@@ -108,7 +108,7 @@ const AddMemberModal = ({ open, handleClose }) => {
 
     try {
       for (const member of members) {
-        await GroupService.addMemberToGroup(currentGroup.id, member);
+        await GroupService.addMemberToGroup(currentGroupID, member);
       }
       setMembers([]); // Reset members after submission
       handleClose();

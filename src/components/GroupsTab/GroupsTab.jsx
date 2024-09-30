@@ -31,6 +31,7 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { Tooltip } from "@mui/material"; // Import Tooltip from MUI
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
 import Groups2Icon from "@mui/icons-material/Groups2";
+import { useLinearProgress } from "../contexts/LinearProgress";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -66,21 +67,40 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 const GroupTab = () => {
   const isMobile = useScreenSize();
   const [modelOpen, setModelOpen] = useState(false);
-  const [membarModal, setMemberModal] = useState(false);
-  const { currentGroup, setCurrentGroup } = useCurrentGroup();
+  const [memberModal, setMemberModal] = useState(false);
+  const { currentGroupID, setCurrentGroupID } = useCurrentGroup();
   const { allGroups, refreshAllGroups } = useAllGroups();
   const [tabIndex, setTabIndex] = useState(0);
+  const { setLinearProgress } = useLinearProgress();
+
+  const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
+
+  // Set currentGroup from localStorage or default to the first group
+  useEffect(() => {
+    setLinearProgress(true);
+    const storedGroup = JSON.parse(localStorage.getItem("currentGroupID"));
+    if (storedGroup) {
+      setCurrentGroupID(storedGroup);
+    } else if (allGroups.length > 0) {
+      setCurrentGroupID(allGroups[0].id);
+    }
+    setLinearProgress(false);
+  }, [allGroups, setCurrentGroupID]);
 
   // Memoized group details
   const selectedGroupDetails = useMemo(
-    () => allGroups.find((group) => group.title === currentGroup?.title),
-    [allGroups, currentGroup]
+    () => allGroups.find((group) => group.title === title),
+    [allGroups, currentGroupID]
   );
 
-  const handleGroupChange = useCallback((event) => {
-    const selectedValue = event.target.value;
-    setCurrentGroup(selectedValue);
-  }, []);
+  const handleGroupChange = useCallback(
+    (event) => {
+      const selectedValue = event.target.value;
+      setCurrentGroupID(selectedValue);
+      localStorage.setItem("currentGroupID", JSON.stringify(selectedValue)); // Store in localStorage
+    },
+    [setCurrentGroupID]
+  );
 
   const handleTabChange = useCallback(
     (_, newValue) => setTabIndex(newValue),
@@ -92,7 +112,7 @@ const GroupTab = () => {
     () => setMemberModal((prev) => !prev),
     []
   );
-  console.log(allGroups);
+
   return (
     <Box
       sx={{
@@ -117,7 +137,7 @@ const GroupTab = () => {
             sx={{ width: isMobile ? "50%" : "20%" }}
           >
             <CustomSelect
-              value={currentGroup || {}}
+              value={currentGroupID || ""}
               onChange={handleGroupChange}
               IconComponent={KeyboardArrowDownIcon}
               displayEmpty
@@ -131,10 +151,7 @@ const GroupTab = () => {
               )}
             >
               {allGroups.map((group, index) => (
-                <MenuItem
-                  key={index}
-                  value={{ id: group.id, title: group.title }}
-                >
+                <MenuItem key={index} value={group.id}>
                   <Typography variant="body1">{group.title}</Typography>
                 </MenuItem>
               ))}
@@ -242,7 +259,7 @@ const GroupTab = () => {
       />
 
       <AddMemberModal
-        open={membarModal}
+        open={memberModal}
         handleClose={toggleMembersModal}
         refreshGroupMembers={undefined}
       />
