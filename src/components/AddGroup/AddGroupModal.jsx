@@ -149,6 +149,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
         isOpen: true,
         message: "Group created",
       });
+      localStorage.setItem("currentGroupID", JSON.stringify(newGroup?.id));
       refreshGroups();
     } catch (error) {
       setError("Failed to create group. Please try again.");
