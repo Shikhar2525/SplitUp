@@ -24,6 +24,7 @@ import GroupService from "../services/group.service";
 import userService from "../services/user.service";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useLinearProgress } from "../contexts/LinearProgress";
+import groupService from "../services/group.service";
 
 const styles = {
   modalBox: {
@@ -73,33 +74,45 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
       e.preventDefault();
 
       if (!validateEmail(inputEmail)) {
-        setError("Email is invalid.");
-      } else if (members?.some((member) => member?.email === inputEmail)) {
-        setError("This email is already added.");
-      } else {
-        setEmailLoading(true);
-
-        try {
-          const user = await userService.getUserByEmail(inputEmail);
-          if (user) {
-            // Add avatar along with email
-            setMembers((prevMembers) => [...prevMembers, user]);
-            setError("");
-          } else {
-            setMembers((prevMembers) => [
-              ...prevMembers,
-              user, // No avatar if user not found
-            ]);
-            setError("User not found, but email added.");
-          }
-        } catch (err) {
-          setError("Error fetching user.");
-        } finally {
-          setEmailLoading(false);
-        }
+        return setError("Email is invalid.");
       }
 
-      setInputEmail(""); // Reset the input field
+      if (members.some((member) => member.email === inputEmail)) {
+        return setError("This email is already added.");
+      }
+
+      setEmailLoading(true);
+
+      try {
+        // Check if the user already exists in the group
+        const existingUser = await groupService.getUserFromGroup(
+          currentGroupID,
+          inputEmail
+        );
+
+        if (existingUser) {
+          return setError("This email is already a member of the group.");
+        }
+
+        const user = await userService.getUserByEmail(inputEmail);
+        if (user) {
+          // Add user with avatar
+          setMembers((prevMembers) => [...prevMembers, user]);
+          setError("");
+        } else {
+          // Add email only if user is not found
+          setMembers((prevMembers) => [
+            ...prevMembers,
+            { email: inputEmail }, // Add the email object only
+          ]);
+          setError("User not found, but email added.");
+        }
+      } catch (err) {
+        setError("Error fetching user.");
+      } finally {
+        setEmailLoading(false);
+        setInputEmail(""); // Reset the input field
+      }
     }
   };
 

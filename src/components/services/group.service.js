@@ -100,6 +100,31 @@ class GroupService {
       throw error;
     }
   };
+
+  getUserFromGroup = async (groupIdField, userEmail) => {
+    try {
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("No document found with ID:", groupIdField);
+        return null; // or throw an error if preferred
+      }
+
+      const groupData = querySnapshot.docs[0].data();
+      const user = groupData.members.find(
+        (member) => member.email === userEmail
+      );
+
+      return user || null; // Return user object or null if not found
+    } catch (error) {
+      console.error("Error retrieving user from group: ", error);
+      throw error;
+    }
+  };
 }
 
 export default new GroupService();
