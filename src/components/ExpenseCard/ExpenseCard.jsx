@@ -109,7 +109,7 @@ const TransactionCard = ({ transaction }) => {
               fontFamily: "Poppins, sans-serif !important",
             }}
           >
-            {transaction.title}
+            {transaction?.description}
           </Typography>
 
           <Typography
@@ -153,7 +153,7 @@ const TransactionCard = ({ transaction }) => {
                   >
                     Description
                   </TableCell>
-                  <TableCell sx={{ padding: "8px" }}>
+                  <TableCell sx={{ padding: "8px", paddingLeft: 2.2 }}>
                     {transaction.description}
                   </TableCell>
                 </TableRow>
@@ -175,7 +175,6 @@ const TransactionCard = ({ transaction }) => {
                     <Chip
                       key={transaction?.nameOrEmail}
                       label={transaction?.nameOrEmail}
-                      sx={{ margin: "0.2rem" }}
                     />
                   </TableCell>
                 </TableRow>
@@ -195,7 +194,6 @@ const TransactionCard = ({ transaction }) => {
                   </TableCell>
                   <TableCell sx={{ padding: "8px" }}>
                     <Chip
-                      sx={{ marginLeft: 1 }}
                       label={new Date(transaction.date).toLocaleDateString(
                         "en-US",
                         {
@@ -223,7 +221,7 @@ const TransactionCard = ({ transaction }) => {
                     Spent Amount
                   </TableCell>
                   <TableCell
-                    sx={{ padding: "8px" }}
+                    sx={{ padding: "8px", paddingLeft: 2.2 }}
                   >{`${transaction.amount} Rs`}</TableCell>
                 </TableRow>
                 <TableRow

@@ -15,26 +15,20 @@ const Expenses = () => {
     <Box
       sx={{ height: "53vh", overflow: "auto", paddingRight: isMobile ? 1 : 2 }}
     >
-      {currentGroup?.expense?.lenght > 0 ? (
-        currentGroup?.expenses?.map((expense) => {
-          return (
-            <ExpenseCard
-              transaction={{
-                nameOrEmail: expense?.paidBy,
-                description: expense?.description,
-                amount: expense?.amount,
-                currency: "USD",
-                date: expense?.date,
-                splitBetween: expense?.splitBetween,
-              }}
-            />
-          );
-        })
-      ) : (
-        <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-          No expenses
-        </Typography>
-      )}
+      {currentGroup?.expenses?.map((expense) => {
+        return (
+          <ExpenseCard
+            transaction={{
+              nameOrEmail: expense?.paidBy,
+              description: expense?.description,
+              amount: expense?.amount,
+              currency: "USD",
+              date: expense?.date,
+              splitBetween: expense?.splitBetween,
+            }}
+          />
+        );
+      })}
     </Box>
   );
 };

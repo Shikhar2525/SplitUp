@@ -25,12 +25,18 @@ class GroupService {
 
   fetchGroupsByAdminEmail = async (adminEmail) => {
     try {
-      const q = query(groupRef, where("admin.email", "==", adminEmail));
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(groupRef);
       const groups = [];
 
       querySnapshot.forEach((doc) => {
-        groups.push({ id: doc.id, ...doc.data() });
+        const groupData = doc.data();
+        // Check if any member's email matches the adminEmail
+        const isAdmin = groupData.members.some(
+          (member) => member.email === adminEmail
+        );
+        if (isAdmin) {
+          groups.push({ id: doc.id, ...groupData });
+        }
       });
 
       return groups;
