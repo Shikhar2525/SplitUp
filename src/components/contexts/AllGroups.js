@@ -30,7 +30,10 @@ export const AllGroupsProvider = ({ children }) => {
       setAllGroups(sortedGroups);
 
       if (sortedGroups.length > 0) {
-        setCurrentGroup(sortedGroups[0]?.title);
+        setCurrentGroup({
+          title: sortedGroups[0]?.title,
+          id: sortedGroups[0]?.id,
+        });
       }
     } catch (error) {
       console.error("Error fetching groups:", error);

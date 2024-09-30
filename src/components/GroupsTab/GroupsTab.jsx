@@ -14,6 +14,7 @@ import {
   Tabs,
   Tab,
   Button,
+  IconButton,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -25,9 +26,11 @@ import Expenses from "../Expenses/Expenses";
 import AddGroupModal from "../AddGroup/AddGroupModal";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
-import { formatDate, sortByDate } from "../utils";
+import { formatDate } from "../utils";
 import { useAllGroups } from "../contexts/AllGroups";
 import { Tooltip } from "@mui/material"; // Import Tooltip from MUI
+import AddMemberModal from "../AddMemberModal/AddMemberModal";
+import Groups2Icon from "@mui/icons-material/Groups2";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -63,20 +66,21 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 const GroupTab = () => {
   const isMobile = useScreenSize();
   const [modelOpen, setModelOpen] = useState(false);
+  const [membarModal, setMemberModal] = useState(false);
   const { currentGroup, setCurrentGroup } = useCurrentGroup();
   const { allGroups, refreshAllGroups } = useAllGroups();
   const [tabIndex, setTabIndex] = useState(0);
 
   // Memoized group details
   const selectedGroupDetails = useMemo(
-    () => allGroups.find((group) => group.title === currentGroup),
+    () => allGroups.find((group) => group.title === currentGroup?.title),
     [allGroups, currentGroup]
   );
 
-  const handleGroupChange = useCallback(
-    (event) => setCurrentGroup(event.target.value),
-    [setCurrentGroup]
-  );
+  const handleGroupChange = useCallback((event) => {
+    const selectedValue = event.target.value;
+    setCurrentGroup(selectedValue);
+  }, []);
 
   const handleTabChange = useCallback(
     (_, newValue) => setTabIndex(newValue),
@@ -84,7 +88,11 @@ const GroupTab = () => {
   );
 
   const toggleModal = useCallback(() => setModelOpen((prev) => !prev), []);
-
+  const toggleMembersModal = useCallback(
+    () => setMemberModal((prev) => !prev),
+    []
+  );
+  console.log(allGroups);
   return (
     <Box
       sx={{
@@ -109,7 +117,7 @@ const GroupTab = () => {
             sx={{ width: isMobile ? "50%" : "20%" }}
           >
             <CustomSelect
-              value={currentGroup}
+              value={currentGroup || {}}
               onChange={handleGroupChange}
               IconComponent={KeyboardArrowDownIcon}
               displayEmpty
@@ -123,7 +131,10 @@ const GroupTab = () => {
               )}
             >
               {allGroups.map((group, index) => (
-                <MenuItem key={index} value={group.title}>
+                <MenuItem
+                  key={index}
+                  value={{ id: group.id, title: group.title }}
+                >
                   <Typography variant="body1">{group.title}</Typography>
                 </MenuItem>
               ))}
@@ -157,7 +168,19 @@ const GroupTab = () => {
           {!isMobile && "New Group"}
         </Button>
         {allGroups.length > 0 && (
-          <AvatarGroupSection members={selectedGroupDetails?.members} />
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 2,
+            }}
+          >
+            <AvatarGroupSection members={selectedGroupDetails?.members} />
+            <IconButton onClick={toggleMembersModal} sx={{ color: "#1657FF" }}>
+              <Groups2Icon />
+            </IconButton>
+          </Box>
         )}
       </Box>
 
@@ -217,27 +240,66 @@ const GroupTab = () => {
         handleClose={toggleModal}
         refreshGroups={() => refreshAllGroups()}
       />
+
+      <AddMemberModal
+        open={membarModal}
+        handleClose={toggleMembersModal}
+        refreshGroupMembers={undefined}
+      />
     </Box>
   );
 };
 
 // Memoized AvatarGroup section to prevent re-rendering
-const AvatarGroupSection = React.memo(({ members }) => (
-  <Box sx={{ display: "flex", alignItems: "center" }}>
-    <Typography variant="subtitle1" margin={0.5} sx={{ color: "#353E6C" }}>
-      Members:
-    </Typography>
-    <AvatarGroup max={4}>
-      {members?.map((member, index) => (
-        <Avatar
+const AvatarGroupSection = React.memo(({ members }) => {
+  // Get the names of members for tooltip display
+  const memberNames = members.map((member) => ({
+    name: member?.firstName
+      ? `${member.firstName} ${member.lastName}`
+      : member?.email ?? "Anonymous",
+    picture: member?.profilePicture,
+  }));
+
+  // Create tooltip content with new lines and avatars
+  const tooltipContent = (
+    <div>
+      {memberNames.map((member, index) => (
+        <Box
           key={index}
-          alt={member?.email ?? "Anonymous"}
-          src={`https://mui.com/static/images/avatar/${index + 1}.jpg`}
-        />
-      )) ?? <Typography variant="body2">No members available</Typography>}
-    </AvatarGroup>
-  </Box>
-));
+          sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}
+        >
+          <Avatar
+            alt={member.name}
+            src={member.picture}
+            sx={{ width: 24, height: 24, marginRight: 1 }} // Small avatar
+          />
+          <Typography variant="body2" sx={{ margin: 0 }}>
+            {member.name}
+          </Typography>
+        </Box>
+      ))}
+    </div>
+  );
+
+  return (
+    <Box sx={{ display: "flex", alignItems: "center" }}>
+      <Typography variant="subtitle1" margin={0.5} sx={{ color: "#353E6C" }}>
+        Members:
+      </Typography>
+      <Tooltip title={tooltipContent} arrow>
+        <AvatarGroup max={4}>
+          {members.slice(0, 4).map((member, index) => (
+            <Avatar
+              key={index}
+              alt={member?.email ?? "Anonymous"}
+              src={member?.profilePicture}
+            />
+          ))}
+        </AvatarGroup>
+      </Tooltip>
+    </Box>
+  );
+});
 
 // Memoized group info bar
 const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {

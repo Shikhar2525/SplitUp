@@ -70,8 +70,8 @@ function BreadCrumbs() {
           color="initial"
         >
           {currentTab === "Groups"
-            ? currentGroup
-              ? `Group / ${currentGroup}`
+            ? currentGroup?.title
+              ? `Group / ${currentGroup?.title}`
               : "Group"
             : currentTab}
         </Typography>

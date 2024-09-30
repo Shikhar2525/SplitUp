@@ -12,13 +12,13 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { v4 as uuidv4 } from "uuid";
 import GroupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
-import CircularProgress from "@mui/material/CircularProgress";
 import userService from "../services/user.service";
 
 const styles = {
@@ -49,42 +49,64 @@ const styles = {
     alignItems: "center",
   },
   formControl: {
-    marginBottom: "1rem", // Same margin for all fields
-    width: "100%", // Full width for all fields
+    marginBottom: "1rem",
+    width: "100%",
+  },
+  searchingMessage: {
+    marginTop: "0.5rem",
+    color: "#FFBB38", // Customize the color as needed
   },
 };
 
 const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
-  const [category, setCategory] = useState(""); // New state for category
-  const [emails, setEmails] = useState([]);
+  const [category, setCategory] = useState("");
+  const [members, setMembers] = useState([]);
   const [inputEmail, setInputEmail] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // State to track loading
+  const [loading, setLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
   const { currentUser } = useCurrentUser();
   const { setSnackBar } = useTopSnackBar();
 
-  const handleEmailAdd = (e) => {
+  const handleEmailAdd = async (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
 
       if (!validateEmail(inputEmail)) {
         setError("Email is wrong");
-      } else if (emails.includes(inputEmail)) {
+      } else if (members.some((member) => member.email === inputEmail)) {
         setError("This email is already added.");
       } else {
-        setEmails((prevEmails) => [...prevEmails, inputEmail]);
-        setError("");
+        setEmailLoading(true);
+
+        try {
+          const user = await userService.getUserByEmail(inputEmail);
+          if (user) {
+            setMembers((prevMembers) => [...prevMembers, user]);
+            setError("");
+          } else {
+            setMembers((prevMembers) => [
+              ...prevMembers,
+              { email: inputEmail },
+            ]);
+            setError("User not found, but email added.");
+          }
+        } catch (err) {
+          setError("Error fetching user.");
+        } finally {
+          setEmailLoading(false);
+        }
       }
 
-      setInputEmail("");
+      setInputEmail(""); // Reset the input field
     }
   };
 
-  const handleDeleteEmail = (emailToDelete) => {
-    setEmails((prevEmails) =>
-      prevEmails.filter((email) => email !== emailToDelete)
+  const handleDeleteMember = (emailToDelete) => {
+    setMembers((prevMembers) =>
+      prevMembers.filter((member) => member.email !== emailToDelete)
     );
   };
 
@@ -95,7 +117,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading to true before API call
+    setLoading(true);
 
     const adminUserObject = await userService.getUserByEmail(
       currentUser?.email
@@ -106,7 +128,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
       title: groupName,
       description: groupDescription,
       category: category,
-      members: emails,
+      members: members, // Send the complete members array
       createdDate: new Date(),
       isAllSettled: false,
       expenses: [],
@@ -115,11 +137,11 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
 
     try {
       await GroupService.createGroup(newGroup);
-
+      // Reset form fields
       setGroupName("");
       setGroupDescription("");
       setCategory("");
-      setEmails([]);
+      setMembers([]); // Reset members
       setInputEmail("");
 
       handleClose();
@@ -131,7 +153,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
     } catch (error) {
       setError("Failed to create group. Please try again.");
     } finally {
-      setLoading(false); // Set loading to false after API call
+      setLoading(false);
     }
   };
 
@@ -157,7 +179,6 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             inputProps={{ maxLength: 25 }}
             required
           />
-
           <TextField
             fullWidth
             sx={styles.formControl}
@@ -167,7 +188,6 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             onChange={(e) => setGroupDescription(e.target.value)}
             inputProps={{ maxLength: 150 }}
           />
-
           <FormControl fullWidth sx={styles.formControl}>
             <InputLabel id="category-label" shrink={!!category}>
               Category
@@ -185,14 +205,13 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
               <MenuItem value="Other">Other</MenuItem>
             </Select>
           </FormControl>
-
           <FormControl fullWidth sx={styles.formControl}>
             <div>
-              {emails.map((email) => (
+              {members.map((member, index) => (
                 <Chip
-                  key={email}
-                  label={email}
-                  onDelete={() => handleDeleteEmail(email)}
+                  key={index} // Using index as key since email might not be unique now
+                  label={member.email}
+                  onDelete={() => handleDeleteMember(member.email)}
                   sx={{ margin: "0.3rem" }}
                 />
               ))}
@@ -207,15 +226,19 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
               sx={{ marginTop: "1rem" }}
               helperText="Press 'Enter' to add a member"
             />
+            {emailLoading && (
+              <Typography variant="body2" sx={styles.searchingMessage}>
+                Searching user...
+              </Typography>
+            )}
             {error && <Alert severity="error">{error}</Alert>}
           </FormControl>
-
           <Button
             type="submit"
             variant="contained"
             sx={styles.button}
             fullWidth
-            disabled={loading} // Disable button when loading
+            disabled={loading || emailLoading}
           >
             Create Group
             {loading && (
