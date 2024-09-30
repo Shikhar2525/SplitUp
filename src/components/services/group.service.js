@@ -5,10 +5,9 @@ import {
   getDocs,
   query,
   where,
-  doc,
   updateDoc,
+  arrayRemove,
   arrayUnion,
-  getDoc,
 } from "firebase/firestore";
 
 const groupRef = collection(db, "Groups");
@@ -59,7 +58,46 @@ class GroupService {
       });
     } catch (error) {
       console.error("Error adding member to group: ", error);
-      throw error; // Rethrow error to handle it in the calling function
+      throw error;
+    }
+  };
+
+  // Method to remove a member from the group by their email
+  removeMemberFromGroup = async (groupIdField, email) => {
+    try {
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("No document found with ID:", groupIdField);
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      const groupDocRef = querySnapshot.docs[0].ref;
+      const groupData = querySnapshot.docs[0].data();
+
+      // Find the member object with the matching email
+      const memberToRemove = groupData.members.find(
+        (member) => member.email === email
+      );
+
+      if (!memberToRemove) {
+        console.error("No member found with email:", email);
+        throw new Error(`No member found with email: ${email}`);
+      }
+
+      // Remove the member from the members array
+      await updateDoc(groupDocRef, {
+        members: arrayRemove(memberToRemove),
+      });
+
+      console.log(`Member with email ${email} removed successfully.`);
+    } catch (error) {
+      console.error("Error removing member from group: ", error);
+      throw error;
     }
   };
 }

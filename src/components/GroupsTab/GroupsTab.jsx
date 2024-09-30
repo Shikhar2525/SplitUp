@@ -263,7 +263,9 @@ const GroupTab = () => {
       <AddMemberModal
         open={memberModal}
         handleClose={toggleMembersModal}
-        refreshGroupMembers={undefined}
+        existingMembers={
+          allGroups.find((member) => member.id === currentGroupID)?.members
+        }
       />
     </Box>
   );
