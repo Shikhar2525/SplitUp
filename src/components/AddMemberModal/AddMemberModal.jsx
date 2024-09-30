@@ -132,7 +132,11 @@ const AddMemberModal = ({ open, handleClose }) => {
             <CloseIcon />
           </IconButton>
         </div>
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ marginBottom: 2 }}>
+            {error}
+          </Alert>
+        )}
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
@@ -143,13 +147,13 @@ const AddMemberModal = ({ open, handleClose }) => {
             onKeyDown={handleEmailAdd}
             helperText="Press 'Enter' to add a member"
           />
-          <div style={{ marginTop: "1rem" }}>
+          <div style={{ marginTop: "0.8rem" }}>
             {members.map((member, index) => (
               <Chip
                 key={index} // Using index as key since email might not be unique now
                 label={member.email}
                 onDelete={() => handleDeleteMember(member.email)}
-                sx={{ margin: "0.3rem" }}
+                sx={{ marginBottom: 1.2 }}
               />
             ))}
           </div>

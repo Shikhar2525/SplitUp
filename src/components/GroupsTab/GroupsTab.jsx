@@ -284,7 +284,7 @@ const AvatarGroupSection = React.memo(({ members }) => {
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
       <Typography variant="subtitle1" margin={0.5} sx={{ color: "#353E6C" }}>
-        Members:
+        {members.length > 0 ? "Members :" : "No members"}
       </Typography>
       <Tooltip title={tooltipContent} arrow>
         <AvatarGroup max={4}>
