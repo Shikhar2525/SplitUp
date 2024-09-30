@@ -13,6 +13,7 @@ import {
   MenuItem,
   InputLabel,
   CircularProgress,
+  Avatar,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { v4 as uuidv4 } from "uuid";
@@ -210,10 +211,15 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             <div>
               {members?.map((member, index) => (
                 <Chip
-                  key={index} // Using index as key since email might not be unique now
-                  label={member.email}
-                  onDelete={() => handleDeleteMember(member.email)}
-                  sx={{ margin: "0.3rem" }}
+                  key={index} // Using index as key since member object can change
+                  label={member?.email}
+                  avatar={
+                    <Avatar alt={member?.email} src={member?.profilePicture}>
+                      {member?.email.charAt(0)}
+                    </Avatar>
+                  }
+                  onDelete={() => handleDeleteMember(member?.email)} // Directly remove the chip
+                  sx={{ marginRight: 1, marginTop: 1 }}
                 />
               ))}
             </div>
