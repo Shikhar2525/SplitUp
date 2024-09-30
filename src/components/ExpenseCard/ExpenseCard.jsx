@@ -108,6 +108,10 @@ const TransactionCard = ({ transaction, index }) => {
             component="div"
             sx={{
               fontFamily: "Poppins, sans-serif !important",
+              flexGrow: 1, // Allow the description to take up available space
+              overflow: "hidden", // Hide overflow if the text is too long
+              textOverflow: "ellipsis", // Add ellipsis for long text
+              marginRight: 2, // Add some margin to separate from amount
             }}
           >
             {transaction?.description}
@@ -119,7 +123,10 @@ const TransactionCard = ({ transaction, index }) => {
             sx={{
               display: "flex",
               alignItems: "center",
-              color: "#353E6C ",
+              color: "#353E6C",
+              minWidth: "80px", // Set a minimum width for the amount
+              textAlign: "right", // Align text to the right
+              flexShrink: 0, // Prevent shrinking
             }}
           >
             {transaction.amount} Rs {/* Removed dollar sign */}

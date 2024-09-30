@@ -25,6 +25,8 @@ import userService from "../services/user.service";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useLinearProgress } from "../contexts/LinearProgress";
 import groupService from "../services/group.service";
+import { useCurrentUser } from "../contexts/CurrentUser";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 const styles = {
   modalBox: {
@@ -64,6 +66,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   const { setLinearProgress } = useLinearProgress();
   const { refreshAllGroups } = useAllGroups();
   const { allGroups } = useAllGroups();
+  const { currentUser } = useCurrentUser();
   const currentGroupObj = allGroups.find(
     (group) => group?.id === currentGroupID
   );
@@ -266,15 +269,19 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                     </Tooltip>
                   </Box>
                   {/* Delete icon button */}
-                  <IconButton
-                    sx={{
-                      marginLeft: { xs: 0, sm: 2 },
-                      marginTop: { xs: 1, sm: 0 },
-                    }}
-                    onClick={() => handleDeleteClick(member)} // Open confirmation before deletion
-                  >
-                    <DeleteIcon sx={{ color: "grey", width: 20, height: 20 }} />
-                  </IconButton>
+                  {currentUser?.email === currentGroupObj?.admin?.email && (
+                    <IconButton
+                      sx={{
+                        marginLeft: { xs: 0, sm: 2 },
+                        marginTop: { xs: 1, sm: 0 },
+                      }}
+                      onClick={() => handleDeleteClick(member)} // Open confirmation before deletion
+                    >
+                      <DeleteIcon
+                        sx={{ color: "grey", width: 20, height: 20 }}
+                      />
+                    </IconButton>
+                  )}
                 </Box>
               );
             })}
@@ -296,10 +303,15 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
         )}
         <form onSubmit={handleSubmit}>
           <TextField
+            disabled={currentUser?.email !== currentGroupObj?.admin?.email}
             fullWidth
             label="Add Members"
             variant="outlined"
-            value={inputEmail}
+            value={
+              currentUser?.email !== currentGroupObj?.admin?.email
+                ? ""
+                : inputEmail
+            }
             onChange={(e) => setInputEmail(e.target.value)}
             onKeyDown={handleEmailAdd}
             helperText="Press 'Enter' to add a member"
@@ -331,6 +343,23 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
               "Add Members"
             )}
           </Button>
+          {currentUser?.email !== currentGroupObj?.admin?.email && (
+            <Box
+              sx={{
+                display: "flex",
+                justfyContent: "center",
+                alignItems: "center",
+                marginTop: 2,
+                gap: 1,
+                color: "#FF1010",
+              }}
+            >
+              <HelpOutlineIcon fontSize="smaller" />
+              <Typography variant="subtitle2" fontSize={10}>
+                Only admin can add/remove members
+              </Typography>
+            </Box>
+          )}
         </form>
 
         {/* Confirmation dialog for deletion of existing members */}

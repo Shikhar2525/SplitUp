@@ -327,7 +327,11 @@ const AvatarGroupSection = React.memo(({ members }) => {
               key={index}
               alt={member?.email ?? "Anonymous"}
               src={member?.profilePicture}
-            />
+            >
+              {member?.name
+                ? member?.name?.charAt(0)
+                : member?.email?.charAt(0)}
+            </Avatar>
           ))}
         </AvatarGroup>
       </Tooltip>
