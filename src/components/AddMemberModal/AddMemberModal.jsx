@@ -83,15 +83,12 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
           const user = await userService.getUserByEmail(inputEmail);
           if (user) {
             // Add avatar along with email
-            setMembers((prevMembers) => [
-              ...prevMembers,
-              { email: user.email, profilePicture: user.profilePicture },
-            ]);
+            setMembers((prevMembers) => [...prevMembers, user]);
             setError("");
           } else {
             setMembers((prevMembers) => [
               ...prevMembers,
-              { email: inputEmail, profilePicture: "" }, // No avatar if user not found
+              user, // No avatar if user not found
             ]);
             setError("User not found, but email added.");
           }
