@@ -193,7 +193,9 @@ const GroupTab = () => {
               gap: 2,
             }}
           >
-            <AvatarGroupSection members={selectedGroupDetails?.members} />
+            {!isMobile && (
+              <AvatarGroupSection members={selectedGroupDetails?.members} />
+            )}
             <IconButton onClick={toggleMembersModal} sx={{ color: "#1657FF" }}>
               <Groups2Icon />
             </IconButton>
