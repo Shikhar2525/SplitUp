@@ -47,7 +47,7 @@ function BreadCrumbs() {
           alignItems: "center",
           justifyContent: "flex-start",
           gap: 1,
-          ...(isMobile && { flexBasis: "8%" }),
+          ...(isMobile && { flexBasis: "14%" }),
         }}
       >
         {currentTab === "Groups" && (

@@ -16,7 +16,7 @@ class GroupService {
 
   fetchGroupsByAdminEmail = async (adminEmail) => {
     try {
-      const q = query(groupRef, where("admin", "==", adminEmail));
+      const q = query(groupRef, where("admin.email", "==", adminEmail));
       const querySnapshot = await getDocs(q);
       const groups = [];
 

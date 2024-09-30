@@ -25,7 +25,6 @@ function App() {
       joinedDate: new Date(),
       profilePicture: user.picture,
       email: user.email,
-      groups: [],
     });
   };
 

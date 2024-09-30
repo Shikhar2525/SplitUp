@@ -24,12 +24,10 @@ import { useScreenSize } from "../contexts/ScreenSizeContext";
 import Expenses from "../Expenses/Expenses";
 import AddGroupModal from "../AddGroup/AddGroupModal";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
-import GroupService from "../services/group.service";
-import { useCurrentUser } from "../contexts/CurrentUser";
-import { useLinearProgress } from "../contexts/LinearProgress";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
 import { formatDate, sortByDate } from "../utils";
 import { useAllGroups } from "../contexts/AllGroups";
+import { Tooltip } from "@mui/material"; // Import Tooltip from MUI
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -66,38 +64,8 @@ const GroupTab = () => {
   const isMobile = useScreenSize();
   const [modelOpen, setModelOpen] = useState(false);
   const { currentGroup, setCurrentGroup } = useCurrentGroup();
-  const { currentUser } = useCurrentUser();
-  const { allGroups, setAllGroups } = useAllGroups();
-  const { setLinearProgress } = useLinearProgress();
-  const [refresh, setRefresh] = useState(false);
+  const { allGroups, refreshAllGroups } = useAllGroups();
   const [tabIndex, setTabIndex] = useState(0);
-
-  // Memoized fetch function to reduce unnecessary re-renders
-  const fetchGroups = useCallback(async () => {
-    setLinearProgress(true);
-    try {
-      const fetchedGroups = await GroupService.fetchGroupsByAdminEmail(
-        currentUser?.email ?? ""
-      );
-      // Sort the fetched groups by date
-      const sortedGroups = sortByDate(fetchedGroups);
-      setAllGroups(sortedGroups);
-
-      // Set the first group in the sorted list as the default
-      if (sortedGroups.length > 0) {
-        setCurrentGroup(sortedGroups[0]?.title);
-      }
-    } catch (error) {
-      console.error("Error fetching groups:", error);
-    } finally {
-      setLinearProgress(false);
-    }
-  }, [currentUser?.email, setCurrentGroup, setLinearProgress]);
-
-  // Fetch groups on mount or refresh
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups, refresh]);
 
   // Memoized group details
   const selectedGroupDetails = useMemo(
@@ -247,7 +215,7 @@ const GroupTab = () => {
       <AddGroupModal
         open={modelOpen}
         handleClose={toggleModal}
-        refreshGroups={() => setRefresh(!refresh)}
+        refreshGroups={() => refreshAllGroups()}
       />
     </Box>
   );
@@ -272,24 +240,45 @@ const AvatarGroupSection = React.memo(({ members }) => (
 ));
 
 // Memoized group info bar
-const GroupInfoBar = React.memo(({ selectedGroupDetails }) => (
-  <Box
-    sx={{
-      p: 2,
-      backgroundColor: "#f0f0f0",
-      borderRadius: "8px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-    }}
-  >
-    <Typography variant="h6">
-      {selectedGroupDetails?.title ?? "Group Title"}
-    </Typography>
-    <Typography variant="subtitle2" color="textSecondary">
-      Created on: {formatDate(selectedGroupDetails?.createdDate) ?? "N/A"}
-    </Typography>
-  </Box>
-));
+const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {
+  const descriptionOrTitle = selectedGroupDetails?.description
+    ? `Description: ${selectedGroupDetails?.description}`
+    : `Group: ${selectedGroupDetails?.title}`;
+
+  return (
+    <Box
+      sx={{
+        p: 2,
+        backgroundColor: "#f0f0f0",
+        borderRadius: "8px",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center", // Align items horizontally in the center
+        justifyContent: "space-between",
+        gap: 2, // Space between elements
+      }}
+    >
+      <Tooltip title={descriptionOrTitle} arrow>
+        <Typography
+          variant="subtitle2"
+          color="textSecondary"
+          sx={{
+            overflow: "hidden", // Hide overflowing text
+            textOverflow: "ellipsis", // Add ellipsis when text is truncated
+            whiteSpace: "nowrap", // Prevent text wrapping
+            maxWidth: "60%", // Set a specific width to limit the text (adjust as needed)
+            cursor: "pointer", // Show pointer on hover
+          }}
+        >
+          {descriptionOrTitle}
+        </Typography>
+      </Tooltip>
+
+      <Typography variant="subtitle2" color="textSecondary">
+        Created on: {formatDate(selectedGroupDetails?.createdDate) ?? "N/A"}
+      </Typography>
+    </Box>
+  );
+});
 
 export default GroupTab;

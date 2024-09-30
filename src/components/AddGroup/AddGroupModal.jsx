@@ -19,6 +19,7 @@ import GroupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import CircularProgress from "@mui/material/CircularProgress";
+import userService from "../services/user.service";
 
 const styles = {
   modalBox: {
@@ -96,6 +97,10 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
     e.preventDefault();
     setLoading(true); // Set loading to true before API call
 
+    const adminUserObject = await userService.getUserByEmail(
+      currentUser?.email
+    );
+
     const newGroup = {
       id: uuidv4(),
       title: groupName,
@@ -105,7 +110,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
       createdDate: new Date(),
       isAllSettled: false,
       expenses: [],
-      admin: currentUser?.email,
+      admin: adminUserObject,
     };
 
     try {
@@ -149,6 +154,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             variant="outlined"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
+            inputProps={{ maxLength: 25 }}
             required
           />
 
@@ -159,7 +165,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             variant="outlined"
             value={groupDescription}
             onChange={(e) => setGroupDescription(e.target.value)}
-            required
+            inputProps={{ maxLength: 150 }}
           />
 
           <FormControl fullWidth sx={styles.formControl}>
