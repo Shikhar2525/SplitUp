@@ -1,11 +1,12 @@
 import React from "react";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 import ExpenseCard from "../ExpenseCard/ExpenseCard";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import { sortByISODate } from "../utils";
+import { Empty } from "antd";
 
 const Expenses = () => {
   const isMobile = useScreenSize();
@@ -14,7 +15,11 @@ const Expenses = () => {
   const currentGroup = allGroups?.find((item) => item?.id === currentGroupID);
   return (
     <Box
-      sx={{ height: "53vh", overflow: "auto", paddingRight: isMobile ? 1 : 2 }}
+      sx={{
+        height: "53vh",
+        overflow: "auto",
+        paddingRight: isMobile ? 1 : 2,
+      }}
     >
       {sortByISODate(currentGroup?.expenses)?.map((expense, index) => {
         return (
@@ -34,6 +39,14 @@ const Expenses = () => {
           />
         );
       })}
+      {currentGroup?.expenses?.length <= 0 && (
+        <Empty
+          style={{ marginTop: 100 }}
+          description={
+            <Typography variant="subtitle2">No expense, add new</Typography>
+          }
+        ></Empty>
+      )}
     </Box>
   );
 };

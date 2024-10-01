@@ -140,6 +140,7 @@ const GroupTab = () => {
         boxShadow: 3,
         borderRadius: 2,
         mt: isMobile ? 5 : 1,
+        height: "81vh",
       }}
     >
       <Box
@@ -271,7 +272,7 @@ const GroupTab = () => {
           </Box>
         </>
       ) : (
-        <NoDataScreen message="No groups" />
+        <NoDataScreen message="No groups, create new" />
       )}
 
       <AddGroupModal

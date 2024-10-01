@@ -1,6 +1,8 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { Empty } from "antd";
+import { useScreenSize } from "../contexts/ScreenSizeContext";
 
 const StyledContainer = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -13,12 +15,12 @@ const StyledContainer = styled(Box)(({ theme }) => ({
 }));
 
 const NoDataScreen = ({ message }) => {
+  const { isMobile } = useScreenSize();
   return (
-    <StyledContainer>
-      <Typography variant="h6" sx={{ marginTop: 2, padding: 2 }}>
-        {message}
-      </Typography>
-    </StyledContainer>
+    <Empty
+      style={{ ...(!isMobile && { marginTop: 150 }) }}
+      description={<Typography variant="subtitle2">{message}</Typography>}
+    ></Empty>
   );
 };
 
