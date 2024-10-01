@@ -14,6 +14,7 @@ import {
   ListItemText,
   Avatar,
   CircularProgress,
+  Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckBox from "@mui/material/Checkbox";
@@ -25,6 +26,7 @@ import { useAllGroups } from "../contexts/AllGroups";
 import GroupService from "../services/group.service"; // Import the GroupService
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import { v4 as uuidv4 } from "uuid";
 
 const styles = {
   modalBox: {
@@ -102,6 +104,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
     e.preventDefault();
 
     const expense = {
+      id: uuidv4(),
       description,
       amount: Number(amount), // Convert to a number
       paidBy,
@@ -109,6 +112,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
       createdDate: selectedDate.toISOString(), // Format the date as needed
       createdBy: currentUser?.email,
     };
+
     try {
       setLoading(true);
       const selectedGroupID = allGroups.find(
@@ -213,6 +217,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
               multiple
               value={splitOptions}
               onChange={handleSplitChange}
+              required
               renderValue={(selected) => (
                 <div>
                   {selected.length > 2
@@ -255,7 +260,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
                   )}
                 </div>
               )}
-              disabled={!paidBy} // Disable until paidBy is selected
+              disabled={!paidBy || users?.length <= 1} // Disable until paidBy is selected
             >
               {users
                 .filter((user) => user.email !== paidBy) // Filter out the user selected in "Paid By"
@@ -279,6 +284,20 @@ const AddExpenseModal = ({ open, handleClose }) => {
                   </MenuItem>
                 ))}
             </Select>
+            {users?.length <= 1 && (
+              <Alert
+                severity="error"
+                sx={{
+                  fontSize: 10,
+                  "& .MuiAlert-icon": {
+                    // Targeting the icon specifically
+                    fontSize: 16, // Adjust the size as needed
+                  },
+                }}
+              >
+                Add more members to split the expense
+              </Alert>
+            )}
           </FormControl>
 
           <LocalizationProvider dateAdapter={AdapterDayjs}>

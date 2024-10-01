@@ -20,6 +20,7 @@ const Expenses = () => {
         return (
           <ExpenseCard
             transaction={{
+              id: expense?.id,
               nameOrEmail: expense?.paidBy,
               description: expense?.description,
               amount: expense?.amount,

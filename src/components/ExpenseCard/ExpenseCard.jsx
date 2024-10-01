@@ -294,11 +294,6 @@ const TransactionCard = ({ transaction, index }) => {
                     <TableCell sx={{ padding: "8px" }}>
                       <Grid container spacing={1}>
                         <Grid item>
-                          <IconButton color="primary" aria-label="edit">
-                            <EditIcon />
-                          </IconButton>
-                        </Grid>
-                        <Grid item>
                           <IconButton color="error" aria-label="delete">
                             <DeleteIcon />
                           </IconButton>
