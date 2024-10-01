@@ -32,6 +32,9 @@ import { Tooltip } from "@mui/material"; // Import Tooltip from MUI
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
 import Groups2Icon from "@mui/icons-material/Groups2";
 import { useLinearProgress } from "../contexts/LinearProgress";
+import SettingsIcon from "@mui/icons-material/Settings";
+import GroupsSettings from "../GroupSettings/GroupsSettings";
+import { useCurrentUser } from "../contexts/CurrentUser";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -72,8 +75,12 @@ const GroupTab = () => {
   const { allGroups, refreshAllGroups } = useAllGroups();
   const [tabIndex, setTabIndex] = useState(0);
   const { setLinearProgress } = useLinearProgress();
+  const { currentUser } = useCurrentUser();
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
+  const currentGroupAdminEmail = allGroups?.find(
+    (group) => group.id === currentGroupID
+  )?.admin?.id;
 
   // Set currentGroup from localStorage or default to the first group
   useEffect(() => {
@@ -240,11 +247,13 @@ const GroupTab = () => {
                 icon={<BalanceIcon />}
                 iconPosition="start"
               />
-              <Tab
-                label="Totals"
-                icon={<AddCircleIcon />}
-                iconPosition="start"
-              />
+              {currentGroupAdminEmail === currentUser?.id && (
+                <Tab
+                  label="Settings"
+                  icon={<SettingsIcon />}
+                  iconPosition="start"
+                />
+              )}
             </Tabs>
           </AppBar>
           <Box sx={{ p: 2 }}>
@@ -257,9 +266,7 @@ const GroupTab = () => {
               </Typography>
             )}
             {tabIndex === 2 && (
-              <Typography variant="body2" color="text.secondary">
-                Settings content goes here.
-              </Typography>
+              <GroupsSettings groupID={currentGroupID} groupName={title} />
             )}
           </Box>
         </>

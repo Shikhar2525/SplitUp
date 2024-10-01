@@ -8,6 +8,7 @@ import {
   updateDoc,
   arrayRemove,
   arrayUnion,
+  deleteDoc,
 } from "firebase/firestore";
 
 const groupRef = collection(db, "Groups");
@@ -196,6 +197,32 @@ class GroupService {
       console.log(`Expense with ID ${expenseId} removed successfully.`);
     } catch (error) {
       console.error("Error removing expense from group: ", error);
+      throw error;
+    }
+  };
+
+  deleteGroup = async (groupIdField) => {
+    try {
+      // Query to find the group by its ID
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("No document found with ID:", groupIdField);
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      const groupDocRef = querySnapshot.docs[0].ref;
+
+      // Delete the group document
+      await deleteDoc(groupDocRef);
+
+      console.log(`Group with ID ${groupIdField} deleted successfully.`);
+    } catch (error) {
+      console.error("Error deleting group: ", error);
       throw error;
     }
   };
