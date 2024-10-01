@@ -29,7 +29,7 @@ export const sortByDate = (arr) => {
 
 export function formatTransactionDate(dateString) {
   const date = new Date(dateString);
-
+  console.log(date);
   // Array of month abbreviations
   const monthAbbreviations = [
     "Jan",
@@ -56,4 +56,12 @@ export function formatTransactionDate(dateString) {
     month,
     day: formattedDay, // Use the formatted day with leading zero
   };
+}
+
+export function sortByISODate(arr) {
+  return arr.sort((a, b) => {
+    const dateA = new Date(a.createdDate);
+    const dateB = new Date(b.createdDate);
+    return dateB - dateA; // Sorts in descending order (latest first)
+  });
 }

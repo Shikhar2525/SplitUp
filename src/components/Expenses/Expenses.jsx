@@ -1,10 +1,11 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 
 import ExpenseCard from "../ExpenseCard/ExpenseCard";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
+import { sortByISODate } from "../utils";
 
 const Expenses = () => {
   const isMobile = useScreenSize();
@@ -15,7 +16,7 @@ const Expenses = () => {
     <Box
       sx={{ height: "53vh", overflow: "auto", paddingRight: isMobile ? 1 : 2 }}
     >
-      {currentGroup?.expenses?.map((expense, index) => {
+      {sortByISODate(currentGroup?.expenses)?.map((expense, index) => {
         return (
           <ExpenseCard
             transaction={{
@@ -23,7 +24,7 @@ const Expenses = () => {
               description: expense?.description,
               amount: expense?.amount,
               currency: "USD",
-              date: expense?.date,
+              date: expense?.createdDate,
               splitBetween: expense?.splitBetween,
               createdBy: expense?.createdBy,
             }}

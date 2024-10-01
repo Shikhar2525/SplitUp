@@ -24,6 +24,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
+import PersonIcon from "@mui/icons-material/Person";
 import { formatTransactionDate } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 
@@ -133,13 +134,6 @@ const TransactionCard = ({ transaction, index }) => {
           >
             {transaction.amount} Rs {/* Removed dollar sign */}
           </Typography>
-
-          <Avatar
-            sx={{ width: 25, height: 25 }}
-            src={transaction?.profilePicture} // Placeholder, adjust as needed
-          >
-            {transaction?.nameOrEmail?.charAt(0)}
-          </Avatar>
         </Box>
       </AccordionSummary>
 
@@ -202,7 +196,7 @@ const TransactionCard = ({ transaction, index }) => {
                     }}
                   >
                     <AccessTimeIcon sx={{ marginRight: 1 }} />
-                    Date Created
+                    Transaction Date
                   </TableCell>
                   <TableCell sx={{ padding: "8px" }}>
                     <Chip
@@ -260,6 +254,27 @@ const TransactionCard = ({ transaction, index }) => {
                         />
                       ))}
                     </Box>
+                  </TableCell>
+                </TableRow>
+                <TableRow
+                  sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
+                >
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    sx={{
+                      padding: "8px",
+                      borderRight: "1px solid rgba(224, 224, 224, 1)",
+                    }}
+                  >
+                    <PersonIcon sx={{ marginRight: 1 }} />
+                    Expense added by
+                  </TableCell>
+                  <TableCell sx={{ padding: "8px" }}>
+                    <Chip
+                      key={transaction.createdBy}
+                      label={transaction.createdBy}
+                    />
                   </TableCell>
                 </TableRow>
                 {transaction?.createdBy === currentUser?.email && (

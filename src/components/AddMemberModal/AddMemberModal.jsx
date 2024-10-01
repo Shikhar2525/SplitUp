@@ -269,7 +269,8 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                     </Tooltip>
                   </Box>
                   {/* Delete icon button */}
-                  {currentUser?.email === currentGroupObj?.admin?.email && (
+                  {(currentUser?.email === currentGroupObj?.admin?.email ||
+                    currentUser?.email === member?.email) && (
                     <IconButton
                       sx={{
                         marginLeft: { xs: 0, sm: 2 },

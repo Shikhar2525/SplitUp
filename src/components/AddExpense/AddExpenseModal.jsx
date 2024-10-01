@@ -106,7 +106,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
       amount: Number(amount), // Convert to a number
       paidBy,
       splitBetween: splitOptions, // Now stores emails
-      date: selectedDate.toISOString(), // Format the date as needed
+      createdDate: selectedDate.toISOString(), // Format the date as needed
       createdBy: currentUser?.email,
     };
     try {
