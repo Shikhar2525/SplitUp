@@ -160,6 +160,45 @@ class GroupService {
       throw error;
     }
   };
+
+  removeExpenseFromGroup = async (groupIdField, expenseId) => {
+    try {
+      // Query to find the group by its ID
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("No document found with ID:", groupIdField);
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      const groupDocRef = querySnapshot.docs[0].ref;
+      const groupData = querySnapshot.docs[0].data();
+
+      // Find the expense object with the matching ID
+      const expenseToRemove = groupData.expenses.find(
+        (expense) => expense.id === expenseId
+      );
+
+      if (!expenseToRemove) {
+        console.error("No expense found with ID:", expenseId);
+        throw new Error(`No expense found with ID: ${expenseId}`);
+      }
+
+      // Remove the expense from the expenses array
+      await updateDoc(groupDocRef, {
+        expenses: arrayRemove(expenseToRemove),
+      });
+
+      console.log(`Expense with ID ${expenseId} removed successfully.`);
+    } catch (error) {
+      console.error("Error removing expense from group: ", error);
+      throw error;
+    }
+  };
 }
 
 export default new GroupService();

@@ -8,7 +8,6 @@ import {
   Grid,
   IconButton,
   Box,
-  Avatar,
   Chip,
   TableContainer,
   TableBody,
@@ -20,31 +19,51 @@ import {
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
 import PersonIcon from "@mui/icons-material/Person";
 import { formatTransactionDate } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import GroupService from "../services/group.service"; // Import your GroupService
+import { useLinearProgress } from "../contexts/LinearProgress";
+import { useAllGroups } from "../contexts/AllGroups";
+import { useTopSnackBar } from "../contexts/TopSnackBar";
 
-const TransactionCard = ({ transaction, index }) => {
+const TransactionCard = ({ transaction, index, groupId }) => {
   const [expanded, setExpanded] = useState(false);
   const dateShort = formatTransactionDate(transaction?.date);
+  const { currentUser } = useCurrentUser();
+  const colors = ["#FFBB38", "#F44771", "#332A7C", "#16DBCC"];
+  const { setLinearProgress } = useLinearProgress();
+  const { refreshAllGroups } = useAllGroups();
+  const { setSnackBar } = useTopSnackBar();
+
   const handleAccordionChange = () => {
     setExpanded(!expanded);
   };
-  const { currentUser } = useCurrentUser();
-  const colors = ["#FFBB38", "#F44771", "#332A7C", "#16DBCC"];
+
+  const handleDeleteExpense = async () => {
+    try {
+      setLinearProgress(true);
+      await GroupService.removeExpenseFromGroup(groupId, transaction?.id);
+      setSnackBar({ isOpen: true, message: "Expense deleted" });
+      refreshAllGroups();
+    } catch (err) {
+      console.warn("Error removing expense: " + err.message);
+    } finally {
+      setLinearProgress(false);
+    }
+  };
+
   return (
     <Accordion
       sx={{
         marginBottom: 1.5,
         borderRadius: 2,
         boxShadow: 3,
-
-        width: "100%", // Full width
-        fontFamily: "Poppins, sans-serif", // Apply Poppins font
+        width: "100%",
+        fontFamily: "Poppins, sans-serif",
       }}
       expanded={expanded}
       onChange={handleAccordionChange}
@@ -63,11 +82,11 @@ const TransactionCard = ({ transaction, index }) => {
         <Box
           sx={{
             backgroundColor: colors[index % colors.length],
-            height: "100%", // Cover entire height of accordion
+            height: "100%",
             width: 50,
-            position: "absolute", // Position the box absolutely
-            left: 0, // Align to the left
-            top: 0, // Align to the top
+            position: "absolute",
+            left: 0,
+            top: 0,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -77,26 +96,18 @@ const TransactionCard = ({ transaction, index }) => {
           <Typography
             variant="subtitle1"
             component="div"
-            sx={{
-              fontFamily: "Poppins, sans-serif !important",
-              color: "white",
-            }}
+            sx={{ color: "white" }}
           >
             {dateShort?.month}
           </Typography>
           <Typography
             variant="subtitle2"
             component="div"
-            sx={{
-              fontFamily: "Poppins, sans-serif !important",
-              color: "white",
-            }}
+            sx={{ color: "white" }}
           >
             {dateShort?.day}
           </Typography>
         </Box>
-
-        {/* Flex container for title and amount */}
         <Box
           sx={{
             display: "flex",
@@ -110,16 +121,14 @@ const TransactionCard = ({ transaction, index }) => {
             color="text.secondary"
             component="div"
             sx={{
-              fontFamily: "Poppins, sans-serif !important",
-              flexGrow: 1, // Allow the description to take up available space
-              overflow: "hidden", // Hide overflow if the text is too long
-              textOverflow: "ellipsis", // Add ellipsis for long text
-              marginRight: 2, // Add some margin to separate from amount
+              flexGrow: 1,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              marginRight: 2,
             }}
           >
             {transaction?.description}
           </Typography>
-
           <Typography
             variant="body1"
             color="text.primary"
@@ -127,16 +136,15 @@ const TransactionCard = ({ transaction, index }) => {
               display: "flex",
               alignItems: "center",
               color: "#353E6C",
-              minWidth: "80px", // Set a minimum width for the amount
-              textAlign: "right", // Align text to the right
-              flexShrink: 0, // Prevent shrinking
+              minWidth: "80px",
+              textAlign: "right",
+              flexShrink: 0,
             }}
           >
-            {transaction.amount} Rs {/* Removed dollar sign */}
+            {transaction.amount} Rs
           </Typography>
         </Box>
       </AccordionSummary>
-
       <AccordionDetails>
         <CardContent sx={{ padding: "0 !important" }}>
           <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
@@ -202,11 +210,7 @@ const TransactionCard = ({ transaction, index }) => {
                     <Chip
                       label={new Date(transaction.date).toLocaleDateString(
                         "en-US",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }
+                        { year: "numeric", month: "long", day: "numeric" }
                       )}
                       variant="outlined"
                     />
@@ -294,7 +298,11 @@ const TransactionCard = ({ transaction, index }) => {
                     <TableCell sx={{ padding: "8px" }}>
                       <Grid container spacing={1}>
                         <Grid item>
-                          <IconButton color="error" aria-label="delete">
+                          <IconButton
+                            color="error"
+                            aria-label="delete"
+                            onClick={handleDeleteExpense}
+                          >
                             <DeleteIcon />
                           </IconButton>
                         </Grid>

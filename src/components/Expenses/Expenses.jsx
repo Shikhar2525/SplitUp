@@ -30,6 +30,7 @@ const Expenses = () => {
               createdBy: expense?.createdBy,
             }}
             index={index}
+            groupId={currentGroupID}
           />
         );
       })}

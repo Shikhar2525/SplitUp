@@ -284,7 +284,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
                   </MenuItem>
                 ))}
             </Select>
-            {users?.length <= 1 && (
+            {group && users?.length <= 1 && (
               <Alert
                 severity="error"
                 sx={{
