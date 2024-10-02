@@ -133,7 +133,7 @@ function BalanceCard({ balances }) {
                         <Avatar
                           sx={{ marginRight: 1, width: 28, height: 28 }}
                         />
-                        <Tooltip title={creditor} placement="top" arrow>
+                        <Tooltip title={creditor?.name} placement="top" arrow>
                           <Typography
                             variant="body2"
                             sx={{
