@@ -167,3 +167,11 @@ export function calculateBalances(group) {
 
   return result;
 }
+
+export function isEmail(input) {
+  // Basic pattern to check if string is in email format
+  const emailRegex = /\S+@\S+\.\S+/;
+
+  // Return true if the input matches the pattern, otherwise false
+  return emailRegex.test(input);
+}
