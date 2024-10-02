@@ -35,6 +35,7 @@ import { useLinearProgress } from "../contexts/LinearProgress";
 import SettingsIcon from "@mui/icons-material/Settings";
 import GroupsSettings from "../GroupSettings/GroupsSettings";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import GroupBalances from "../GroupBalances/GroupBalances";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -260,11 +261,9 @@ const GroupTab = () => {
           <Box sx={{ p: 2 }}>
             {tabIndex === 0 && <Expenses />}
             {tabIndex === 1 && (
-              <Typography variant="body2" color="text.secondary">
-                {selectedGroupDetails?.members
-                  ?.map((member) => member.email)
-                  .join(", ") ?? "No members available"}
-              </Typography>
+              <GroupBalances
+                group={allGroups?.find((group) => group.id === currentGroupID)}
+              />
             )}
             {tabIndex === 2 && (
               <GroupsSettings groupID={currentGroupID} groupName={title} />
