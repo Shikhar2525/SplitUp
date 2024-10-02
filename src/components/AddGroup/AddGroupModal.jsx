@@ -14,6 +14,7 @@ import {
   InputLabel,
   CircularProgress,
   Avatar,
+  Link,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { v4 as uuidv4 } from "uuid";
@@ -68,8 +69,20 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [showNameField, setShowNameField] = useState(false);
   const { currentUser } = useCurrentUser();
   const { setSnackBar } = useTopSnackBar();
+
+  const userObjWithName = { email: inputEmail, name: name };
+
+  const resetAddMembers = (e) => {
+    e.preventDefault();
+    setShowNameField(false);
+    setInputEmail("");
+    setName("");
+    setError("");
+  };
 
   const handleEmailAdd = async (e) => {
     if (e.key === "Enter") {
@@ -89,12 +102,10 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
           if (fetchedUser) {
             setMembers((prevMembers) => [...prevMembers, fetchedUser]);
             setError("");
+            setInputEmail(""); // Reset the input field
           } else {
-            setMembers((prevMembers) => [
-              ...prevMembers,
-              { email: inputEmail },
-            ]);
-            setError("User not found, but email added.");
+            setShowNameField(true);
+            setError("User not found, enter name");
           }
         } catch (err) {
           setError("Error fetching user.");
@@ -102,8 +113,16 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
           setEmailLoading(false);
         }
       }
+    }
+  };
 
-      setInputEmail(""); // Reset the input field
+  const handleName = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      setMembers((prevMembers) => [...prevMembers, userObjWithName]);
+      setShowNameField(false);
+      setInputEmail("");
+      setError("");
     }
   };
 
@@ -146,6 +165,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
       setCategory("");
       setMembers([]); // Reset members
       setInputEmail("");
+      setError("");
 
       handleClose();
       setSnackBar({
@@ -214,7 +234,10 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
               {members?.map((member, index) => (
                 <Chip
                   key={index} // Using index as key since member object can change
-                  label={member?.email}
+                  label={
+                    member?.name ||
+                    `${member?.firstName + " " + member?.lastName}`
+                  }
                   avatar={
                     <Avatar alt={member?.email} src={member?.profilePicture}>
                       {member?.email.charAt(0)}
@@ -226,6 +249,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
               ))}
             </div>
             <TextField
+              disabled={showNameField}
               label="Add Members"
               variant="outlined"
               value={inputEmail}
@@ -235,6 +259,19 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
               sx={{ marginTop: "1rem" }}
               helperText="Press 'Enter' to add a member"
             />
+
+            {showNameField && (
+              <TextField
+                label="Enter Name"
+                variant="outlined"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={handleName}
+                fullWidth
+                sx={{ marginTop: "1rem" }}
+                helperText="Press 'Enter' to add name"
+              />
+            )}
             {emailLoading && (
               <Typography variant="body2" sx={styles.searchingMessage}>
                 Searching user...
@@ -242,22 +279,36 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             )}
             {error && <Alert severity="error">{error}</Alert>}
           </FormControl>
-          <Button
-            type="submit"
-            variant="contained"
-            sx={styles.button}
-            fullWidth
-            disabled={loading || emailLoading}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
-            Create Group
-            {loading && (
-              <CircularProgress
-                color="success"
-                size={20}
-                sx={{ marginLeft: 2 }}
-              />
-            )}
-          </Button>
+            <Link
+              onClick={resetAddMembers}
+              variant="body2"
+              sx={{ marginLeft: 0.7 }}
+            >
+              Reset email
+            </Link>
+            <Button
+              type="submit"
+              variant="contained"
+              sx={styles.button}
+              disabled={loading || emailLoading}
+            >
+              Create Group
+              {loading && (
+                <CircularProgress
+                  color="success"
+                  size={20}
+                  sx={{ marginLeft: 2 }}
+                />
+              )}
+            </Button>
+          </Box>
         </form>
       </Box>
     </Modal>

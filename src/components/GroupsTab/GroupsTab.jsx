@@ -297,7 +297,7 @@ const AvatarGroupSection = React.memo(({ members }) => {
   const memberNames = members?.map((member) => ({
     name: member?.firstName
       ? `${member.firstName} ${member.lastName}`
-      : member?.email ?? "Anonymous",
+      : member?.name ?? "Anonymous",
     picture: member?.profilePicture,
   }));
 

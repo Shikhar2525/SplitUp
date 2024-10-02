@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Link,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -59,6 +60,8 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   const [members, setMembers] = useState([]); // Store both email and avatar
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [showNameField, setShowNameField] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null); // To store selected member for deletion
   const [confirmationOpen, setConfirmationOpen] = useState(false); // To handle confirmation dialog
@@ -70,6 +73,15 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   const currentGroupObj = allGroups.find(
     (group) => group?.id === currentGroupID
   );
+  const userObjWithName = { email: inputEmail, name: name };
+
+  const resetAddMembers = (e) => {
+    e.preventDefault();
+    setShowNameField(false);
+    setInputEmail("");
+    setName("");
+    setError("");
+  };
 
   const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -106,19 +118,15 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
           // Add user with avatar
           setMembers((prevMembers) => [...prevMembers, user]);
           setError("");
+          setInputEmail("");
         } else {
-          // Add email only if user is not found
-          setMembers((prevMembers) => [
-            ...prevMembers,
-            { email: inputEmail }, // Add the email object only
-          ]);
-          setError("User not found, but email added.");
+          setShowNameField(true);
+          setError("User not found, enter name");
         }
       } catch (err) {
         setError("Error fetching user.");
       } finally {
         setEmailLoading(false);
-        setInputEmail(""); // Reset the input field
       }
     }
   };
@@ -158,6 +166,16 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
     }
   };
 
+  const handleName = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      setMembers((prevMembers) => [...prevMembers, userObjWithName]);
+      setShowNameField(false);
+      setInputEmail("");
+      setError("");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -174,6 +192,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
       }
       setMembers([]); // Reset members after submission
       refreshAllGroups(); // Refresh the group members
+      setError("");
     } catch (error) {
       setError("Failed to add member(s). Please try again.");
     } finally {
@@ -211,12 +230,9 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
             }}
           >
             {existingMembers?.map((member) => {
-              const nameOrEmail = member?.firstName
-                ? member?.firstName + " " + member?.lastName
-                : member?.email;
               return (
                 <Box
-                  key={nameOrEmail}
+                  key={member?.name}
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -240,10 +256,10 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                       sx={{ width: 25, height: 25, marginRight: 1 }}
                       src={member?.profilePicture}
                     >
-                      {nameOrEmail.charAt(0)}
+                      {member?.name?.charAt(0)}
                     </Avatar>
                     {/* Tooltip for the email */}
-                    <Tooltip title={nameOrEmail} arrow>
+                    <Tooltip title={member?.name} arrow>
                       <Box sx={{ display: "flex", flexDirection: "column" }}>
                         <Typography
                           variant="caption"
@@ -255,7 +271,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                             textOverflow: "ellipsis", // Shows ellipsis when the text overflows
                           }}
                         >
-                          {nameOrEmail}
+                          {member?.name}
                         </Typography>
                         <Typography
                           variant="caption"
@@ -304,7 +320,10 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
         )}
         <form onSubmit={handleSubmit}>
           <TextField
-            disabled={currentUser?.email !== currentGroupObj?.admin?.email}
+            disabled={
+              currentUser?.email !== currentGroupObj?.admin?.email ||
+              showNameField
+            }
             fullWidth
             label="Add Members"
             variant="outlined"
@@ -317,11 +336,27 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
             onKeyDown={handleEmailAdd}
             helperText="Press 'Enter' to add a member"
           />
+          {showNameField && (
+            <TextField
+              fullWidth
+              sx={{ marginTop: 2 }}
+              label="Enter Name"
+              variant="outlined"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={handleName}
+              helperText="Press 'Enter' to add name"
+            />
+          )}
+
           <div style={{ marginTop: "0.8rem", marginBottom: "0.8rem" }}>
             {members?.map((member, index) => (
               <Chip
                 key={index} // Using index as key since member object can change
-                label={member?.email}
+                label={
+                  member?.name ||
+                  `${member?.firstName + " " + member?.lastName}`
+                }
                 avatar={
                   <Avatar alt={member?.email} src={member?.profilePicture}>
                     {member?.email.charAt(0)}
@@ -332,18 +367,35 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
               />
             ))}
           </div>
-          <Button
-            variant="contained"
-            type="submit"
-            sx={styles.button}
-            disabled={loading || members?.length === 0}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
-            {loading || emailLoading ? (
-              <CircularProgress size={24} />
-            ) : (
-              "Add Members"
-            )}
-          </Button>
+            {" "}
+            <Link
+              onClick={resetAddMembers}
+              variant="body2"
+              sx={{ marginLeft: 0.7 }}
+            >
+              Reset
+            </Link>
+            <Button
+              variant="contained"
+              type="submit"
+              sx={styles.button}
+              disabled={loading || members?.length === 0}
+            >
+              {loading || emailLoading ? (
+                <CircularProgress size={24} />
+              ) : (
+                "Add Members"
+              )}
+            </Button>
+          </Box>
+
           {currentUser?.email !== currentGroupObj?.admin?.email && (
             <Box
               sx={{
