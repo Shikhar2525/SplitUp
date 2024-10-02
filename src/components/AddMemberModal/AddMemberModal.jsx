@@ -353,10 +353,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
             {members?.map((member, index) => (
               <Chip
                 key={index} // Using index as key since member object can change
-                label={
-                  member?.name ||
-                  `${member?.firstName + " " + member?.lastName}`
-                }
+                label={member?.name}
                 avatar={
                   <Avatar alt={member?.email} src={member?.profilePicture}>
                     {member?.email.charAt(0)}

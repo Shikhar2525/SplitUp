@@ -187,8 +187,8 @@ const TransactionCard = ({ transaction, index, groupId }) => {
                   </TableCell>
                   <TableCell sx={{ padding: "8px" }}>
                     <Chip
-                      key={transaction?.nameOrEmail}
-                      label={transaction?.nameOrEmail}
+                      key={transaction?.paidBy?.name}
+                      label={transaction?.paidBy?.name}
                     />
                   </TableCell>
                 </TableRow>
@@ -252,8 +252,8 @@ const TransactionCard = ({ transaction, index, groupId }) => {
                     <Box>
                       {transaction.splitBetween?.map((item) => (
                         <Chip
-                          key={item}
-                          label={item}
+                          key={item?.name}
+                          label={item?.name}
                           sx={{ margin: "0.2rem" }}
                         />
                       ))}
@@ -276,12 +276,12 @@ const TransactionCard = ({ transaction, index, groupId }) => {
                   </TableCell>
                   <TableCell sx={{ padding: "8px" }}>
                     <Chip
-                      key={transaction.createdBy}
-                      label={transaction.createdBy}
+                      key={transaction?.createdBy?.name}
+                      label={transaction?.createdBy?.name}
                     />
                   </TableCell>
                 </TableRow>
-                {transaction?.createdBy === currentUser?.email && (
+                {transaction?.createdBy?.email === currentUser?.email && (
                   <TableRow
                     sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
                   >

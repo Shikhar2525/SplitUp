@@ -20,7 +20,6 @@ import AddIcon from "@mui/icons-material/Add";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PaidIcon from "@mui/icons-material/Paid";
 import BalanceIcon from "@mui/icons-material/Balance";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import Expenses from "../Expenses/Expenses";
 import AddGroupModal from "../AddGroup/AddGroupModal";
@@ -295,9 +294,7 @@ const GroupTab = () => {
 const AvatarGroupSection = React.memo(({ members }) => {
   // Get the names of members for tooltip display
   const memberNames = members?.map((member) => ({
-    name: member?.firstName
-      ? `${member.firstName} ${member.lastName}`
-      : member?.name ?? "Anonymous",
+    name: member?.name,
     picture: member?.profilePicture,
   }));
 

@@ -47,7 +47,7 @@ const AccountMenu = () => {
       >
         <Avatar sx={{ bgcolor: "#8675FF", width: 45, height: 45 }}>
           <Avatar
-            alt={currentUser?.firstName + " " + currentUser?.lastName}
+            alt={currentUser?.name}
             src={currentUser?.profilePicture}
             sx={{ width: 40, height: 40 }}
           />
@@ -71,12 +71,12 @@ const AccountMenu = () => {
         {/* Display User's Name */}
         <MenuItem sx={{ display: "flex", alignItems: "center" }}>
           <Avatar
-            alt={currentUser?.firstName + " " + currentUser?.lastName} // Alt text for accessibility
+            alt={currentUser?.name} // Alt text for accessibility
             src={currentUser?.profilePicture}
             sx={{ width: 30, height: 30, marginRight: 1 }}
           />
           <Typography sx={{ color: "#353E6C" }}>
-            {currentUser?.firstName + " " + currentUser?.lastName || "User"}
+            {currentUser?.name || "User"}
           </Typography>
         </MenuItem>
         <Divider />

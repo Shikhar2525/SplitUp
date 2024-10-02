@@ -75,18 +75,18 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const { refreshAllGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
 
+  const userNameByEmail = users?.find((item) => item.email === paidBy)?.name;
+  console.log(users);
   useEffect(() => {
     if (group) {
       const selectedGroup = allGroups.find((g) => g.title === group);
       if (selectedGroup && selectedGroup.members) {
         setUsers(
           selectedGroup.members.map((member) => ({
-            name: member?.firstName
-              ? `${member?.firstName} ${member?.lastName}`
-              : member?.email,
+            name: member?.name,
             avatar: member?.profilePicture,
             email: member?.email, // Add the email here
-            firstInitial: member?.firstName ? member?.firstName[0] : "",
+            firstInitial: member?.name?.[0],
           }))
         );
       }
@@ -96,9 +96,39 @@ const AddExpenseModal = ({ open, handleClose }) => {
   }, [group, allGroups]);
 
   const handleSplitChange = (event) => {
-    const email = event.target.value;
-    setSplitOptions(typeof email === "string" ? email.split(",") : email);
+    const emails = event.target.value; // Get the selected emails
+    const uniqueEmails = new Set(splitOptions.map((option) => option.email)); // Create a Set from existing emails in splitOptions
+
+    // New split options after processing the selected emails
+    const newOptions = emails
+      .map((email) => {
+        const userNameByEmail = users?.find(
+          (item) => item.email === email
+        )?.name;
+        if (userNameByEmail) {
+          return { email: email, name: userNameByEmail }; // Return the new option
+        }
+        return null; // Return null if user not found
+      })
+      .filter(Boolean); // Filter out null values
+
+    // Update splitOptions based on whether the email already exists
+    setSplitOptions((prevOptions) => {
+      const existingEmails = new Set(prevOptions.map((option) => option.email)); // Get existing emails
+
+      // Create a new array based on the selected emails
+      return newOptions.reduce((updatedOptions, option) => {
+        // If the email exists, remove it; otherwise, add it
+        if (existingEmails.has(option.email)) {
+          return updatedOptions.filter((item) => item.email !== option.email); // Remove existing email
+        } else {
+          return [...updatedOptions, option]; // Add new option
+        }
+      }, prevOptions);
+    });
   };
+
+  console.log("split", splitOptions);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -107,10 +137,10 @@ const AddExpenseModal = ({ open, handleClose }) => {
       id: uuidv4(),
       description,
       amount: Number(amount), // Convert to a number
-      paidBy,
+      paidBy: { email: paidBy, name: userNameByEmail },
       splitBetween: splitOptions, // Now stores emails
       createdDate: selectedDate.toISOString(), // Format the date as needed
-      createdBy: currentUser?.email,
+      createdBy: { email: currentUser?.email, name: currentUser?.name },
     };
 
     try {
@@ -166,6 +196,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
           </FormControl>
 
           <TextField
+            required
             fullWidth
             sx={styles.formControl}
             label="Description"
@@ -194,9 +225,13 @@ const AddExpenseModal = ({ open, handleClose }) => {
               onChange={(e) => {
                 setPaidBy(e.target.value);
                 // Remove the selected user from splitOptions if present
-                if (splitOptions.includes(e.target.value)) {
+                if (
+                  splitOptions.some((option) => option.email === e.target.value)
+                ) {
                   setSplitOptions(
-                    splitOptions.filter((user) => user !== e.target.value)
+                    splitOptions.filter(
+                      (user) => user?.email !== e.target.value
+                    )
                   );
                 }
               }}
@@ -238,7 +273,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
                           />
                         );
                       })
-                    : selected.map((email) => {
+                    : selected.map(({ name, email }) => {
                         const user = users.find((u) => u.email === email);
                         return (
                           <Chip
@@ -266,7 +301,11 @@ const AddExpenseModal = ({ open, handleClose }) => {
                 .filter((user) => user.email !== paidBy) // Filter out the user selected in "Paid By"
                 .map((user) => (
                   <MenuItem key={user.email} value={user.email}>
-                    <CheckBox checked={splitOptions.indexOf(user.email) > -1} />
+                    <CheckBox
+                      checked={splitOptions.some(
+                        (option) => option.email === user?.email
+                      )}
+                    />
                     <ListItemText
                       primary={
                         <div style={{ display: "flex", alignItems: "center" }}>

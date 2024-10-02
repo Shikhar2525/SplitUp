@@ -112,7 +112,7 @@ function BalanceCard({ balances }) {
                         <Avatar
                           sx={{ marginRight: 1, width: 28, height: 28 }}
                         />
-                        <Tooltip title={debtor} placement="top" arrow>
+                        <Tooltip title={debtor?.name} placement="top" arrow>
                           <Typography
                             variant="body2"
                             sx={{
@@ -123,7 +123,7 @@ function BalanceCard({ balances }) {
                               maxWidth: "160px",
                             }}
                           >
-                            {debtor}
+                            {debtor?.name}
                           </Typography>
                         </Tooltip>
                       </Box>
@@ -144,7 +144,7 @@ function BalanceCard({ balances }) {
                               maxWidth: "160px",
                             }}
                           >
-                            {creditor}
+                            {creditor?.name}
                           </Typography>
                         </Tooltip>
                       </Box>
@@ -278,7 +278,7 @@ function BalanceCard({ balances }) {
                     </TableCell>
 
                     <TableCell sx={{ padding: "8px" }}>
-                      <Tooltip title={item.owedBy} placement="top" arrow>
+                      <Tooltip title={item.owedBy?.name} placement="top" arrow>
                         <Typography
                           sx={{
                             whiteSpace: "nowrap",
@@ -287,12 +287,12 @@ function BalanceCard({ balances }) {
                             maxWidth: "120px",
                           }}
                         >
-                          {item.owedBy}
+                          {item.owedBy?.name}
                         </Typography>
                       </Tooltip>
                     </TableCell>
                     <TableCell sx={{ padding: "8px" }}>
-                      <Tooltip title={item.paidBy} placement="top" arrow>
+                      <Tooltip title={item.paidBy?.name} placement="top" arrow>
                         <Typography
                           sx={{
                             whiteSpace: "nowrap",
@@ -301,7 +301,7 @@ function BalanceCard({ balances }) {
                             maxWidth: "120px",
                           }}
                         >
-                          {item.paidBy}
+                          {item.paidBy?.name}
                         </Typography>
                       </Tooltip>
                     </TableCell>

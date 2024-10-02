@@ -20,8 +20,7 @@ function App() {
   const createUser = async () => {
     await userService.addUniqueUser({
       id: uuidv4(),
-      firstName: user.given_name,
-      lastName: user.family_name,
+      name: user.name,
       joinedDate: new Date(),
       profilePicture: user.picture,
       email: user.email,

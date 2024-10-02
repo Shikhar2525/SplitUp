@@ -80,35 +80,35 @@ export function calculateBalances(group) {
   // Process each expense
   group.expenses.forEach((expense) => {
     const amount = expense.amount;
-    const paidBy = expense.paidBy;
-    const splitBetween = expense.splitBetween;
+    const paidBy = expense.paidBy; // Object with email and name
+    const splitBetween = expense.splitBetween; // Array of objects with email and name
 
     // Calculate the share for each member involved in the expense
     const share = amount / (splitBetween.length + 1); // +1 to include the payer
 
     // Update balances and add records of each individual transaction
-    splitBetween.forEach((email) => {
+    splitBetween.forEach(({ email, name }) => {
       balances[email] -= share; // Each member owes their share
-      balances[paidBy] += share; // The payer is owed that amount
+      balances[paidBy.email] += share; // The payer is owed that amount
 
       // Record the transaction for breakdown purposes
       if (!transactions[email]) {
         transactions[email] = {};
       }
-      if (!transactions[email][paidBy]) {
-        transactions[email][paidBy] = {
+      if (!transactions[email][paidBy.email]) {
+        transactions[email][paidBy.email] = {
           amount: 0,
           breakdown: [], // Track who owed what in each transaction
         };
       }
 
       // Add the breakdown details of each expense
-      transactions[email][paidBy].amount += share;
-      transactions[email][paidBy].breakdown.push({
+      transactions[email][paidBy.email].amount += share;
+      transactions[email][paidBy.email].breakdown.push({
         description: expense.description,
         amount: parseFloat(share.toFixed(2)), // Round to 2 decimals
-        paidBy: paidBy,
-        owedBy: email,
+        paidBy: { email: paidBy.email, name: paidBy.name }, // Include name and email
+        owedBy: { email: email, name: name }, // Include name and email
         createdDate: expense.createdDate,
       });
     });
@@ -143,8 +143,14 @@ export function calculateBalances(group) {
         if (netAmount !== 0) {
           result.push({
             id: uuidv4(), // Add a unique ID for each settlement entry
-            debtor: finalDebtor,
-            creditor: finalCreditor,
+            debtor: {
+              email: finalDebtor,
+              name: group.members.find((m) => m.email === finalDebtor)?.name,
+            }, // Include name and email
+            creditor: {
+              email: finalCreditor,
+              name: group.members.find((m) => m.email === finalCreditor)?.name,
+            }, // Include name and email
             amount: parseFloat(Math.abs(netAmount).toFixed(2)), // Round to 2 decimals
             breakdown: [
               ...transactions[debtor][creditor].breakdown,

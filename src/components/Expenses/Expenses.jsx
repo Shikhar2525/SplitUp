@@ -13,6 +13,7 @@ const Expenses = () => {
   const { allGroups } = useAllGroups();
   const { currentGroupID } = useCurrentGroup();
   const currentGroup = allGroups?.find((item) => item?.id === currentGroupID);
+
   return (
     <Box
       sx={{
@@ -26,7 +27,7 @@ const Expenses = () => {
           <ExpenseCard
             transaction={{
               id: expense?.id,
-              nameOrEmail: expense?.paidBy,
+              paidBy: expense?.paidBy,
               description: expense?.description,
               amount: expense?.amount,
               currency: "USD",
