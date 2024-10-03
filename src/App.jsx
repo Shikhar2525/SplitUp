@@ -26,19 +26,17 @@ function App() {
 
   // Create user in db
   const createUser = async (name) => {
-    console.log(`Creating user with name: ${name}`);
     await userService.addUniqueUser({
       id: uuidv4(),
       name: name,
       joinedDate: new Date(),
-      profilePicture: user.picture,
+      profilePicture: user.profilePicture,
       email: user.email,
       hasEnteredName: true, // Track name entry
     });
   };
 
   const fetchUser = async () => {
-    console.log(`Fetching user by email: ${user.email}`);
     const currentUser = await userService.getUserByEmail(user.email);
     return currentUser; // Return currentUser for further checks
   };
@@ -46,34 +44,26 @@ function App() {
   useEffect(() => {
     const checkUserEntryStatus = async () => {
       if (user && isAuthenticated && !isLoading) {
-        console.log("User is authenticated, checking entry status...");
         const currentUser = await fetchUser(); // Fetch user by email
 
         // If the user exists, check if they have already entered their name
         if (currentUser) {
           setCurrentUser(currentUser); // Set currentUser if it exists
           if (currentUser.hasEnteredName) {
-            console.log("User has already entered their name.");
             return; // User has already entered their name, no action needed
           }
 
           // If user name is an email and they haven't entered their name yet, open the modal
           if (isEmail(user.name)) {
-            console.log("User name is an email, opening modal...");
             setIsNameModalOpen(true);
           } else {
-            console.log("Creating user with valid name...");
             await createUser(user.name); // Create user if name is valid
           }
         } else {
           // If user is not found, check if the name is an email
           if (isEmail(user.name)) {
-            console.log(
-              "No user found in the database and name is an email, opening modal..."
-            );
             setIsNameModalOpen(true); // Open modal if user is not found
           } else {
-            console.log("Creating user with valid name...");
             await createUser(user.name); // Create user if name is valid
           }
         }
@@ -89,7 +79,7 @@ function App() {
         id: uuidv4(),
         name: user?.name,
         joinedDate: new Date(),
-        profilePicture: user?.picture,
+        profilePicture: user?.profilePicture,
         email: user.email,
         hasEnteredName: true, // Track name entry
       });
@@ -97,7 +87,6 @@ function App() {
 
   // Handle the modal submit to create user with new name
   const handleNameSubmit = async (name) => {
-    console.log(`Modal submitted with name: ${name}`);
     await createUser(name); // Create user with the new name
     const currentUser = await fetchUser(); // Fetch the user after creation
     if (currentUser) {

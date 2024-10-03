@@ -100,8 +100,6 @@ class GroupService {
       await updateDoc(groupDocRef, {
         members: arrayRemove(memberToRemove),
       });
-
-      console.log(`Member with email ${email} removed successfully.`);
     } catch (error) {
       console.error("Error removing member from group: ", error);
       throw error;
@@ -154,8 +152,6 @@ class GroupService {
       await updateDoc(groupDocRef, {
         expenses: arrayUnion(expense),
       });
-
-      console.log(`Expense added successfully to group ID ${groupIdField}.`);
     } catch (error) {
       console.error("Error adding expense to group: ", error);
       throw error;
@@ -193,8 +189,6 @@ class GroupService {
       await updateDoc(groupDocRef, {
         expenses: arrayRemove(expenseToRemove),
       });
-
-      console.log(`Expense with ID ${expenseId} removed successfully.`);
     } catch (error) {
       console.error("Error removing expense from group: ", error);
       throw error;
@@ -219,8 +213,6 @@ class GroupService {
 
       // Delete the group document
       await deleteDoc(groupDocRef);
-
-      console.log(`Group with ID ${groupIdField} deleted successfully.`);
     } catch (error) {
       console.error("Error deleting group: ", error);
       throw error;

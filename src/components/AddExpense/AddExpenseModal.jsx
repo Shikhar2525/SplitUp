@@ -76,7 +76,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const { currentUser } = useCurrentUser();
 
   const userNameByEmail = users?.find((item) => item.email === paidBy)?.name;
-  console.log(users);
+
   useEffect(() => {
     if (group) {
       const selectedGroup = allGroups.find((g) => g.title === group);
@@ -128,8 +128,6 @@ const AddExpenseModal = ({ open, handleClose }) => {
     });
   };
 
-  console.log("split", splitOptions);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -149,7 +147,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
         (item) => item?.title === group
       )?.id;
       await GroupService.addExpenseToGroup(selectedGroupID, expense);
-      console.log("Expense added successfully:", expense);
+
       handleClose(); // Close the modal after successful submission
       setSnackBar({
         isOpen: true,
