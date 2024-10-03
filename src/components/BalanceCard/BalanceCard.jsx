@@ -20,14 +20,14 @@ import {
   Link,
 } from "@mui/material";
 import React, { useState } from "react";
-import GroupService from "../services/group.service"; // Import your set balance service function
-import { useAllGroups } from "../contexts/AllGroups";
+
 import DoneOutlineIcon from "@mui/icons-material/DoneOutline";
 
 function BalanceCard({ balances, groupId }) {
   const [openModal, setOpenModal] = useState(false);
   const [selectedBreakdown, setSelectedBreakdown] = useState([]);
-  const { refreshAllGroups } = useAllGroups();
+
+  console.log(selectedBreakdown);
 
   const handleOpenModal = (breakdown) => {
     setSelectedBreakdown(breakdown);
@@ -327,11 +327,13 @@ function BalanceCard({ balances, groupId }) {
               <TableBody>
                 {selectedBreakdown?.map((transaction, index) => (
                   <TableRow key={index}>
-                    <TableCell>{transaction.expenseName}</TableCell>
-                    <TableCell>{transaction.owedBy}</TableCell>
-                    <TableCell>{transaction.paidBy}</TableCell>
+                    <TableCell>{transaction.description}</TableCell>
+                    <TableCell>{transaction.owedBy?.name}</TableCell>
+                    <TableCell>{transaction.paidBy?.name}</TableCell>
                     <TableCell>{transaction.amount} Rs</TableCell>
-                    <TableCell>{transaction.date}</TableCell>
+                    <TableCell>
+                      {new Date(transaction.createdDate).toLocaleDateString()}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
