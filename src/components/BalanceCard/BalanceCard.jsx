@@ -101,16 +101,6 @@ function BalanceCard({ balances, groupId }) {
                   >
                     View all transactions
                   </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      backgroundColor: "#8675FF",
-                      color: "white",
-                      padding: "4px 16px",
-                    }}
-                  >
-                    Actions
-                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -197,58 +187,6 @@ function BalanceCard({ balances, groupId }) {
                         >
                           View Breakdown
                         </Button>
-                      </TableCell>
-                      <TableCell>
-                        {isSettled ? (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <DoneOutlineIcon color="success" />
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600 }}
-                            >
-                              Settled
-                            </Typography>
-                            <Link
-                              key={id}
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent triggering other row actions
-                                handleSettleUp(id, false); // Call the undo settle up function
-                              }}
-                            >
-                              Undo
-                            </Link>
-                          </Box>
-                        ) : (
-                          <Button
-                            key={id}
-                            variant="outlined"
-                            onClick={(e) => {
-                              e.preventDefault(); // Prevent default action
-                              e.stopPropagation(); // Prevent any parent row click actions
-                              handleSettleUp(id, true); // Call the settle up function for the specific row
-                            }}
-                            sx={{
-                              color: "green",
-                              borderColor: "green",
-                              borderRadius: 1,
-                              padding: "2px 6px",
-                              minWidth: "120px",
-                              whiteSpace: "nowrap",
-                              flexShrink: 0,
-                              "&:hover": {
-                                backgroundColor: "#e3f2fd",
-                              },
-                            }}
-                          >
-                            Settle Up
-                          </Button>
-                        )}
                       </TableCell>
                     </TableRow>
                   )
