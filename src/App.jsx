@@ -40,10 +40,7 @@ function App() {
   const fetchUser = async () => {
     console.log(`Fetching user by email: ${user.email}`);
     const currentUser = await userService.getUserByEmail(user.email);
-    if (currentUser) {
-      setCurrentUser(currentUser);
-    }
-    return currentUser;
+    return currentUser; // Return currentUser for further checks
   };
 
   useEffect(() => {
@@ -54,6 +51,7 @@ function App() {
 
         // If the user exists, check if they have already entered their name
         if (currentUser) {
+          setCurrentUser(currentUser); // Set currentUser if it exists
           if (currentUser.hasEnteredName) {
             console.log("User has already entered their name.");
             return; // User has already entered their name, no action needed
@@ -85,11 +83,26 @@ function App() {
     checkUserEntryStatus();
   }, [user, isAuthenticated, isLoading]);
 
+  useEffect(() => {
+    user &&
+      setCurrentUser({
+        id: uuidv4(),
+        name: user?.name,
+        joinedDate: new Date(),
+        profilePicture: user?.picture,
+        email: user.email,
+        hasEnteredName: true, // Track name entry
+      });
+  }, [user]);
+
   // Handle the modal submit to create user with new name
   const handleNameSubmit = async (name) => {
     console.log(`Modal submitted with name: ${name}`);
     await createUser(name); // Create user with the new name
-    await fetchUser(); // Fetch the user after creation
+    const currentUser = await fetchUser(); // Fetch the user after creation
+    if (currentUser) {
+      setCurrentUser(currentUser); // Set the current user if found
+    }
     setIsNameModalOpen(false); // Close the modal
   };
 

@@ -80,7 +80,7 @@ const GroupTab = () => {
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
   const currentGroupAdminEmail = allGroups?.find(
     (group) => group.id === currentGroupID
-  )?.admin?.id;
+  )?.admin?.email;
 
   // Set currentGroup from localStorage or default to the first group
   useEffect(() => {
@@ -248,7 +248,7 @@ const GroupTab = () => {
                 icon={<BalanceIcon />}
                 iconPosition="start"
               />
-              {currentGroupAdminEmail === currentUser?.id && (
+              {currentGroupAdminEmail === currentUser?.email && (
                 <Tab
                   label="Settings"
                   icon={<SettingsIcon />}

@@ -34,6 +34,8 @@ const AccountMenu = () => {
     setAnchorEl(null);
   };
 
+  console.log(currentUser);
+
   return (
     <Box>
       <IconButton
