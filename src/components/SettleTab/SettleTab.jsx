@@ -31,7 +31,9 @@ const SettleTab = ({ members, groupID }) => {
       // Show success message in the snackbar
       setSnackBar({
         isOpen: true,
-        message: `${memberName} is settled`,
+        message: `${memberName} is ${
+          isCurrentlySettled ? "unsettled" : "setlled"
+        }`,
       });
 
       // Refresh groups to get the latest settled states
