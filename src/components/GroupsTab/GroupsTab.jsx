@@ -35,6 +35,8 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import GroupsSettings from "../GroupSettings/GroupsSettings";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import GroupBalances from "../GroupBalances/GroupBalances";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
+import SettleTab from "../SettleTab/SettleTab";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -248,6 +250,11 @@ const GroupTab = () => {
                 icon={<BalanceIcon />}
                 iconPosition="start"
               />
+              <Tab
+                label="Settle"
+                icon={<HowToRegIcon />}
+                iconPosition="start"
+              />
               {currentGroupAdminEmail === currentUser?.email && (
                 <Tab
                   label="Settings"
@@ -265,6 +272,9 @@ const GroupTab = () => {
               />
             )}
             {tabIndex === 2 && (
+              <SettleTab groupID={currentGroupID} allGroups={allGroups} />
+            )}
+            {tabIndex === 3 && (
               <GroupsSettings groupID={currentGroupID} groupName={title} />
             )}
           </Box>

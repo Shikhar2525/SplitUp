@@ -141,22 +141,29 @@ export function calculateBalances(group) {
 
         // Only include the transaction if there is an outstanding amount
         if (netAmount !== 0) {
-          result.push({
-            id: uuidv4(), // Add a unique ID for each settlement entry
-            debtor: {
-              email: finalDebtor,
-              name: group.members.find((m) => m.email === finalDebtor)?.name,
-            }, // Include name and email
-            creditor: {
-              email: finalCreditor,
-              name: group.members.find((m) => m.email === finalCreditor)?.name,
-            }, // Include name and email
-            amount: parseFloat(Math.abs(netAmount).toFixed(2)), // Round to 2 decimals
-            breakdown: [
-              ...transactions[debtor][creditor].breakdown,
-              ...(transactions[creditor]?.[debtor]?.breakdown || []),
-            ], // Combine breakdowns from both sides for clarity
-          });
+          // Check if the debtor's userSettled is true or not present
+          const debtorMember = group.members.find(
+            (m) => m.email === finalDebtor
+          );
+          if (!debtorMember || debtorMember.userSettled === false) {
+            result.push({
+              id: uuidv4(), // Add a unique ID for each settlement entry
+              debtor: {
+                email: finalDebtor,
+                name: group.members.find((m) => m.email === finalDebtor)?.name,
+              }, // Include name and email
+              creditor: {
+                email: finalCreditor,
+                name: group.members.find((m) => m.email === finalCreditor)
+                  ?.name,
+              }, // Include name and email
+              amount: parseFloat(Math.abs(netAmount).toFixed(2)), // Round to 2 decimals
+              breakdown: [
+                ...transactions[debtor][creditor].breakdown,
+                ...(transactions[creditor]?.[debtor]?.breakdown || []),
+              ], // Combine breakdowns from both sides for clarity
+            });
+          }
         }
 
         // Mark this pair as processed

@@ -116,9 +116,6 @@ function BalanceCard({ balances, groupId }) {
                     >
                       <TableCell>
                         <Box display="flex" alignItems="center">
-                          <Avatar
-                            sx={{ marginRight: 1, width: 28, height: 28 }}
-                          />
                           <Tooltip title={debtor?.name} placement="top" arrow>
                             <Typography
                               variant="body2"
@@ -137,9 +134,6 @@ function BalanceCard({ balances, groupId }) {
                       </TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center">
-                          <Avatar
-                            sx={{ marginRight: 1, width: 28, height: 28 }}
-                          />
                           <Tooltip title={creditor?.name} placement="top" arrow>
                             <Typography
                               variant="body2"

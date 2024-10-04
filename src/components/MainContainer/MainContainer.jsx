@@ -1,11 +1,19 @@
 import React, { useEffect } from "react";
-import { Box, LinearProgress, Snackbar, useMediaQuery } from "@mui/material";
+import {
+  Backdrop,
+  Box,
+  CircularProgress,
+  LinearProgress,
+  Snackbar,
+  useMediaQuery,
+} from "@mui/material";
 import Navigation from "../Navigation/Navigation";
 import { useScreenSize } from "../contexts/ScreenSizeContext"; // Ensure this is correct
 import DashBoard from "../Content/Content";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useLinearProgress } from "../contexts/LinearProgress";
+import { useCircularLoader } from "../contexts/CircularLoader";
 
 function MainContainer() {
   const isMobile = useScreenSize();
@@ -13,6 +21,7 @@ function MainContainer() {
   const { isAuthenticated, isLoading } = useAuth0();
   const { snackBar, setSnackBar } = useTopSnackBar();
   const { isLinearProgress } = useLinearProgress();
+  const { circularLoader } = useCircularLoader();
 
   useEffect(() => {
     if (snackBar?.isOpen) {
@@ -77,6 +86,13 @@ function MainContainer() {
           },
         }}
       />
+
+      <Backdrop
+        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+        open={circularLoader}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Box>
   );
 }

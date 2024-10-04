@@ -218,6 +218,49 @@ class GroupService {
       throw error;
     }
   };
+
+  updateUserSettledStatus = async (groupIdField, userEmail, userSettled) => {
+    try {
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("No document found with ID:", groupIdField);
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      const groupDocRef = querySnapshot.docs[0].ref;
+      const groupData = querySnapshot.docs[0].data();
+
+      // Find the member object with the matching email
+      const memberIndex = groupData.members.findIndex(
+        (member) => member.email === userEmail
+      );
+
+      if (memberIndex === -1) {
+        console.error("No member found with email:", userEmail);
+        throw new Error(`No member found with email: ${userEmail}`);
+      }
+
+      // Update the userSettled property for the found member
+      const updatedMembers = [...groupData.members];
+      updatedMembers[memberIndex] = {
+        ...updatedMembers[memberIndex],
+        userSettled, // Set the userSettled property
+      };
+
+      // Update the members array in Firestore
+      await updateDoc(groupDocRef, {
+        members: updatedMembers,
+      });
+    } catch (error) {
+      console.error("Error updating user settled status: ", error);
+      throw error;
+    }
+  };
 }
 
 export default new GroupService();
