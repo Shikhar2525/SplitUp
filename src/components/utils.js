@@ -145,7 +145,11 @@ export function calculateBalances(group) {
           const debtorMember = group.members.find(
             (m) => m.email === finalDebtor
           );
-          if (!debtorMember || debtorMember.userSettled === false) {
+          if (
+            !debtorMember ||
+            debtorMember.userSettled === false ||
+            debtorMember.userSettled === undefined
+          ) {
             result.push({
               id: uuidv4(), // Add a unique ID for each settlement entry
               debtor: {

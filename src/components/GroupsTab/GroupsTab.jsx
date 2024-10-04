@@ -81,6 +81,7 @@ const GroupTab = () => {
   const [settledMemberStats, setSettledMemberStats] = useState({});
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
+  const currentGroup = allGroups?.find((group) => group.id === currentGroupID);
   const members = allGroups?.find(
     (group) => group.id === currentGroupID
   )?.members;
@@ -97,10 +98,39 @@ const GroupTab = () => {
       setSettledMemberStats({ totalMembers, settledMembers });
     }
   };
-  // Set currentGroup from localStorage or default to the first group
+  console.log(settledMemberStats);
+
+  const dynamicTabs = useMemo(() => {
+    const tabs = [
+      { label: "Expenses", icon: <PaidIcon />, component: <Expenses /> },
+    ];
+
+    if (currentGroup?.expenses?.length > 0) {
+      tabs.push({
+        label: "Balances",
+        icon: <BalanceIcon />,
+        component: <GroupBalances group={currentGroup} />,
+      });
+      tabs.push({
+        label: `Settle (${settledMemberStats?.settledMembers}/${settledMemberStats?.totalMembers})`,
+        icon: <HowToRegIcon />,
+        component: <SettleTab allGroups={allGroups} groupID={currentGroupID} />,
+      });
+    }
+
+    if (currentGroupAdminEmail === currentUser?.email) {
+      tabs.push({
+        label: "Settings",
+        icon: <SettingsIcon />,
+        component: <GroupsSettings group={currentGroup} />,
+      });
+    }
+
+    return tabs;
+  }, [settledMemberStats, currentGroup]);
+
   useEffect(() => {
     setLinearProgress(true);
-    calculateMemberStats();
     const storedGroup = JSON.parse(localStorage.getItem("currentGroupID"));
 
     if (storedGroup) {
@@ -122,6 +152,10 @@ const GroupTab = () => {
 
     setLinearProgress(false);
   }, [allGroups, setCurrentGroupID]);
+
+  useEffect(() => {
+    calculateMemberStats();
+  }, [currentGroupID, currentGroup]);
 
   // Memoized group details
   const selectedGroupDetails = useMemo(
@@ -258,40 +292,18 @@ const GroupTab = () => {
                 "& .MuiTab-root": { padding: "6px 12px", minHeight: "45px" },
               }}
             >
-              <Tab label="Expenses" icon={<PaidIcon />} iconPosition="start" />
-              <Tab
-                label="Balances"
-                icon={<BalanceIcon />}
-                iconPosition="start"
-              />
-              <Tab
-                label={`Settle (${settledMemberStats?.settledMembers}/${settledMemberStats?.totalMembers})`}
-                icon={<HowToRegIcon />}
-                iconPosition="start"
-              />
-              {currentGroupAdminEmail === currentUser?.email && (
+              {" "}
+              {dynamicTabs.map((tab, index) => (
                 <Tab
-                  label="Settings"
-                  icon={<SettingsIcon />}
+                  key={index}
+                  label={tab.label}
+                  icon={tab.icon}
                   iconPosition="start"
                 />
-              )}
+              ))}
             </Tabs>
           </AppBar>
-          <Box sx={{ p: 2 }}>
-            {tabIndex === 0 && <Expenses />}
-            {tabIndex === 1 && (
-              <GroupBalances
-                group={allGroups?.find((group) => group.id === currentGroupID)}
-              />
-            )}
-            {tabIndex === 2 && (
-              <SettleTab groupID={currentGroupID} allGroups={allGroups} />
-            )}
-            {tabIndex === 3 && (
-              <GroupsSettings groupID={currentGroupID} groupName={title} />
-            )}
-          </Box>
+          <Box sx={{ p: 2 }}>{dynamicTabs[tabIndex]?.component}</Box>
         </>
       ) : (
         <NoDataScreen message="No groups, create new" />
