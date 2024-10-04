@@ -30,7 +30,7 @@ function App() {
       id: uuidv4(),
       name: name,
       joinedDate: new Date(),
-      profilePicture: user.profilePicture,
+      profilePicture: user.picture,
       email: user.email,
       hasEnteredName: true, // Track name entry
     });
@@ -79,7 +79,7 @@ function App() {
         id: uuidv4(),
         name: user?.name,
         joinedDate: new Date(),
-        profilePicture: user?.profilePicture,
+        profilePicture: user?.picture,
         email: user.email,
         hasEnteredName: true, // Track name entry
       });
