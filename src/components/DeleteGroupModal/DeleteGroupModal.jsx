@@ -4,6 +4,7 @@ import GroupService from "../services/group.service"; // Adjust the import accor
 import { useLinearProgress } from "../contexts/LinearProgress";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
+import { useCircularLoader } from "../contexts/CircularLoader";
 
 const DeleteGroupModal = ({ open, onClose, groupId, groupName }) => {
   const [inputValue, setInputValue] = useState("");
@@ -11,19 +12,25 @@ const DeleteGroupModal = ({ open, onClose, groupId, groupName }) => {
   const { setLinearProgress } = useLinearProgress();
   const { refreshAllGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
+  const { setCircularLoader } = useCircularLoader();
 
+  console.log(groupId);
+  console.log(groupName);
   const handleDelete = async () => {
     if (inputValue === groupName) {
       try {
+        setCircularLoader(true);
         setLinearProgress(true);
         await GroupService.deleteGroup(groupId);
         onClose(); // Close the modal after deletion
         setSnackBar({ isOpen: true, message: "Group deleted" });
+
         refreshAllGroups();
       } catch (error) {
         console.error("Failed to delete group:", error);
       } finally {
         setLinearProgress(false);
+        setCircularLoader(false);
       }
     } else {
       setError("Group name does not match. Please try again.");

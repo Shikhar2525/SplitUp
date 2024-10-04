@@ -126,7 +126,12 @@ const GroupTab = () => {
       tabs.push({
         label: "Settings",
         icon: <SettingsIcon />,
-        component: <GroupsSettings group={currentGroup} />,
+        component: (
+          <GroupsSettings
+            groupID={currentGroupID}
+            groupName={currentGroup?.title}
+          />
+        ),
       });
     }
 
