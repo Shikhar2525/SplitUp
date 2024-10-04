@@ -78,15 +78,29 @@ const GroupTab = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const { setLinearProgress } = useLinearProgress();
   const { currentUser } = useCurrentUser();
+  const [settledMemberStats, setSettledMemberStats] = useState({});
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
+  const members = allGroups?.find(
+    (group) => group.id === currentGroupID
+  )?.members;
   const currentGroupAdminEmail = allGroups?.find(
     (group) => group.id === currentGroupID
   )?.admin?.email;
 
+  const calculateMemberStats = () => {
+    if (members) {
+      const totalMembers = members.length;
+      const settledMembers = members.filter(
+        (member) => member.userSettled
+      ).length;
+      setSettledMemberStats({ totalMembers, settledMembers });
+    }
+  };
   // Set currentGroup from localStorage or default to the first group
   useEffect(() => {
     setLinearProgress(true);
+    calculateMemberStats();
     const storedGroup = JSON.parse(localStorage.getItem("currentGroupID"));
 
     if (storedGroup) {
@@ -251,7 +265,7 @@ const GroupTab = () => {
                 iconPosition="start"
               />
               <Tab
-                label="Settle"
+                label={`Settle (${settledMemberStats?.settledMembers}/${settledMemberStats?.totalMembers})`}
                 icon={<HowToRegIcon />}
                 iconPosition="start"
               />
