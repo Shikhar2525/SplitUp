@@ -17,13 +17,11 @@ import {
   DialogActions,
   Button,
   Tooltip,
-  Link,
 } from "@mui/material";
 import React, { useState } from "react";
+import GradingIcon from "@mui/icons-material/Grading";
 
-import DoneOutlineIcon from "@mui/icons-material/DoneOutline";
-
-function BalanceCard({ balances, groupId }) {
+function BalanceCard({ balances }) {
   const [openModal, setOpenModal] = useState(false);
   const [selectedBreakdown, setSelectedBreakdown] = useState([]);
 
@@ -53,142 +51,170 @@ function BalanceCard({ balances, groupId }) {
           boxShadow: 2,
         }}
       >
-        <CardContent sx={{ padding: "0 !important" }}>
-          <Typography variant="subtitle1" margin={2} sx={{ color: "#353E6C" }}>
-            Balance summary
-          </Typography>
-          <TableContainer>
-            <Table aria-label="balance table">
-              <TableHead>
-                <TableRow>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      backgroundColor: "#8675FF",
-                      color: "white",
-                      padding: "4px 16px",
-                    }}
-                  >
-                    Will Give
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      backgroundColor: "#8675FF",
-                      color: "white",
-                      padding: "4px 16px",
-                    }}
-                  >
-                    Will Receive
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      backgroundColor: "#8675FF",
-                      color: "white",
-                      padding: "4px 16px",
-                    }}
-                  >
-                    Amount
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      backgroundColor: "#8675FF",
-                      color: "white",
-                      padding: "4px 16px",
-                    }}
-                  >
-                    View all transactions
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {balances?.map(
-                  ({ id, debtor, creditor, amount, breakdown, isSettled }) => (
-                    <TableRow
-                      key={id}
+        {balances?.length > 0 ? (
+          <CardContent sx={{ padding: "0 !important" }}>
+            <Typography
+              variant="subtitle1"
+              margin={2}
+              sx={{ color: "#353E6C" }}
+            >
+              Balance summary
+            </Typography>
+            <TableContainer>
+              <Table aria-label="balance table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell
                       sx={{
-                        "&:hover": { backgroundColor: "#f5f5f5" },
-                        backgroundColor: (index) =>
-                          index % 2 === 0 ? "#fafafa" : "#ffffff",
+                        fontWeight: "bold",
+                        backgroundColor: "#8675FF",
+                        color: "white",
+                        padding: "4px 16px",
                       }}
                     >
-                      <TableCell>
-                        <Box display="flex" alignItems="center">
-                          <Tooltip title={debtor?.name} placement="top" arrow>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontWeight: 600,
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                maxWidth: "160px",
-                              }}
+                      Will Give
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        backgroundColor: "#8675FF",
+                        color: "white",
+                        padding: "4px 16px",
+                      }}
+                    >
+                      Will Receive
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        backgroundColor: "#8675FF",
+                        color: "white",
+                        padding: "4px 16px",
+                      }}
+                    >
+                      Amount
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        backgroundColor: "#8675FF",
+                        color: "white",
+                        padding: "4px 16px",
+                      }}
+                    >
+                      View all transactions
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {balances?.map(
+                    ({
+                      id,
+                      debtor,
+                      creditor,
+                      amount,
+                      breakdown,
+                      isSettled,
+                    }) => (
+                      <TableRow
+                        key={id}
+                        sx={{
+                          "&:hover": { backgroundColor: "#f5f5f5" },
+                          backgroundColor: (index) =>
+                            index % 2 === 0 ? "#fafafa" : "#ffffff",
+                        }}
+                      >
+                        <TableCell>
+                          <Box display="flex" alignItems="center">
+                            <Tooltip title={debtor?.name} placement="top" arrow>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontWeight: 600,
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "160px",
+                                }}
+                              >
+                                {debtor?.name}
+                              </Typography>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" alignItems="center">
+                            <Tooltip
+                              title={creditor?.name}
+                              placement="top"
+                              arrow
                             >
-                              {debtor?.name}
-                            </Typography>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box display="flex" alignItems="center">
-                          <Tooltip title={creditor?.name} placement="top" arrow>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontWeight: 600,
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                maxWidth: "160px",
-                              }}
-                            >
-                              {creditor?.name}
-                            </Typography>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={`${amount} Rs`}
-                          variant="outlined"
-                          sx={{
-                            fontSize: "0.85rem",
-                            fontWeight: "bold",
-                            borderColor: "#8675FF",
-                            color: "#8675FF",
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outlined"
-                          onClick={() => handleOpenModal(breakdown)}
-                          sx={{
-                            color: "#8675FF",
-                            borderColor: "#8675FF",
-                            borderRadius: 20,
-                            padding: "4px 10px",
-                            minWidth: "120px",
-                            whiteSpace: "nowrap",
-                            flexShrink: 0,
-                            "&:hover": {
-                              backgroundColor: "#e3f2fd",
-                            },
-                          }}
-                        >
-                          View Breakdown
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  )
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontWeight: 600,
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "160px",
+                                }}
+                              >
+                                {creditor?.name}
+                              </Typography>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={`${amount} Rs`}
+                            variant="outlined"
+                            sx={{
+                              fontSize: "0.85rem",
+                              fontWeight: "bold",
+                              borderColor: "#8675FF",
+                              color: "#8675FF",
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outlined"
+                            onClick={() => handleOpenModal(breakdown)}
+                            sx={{
+                              color: "#8675FF",
+                              borderColor: "#8675FF",
+                              borderRadius: 20,
+                              padding: "4px 10px",
+                              minWidth: "120px",
+                              whiteSpace: "nowrap",
+                              flexShrink: 0,
+                              "&:hover": {
+                                backgroundColor: "#e3f2fd",
+                              },
+                            }}
+                          >
+                            View Breakdown
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        ) : (
+          <Box sx={{ display: "flex", alignItems: "center", pl: 2 }}>
+            <GradingIcon fontSize="large" color="success" />
+            <Typography
+              variant="subtitle1"
+              margin={2}
+              sx={{ color: "#353E6C" }}
+            >
+              All balances are Settled
+            </Typography>
+          </Box>
+        )}
       </Card>
 
       {/* Breakdown Modal */}

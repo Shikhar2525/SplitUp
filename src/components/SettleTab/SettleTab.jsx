@@ -6,8 +6,7 @@ import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCircularLoader } from "../contexts/CircularLoader.js";
 import { useAllGroups } from "../contexts/AllGroups.js";
 
-const SettleTab = ({ allGroups, groupID }) => {
-  const members = allGroups?.find((item) => item.id === groupID)?.members;
+const SettleTab = ({ members, groupID }) => {
   const { setSnackBar } = useTopSnackBar();
   const { setCircularLoader } = useCircularLoader();
   const { refreshAllGroups } = useAllGroups();

@@ -25,7 +25,11 @@ import Expenses from "../Expenses/Expenses";
 import AddGroupModal from "../AddGroup/AddGroupModal";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
-import { formatDate } from "../utils";
+import {
+  calculateBalances,
+  filterMembersNotInDebtors,
+  formatDate,
+} from "../utils";
 import { useAllGroups } from "../contexts/AllGroups";
 import { Tooltip } from "@mui/material"; // Import Tooltip from MUI
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
@@ -93,12 +97,11 @@ const GroupTab = () => {
     if (members) {
       const totalMembers = members.length;
       const settledMembers = members.filter(
-        (member) => member.userSettled
+        (member) => member?.userSettled
       ).length;
       setSettledMemberStats({ totalMembers, settledMembers });
     }
   };
-  console.log(settledMemberStats);
 
   const dynamicTabs = useMemo(() => {
     const tabs = [
@@ -111,10 +114,11 @@ const GroupTab = () => {
         icon: <BalanceIcon />,
         component: <GroupBalances group={currentGroup} />,
       });
+
       tabs.push({
         label: `Settle (${settledMemberStats?.settledMembers}/${settledMemberStats?.totalMembers})`,
         icon: <HowToRegIcon />,
-        component: <SettleTab allGroups={allGroups} groupID={currentGroupID} />,
+        component: <SettleTab members={members} groupID={currentGroupID} />,
       });
     }
 

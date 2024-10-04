@@ -73,12 +73,12 @@ export function calculateBalances(group) {
   const transactions = {}; // To track the transactions between members
 
   // Initialize balances for each member
-  group.members.forEach((member) => {
-    balances[member.email] = 0;
+  group?.members?.forEach((member) => {
+    balances[member?.email] = 0;
   });
 
   // Process each expense
-  group.expenses.forEach((expense) => {
+  group?.expenses?.forEach((expense) => {
     const amount = expense.amount;
     const paidBy = expense.paidBy; // Object with email and name
     const splitBetween = expense.splitBetween; // Array of objects with email and name
@@ -154,12 +154,15 @@ export function calculateBalances(group) {
               id: uuidv4(), // Add a unique ID for each settlement entry
               debtor: {
                 email: finalDebtor,
-                name: group.members.find((m) => m.email === finalDebtor)?.name,
+                name:
+                  group.members.find((m) => m.email === finalDebtor)?.name ||
+                  debtor + " (left)",
               }, // Include name and email
               creditor: {
                 email: finalCreditor,
-                name: group.members.find((m) => m.email === finalCreditor)
-                  ?.name,
+                name:
+                  group.members.find((m) => m.email === finalCreditor)?.name ||
+                  creditor + " (left)",
               }, // Include name and email
               amount: parseFloat(Math.abs(netAmount).toFixed(2)), // Round to 2 decimals
               breakdown: [
