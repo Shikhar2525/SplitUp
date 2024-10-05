@@ -261,6 +261,33 @@ class GroupService {
       throw error;
     }
   };
+
+  updateMembersInGroup = async (groupIdField, newMembersArray, newExpenses) => {
+    try {
+      // Query to find the group by its ID
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("No document found with ID:", groupIdField);
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      const groupDocRef = querySnapshot.docs[0].ref;
+
+      // Update the members array in Firestore
+      await updateDoc(groupDocRef, {
+        members: newMembersArray,
+        expenses: newExpenses,
+      });
+    } catch (error) {
+      console.error("Error updating members in group: ", error);
+      throw error;
+    }
+  };
 }
 
 export default new GroupService();

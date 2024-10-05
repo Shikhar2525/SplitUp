@@ -25,11 +25,7 @@ import Expenses from "../Expenses/Expenses";
 import AddGroupModal from "../AddGroup/AddGroupModal";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
-import {
-  calculateBalances,
-  filterMembersNotInDebtors,
-  formatDate,
-} from "../utils";
+import { formatDate } from "../utils";
 import { useAllGroups } from "../contexts/AllGroups";
 import { Tooltip } from "@mui/material"; // Import Tooltip from MUI
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
@@ -41,6 +37,9 @@ import { useCurrentUser } from "../contexts/CurrentUser";
 import GroupBalances from "../GroupBalances/GroupBalances";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import SettleTab from "../SettleTab/SettleTab";
+import { useCircularLoader } from "../contexts/CircularLoader";
+import userService from "../services/user.service";
+import groupService from "../services/group.service";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -83,6 +82,8 @@ const GroupTab = () => {
   const { setLinearProgress } = useLinearProgress();
   const { currentUser } = useCurrentUser();
   const [settledMemberStats, setSettledMemberStats] = useState({});
+  const { setCircularLoader } = useCircularLoader();
+  const [groupsIDs, setGroupIDs] = useState([]);
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
   const currentGroup = allGroups?.find((group) => group.id === currentGroupID);
@@ -102,6 +103,83 @@ const GroupTab = () => {
       setSettledMemberStats({ totalMembers, settledMembers });
     }
   };
+
+  const updateMembersIsUserExist = async () => {
+    let updated = false;
+    try {
+      setCircularLoader(true);
+      // Create an array of promises to fetch users
+      const memberPromises = currentGroup?.members?.map(async (member) => {
+        const user = await fetchUser(member?.email);
+        if (user) {
+          updated = true;
+          return {
+            ...user, // If user exists, return the user object
+          };
+        } else {
+          return member; // If no user found, return the original member
+        }
+      });
+
+      // Wait for all promises to resolve
+      const newMembers = await Promise.all(memberPromises);
+
+      const expensePromises = currentGroup?.expenses?.map(async (expense) => {
+        const paidByUser = await fetchUser(expense.paidBy.email);
+
+        const splitPromises = expense.splitBetween.map(async (splitOption) => {
+          const user = await fetchUser(splitOption.email); // Fetch user by splitOption email
+          return user ? { ...user } : splitOption; // Replace with user if found
+        });
+
+        // Wait for all split promises to resolve
+        const updatedSplitBetween = await Promise.all(splitPromises);
+
+        // Return updated expense with the new splitBetween
+        return {
+          ...expense,
+          splitBetween: updatedSplitBetween,
+          paidBy: paidByUser ? { ...paidByUser } : expense.paidBy,
+        };
+      });
+
+      const updatedExpenses = await Promise.all(expensePromises);
+
+      // Now update the group with new members
+      await groupService.updateMembersInGroup(
+        currentGroupID,
+        newMembers,
+        updatedExpenses
+      );
+      if (updated) {
+        refreshAllGroups();
+      }
+    } catch (error) {
+      console.error(error.message);
+    } finally {
+      setCircularLoader(false);
+    }
+  };
+
+  const fetchUser = async (email) => {
+    try {
+      const user = await userService.getUserByEmail(email);
+      return user;
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    if (currentGroupID && !groupsIDs.includes(currentGroupID)) {
+      updateMembersIsUserExist();
+      if (!groupsIDs.includes(currentGroupID)) {
+        setGroupIDs([...groupsIDs, currentGroupID]);
+      }
+    }
+  }, [currentGroupID]);
+
+  console.log(groupsIDs);
 
   const dynamicTabs = useMemo(() => {
     const tabs = [
