@@ -5,11 +5,16 @@ import GroupService from "../services/group.service.js";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCircularLoader } from "../contexts/CircularLoader.js";
 import { useAllGroups } from "../contexts/AllGroups.js";
+import { useCurrentUser } from "../contexts/CurrentUser.js";
 
 const SettleTab = ({ members, groupID }) => {
   const { setSnackBar } = useTopSnackBar();
   const { setCircularLoader } = useCircularLoader();
   const { refreshAllGroups } = useAllGroups();
+  const { allGroups } = useAllGroups();
+  const { currentUser } = useCurrentUser();
+
+  const currentGroup = allGroups?.find((item) => item.id === groupID);
 
   // Toggle settled state for a member
   const handleSettleToggle = async (
@@ -61,8 +66,21 @@ const SettleTab = ({ members, groupID }) => {
         marginBottom: 3,
       }}
     >
-      <Typography variant="subtitle1" margin={1} sx={{ color: "#353E6C" }}>
+      <Typography
+        variant="subtitle1"
+        marginTop={1}
+        marginLeft={1}
+        sx={{ color: "#353E6C" }}
+      >
         Settle up members
+      </Typography>
+      <Typography
+        variant="subtitle2"
+        marginLeft={1}
+        fontSize="10px"
+        color="textSecondary"
+      >
+        Only admin can settle all members
       </Typography>
       <Box
         sx={{
@@ -79,6 +97,10 @@ const SettleTab = ({ members, groupID }) => {
 
           return (
             <ButtonBase
+              disabled={
+                currentGroup?.admin?.email !== currentUser?.email &&
+                currentUser?.email !== member?.email
+              }
               key={member?.email}
               sx={{
                 width: "99%",
@@ -134,6 +156,7 @@ const SettleTab = ({ members, groupID }) => {
                         }}
                       >
                         {member?.name}
+                        {currentUser?.email === member?.email && " (You)"}
                       </Typography>
                     </Box>
                   </Tooltip>
