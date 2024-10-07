@@ -201,6 +201,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
             inputProps={{ maxLength: 25 }}
+            helperText={`${25 - groupName.length} characters remaining`}
             required
           />
           <TextField
@@ -210,7 +211,8 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             variant="outlined"
             value={groupDescription}
             onChange={(e) => setGroupDescription(e.target.value)}
-            inputProps={{ maxLength: 150 }}
+            inputProps={{ maxLength: 35 }} // Enforces max length
+            helperText={`${35 - groupDescription.length} characters remaining`}
           />
           <FormControl fullWidth sx={styles.formControl}>
             <InputLabel id="category-label" shrink={!!category}>

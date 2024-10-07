@@ -131,6 +131,10 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (splitOptions?.length <= 0) {
+      return;
+    }
+
     const expense = {
       id: uuidv4(),
       description,
@@ -202,6 +206,8 @@ const AddExpenseModal = ({ open, handleClose }) => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             disabled={!group} // Disable until group is selected
+            inputProps={{ maxLength: 35 }} // Enforces max length
+            helperText={`${35 - description.length} characters remaining`}
           />
 
           <TextField
@@ -358,6 +364,13 @@ const AddExpenseModal = ({ open, handleClose }) => {
             type="submit"
             variant="contained"
             sx={{ ...styles.button, marginTop: "15px" }}
+            disabled={
+              !description ||
+              !group ||
+              !amount ||
+              !paidBy ||
+              splitOptions?.length <= 0
+            }
           >
             Add Expense
             {loading && (
