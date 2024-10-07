@@ -8,12 +8,14 @@ import AddExpenseButton from "../AddExpense/AddExpenseModal";
 import AccountMenu from "../AccountMenu/AccountMenu";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import { useAllGroups } from "../contexts/AllGroups";
+import NotificationsBox from "../NotificationBox/NotificationBox"; // Import the NotificationsBox
 
 function BreadCrumbs() {
   const isMobile = useScreenSize();
   const { currentGroupID } = useCurrentGroup();
   const { currentTab } = useCurrentTab();
   const [modelOpen, setModelOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false); // State for notifications box
   const { allGroups } = useAllGroups();
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
@@ -22,8 +24,13 @@ function BreadCrumbs() {
     setModelOpen(false);
   };
 
+  const toggleNotifications = () => {
+    setNotificationsOpen((prev) => !prev); // Toggle notifications box
+  };
+
   const iconStyles = {
     color: "#3C3F88",
+    cursor: "pointer", // Change cursor to pointer
   };
 
   return (
@@ -60,14 +67,9 @@ function BreadCrumbs() {
         <Typography
           sx={{
             fontSize: "20px",
-
             color: "#3C3F88",
             letterSpacing: "0.05em",
-            ...(currentTab === "Groups"
-              ? {}
-              : {
-                  marginLeft: 0.6,
-                }),
+            ...(currentTab === "Groups" ? {} : { marginLeft: 0.6 }),
             ...(isMobile ? { fontSize: 14 } : {}),
           }}
           variant="h6"
@@ -80,7 +82,6 @@ function BreadCrumbs() {
             : currentTab}
         </Typography>
       </Box>
-
       <Box
         className="rightSideButton"
         sx={{
@@ -109,10 +110,19 @@ function BreadCrumbs() {
         >
           Add {!isMobile && "Expense"}
         </Button>
-        <NotificationsIcon sx={{ ...iconStyles }} />
+        <NotificationsIcon
+          sx={{ ...iconStyles }}
+          onClick={toggleNotifications}
+        />{" "}
+        {/* Click handler */}
         <AccountMenu />
       </Box>
-      <AddExpenseButton open={modelOpen} handleClose={() => handleClose()} />
+      <AddExpenseButton open={modelOpen} handleClose={handleClose} />
+      <NotificationsBox
+        open={notificationsOpen}
+        handleClose={toggleNotifications}
+      />{" "}
+      {/* Render notifications box */}
     </Box>
   );
 }
