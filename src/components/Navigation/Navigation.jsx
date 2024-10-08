@@ -19,13 +19,12 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import "./Navigration.scss";
 import { useNavigate } from "react-router";
-import { useCurrentTab } from "../contexts/CurrentTabContext";
+import AltRouteIcon from "@mui/icons-material/AltRoute";
 
 function Navigation() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = useScreenSize();
-  const { setCurrentTab } = useCurrentTab();
   const isNineundredPixel = useMediaQuery("(max-width:900px)");
 
   const toggleDrawer = (open) => () => {
@@ -100,16 +99,22 @@ function Navigation() {
             }),
       }}
     >
-      <Typography
-        sx={{
-          fontWeight: 600, // Semi-bold
-          fontSize: "25px",
-          color: "#4D4D4D",
-        }}
-        variant="h5"
-      >
-        SplitUp
-      </Typography>
+      <Box>
+        <Typography
+          sx={{
+            fontWeight: 600, // Semi-bold
+            fontSize: "25px",
+            color: "#4D4D4D",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+          variant="h5"
+        >
+          <AltRouteIcon sx={{ color: "#1976d2", fontSize: 35 }} />
+          SplitUp
+        </Typography>
+      </Box>
       {isMobile ? (
         <>
           <AppBar
