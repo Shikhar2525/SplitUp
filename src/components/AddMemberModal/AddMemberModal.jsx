@@ -28,6 +28,8 @@ import { useLinearProgress } from "../contexts/LinearProgress";
 import groupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import activityService from "../services/activity.service";
+import { v4 as uuidv4 } from "uuid";
 
 const styles = {
   modalBox: {
@@ -154,6 +156,21 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
           currentGroupID,
           selectedMember?.email
         ); // Call API to remove member
+
+        const log = {
+          logId: uuidv4(),
+          logType: "deleteUser",
+          details: {
+            userAffected: selectedMember?.email,
+            performedBy: currentUser?.email,
+            date: new Date(),
+            groupTitle: currentGroupObj?.title,
+            groupId: currentGroupID,
+          },
+        };
+
+        await activityService?.addActivityLog(log);
+
         refreshAllGroups(); // Refresh groups after deletion
         setError(""); // Clear any errors
       } catch (err) {
@@ -189,7 +206,20 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
     try {
       for (const member of members) {
         await GroupService.addMemberToGroup(currentGroupID, member);
+        const log = {
+          logId: uuidv4(),
+          logType: "addUser",
+          details: {
+            userAffected: member?.email,
+            performedBy: currentUser?.email,
+            date: new Date(),
+            groupTitle: currentGroupObj?.title,
+            groupId: currentGroupID,
+          },
+        };
+        await activityService?.addActivityLog(log);
       }
+
       setMembers([]); // Reset members after submission
       refreshAllGroups(); // Refresh the group members
       setError("");

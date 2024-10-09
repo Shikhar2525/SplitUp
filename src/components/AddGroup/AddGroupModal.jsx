@@ -22,6 +22,7 @@ import GroupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import userService from "../services/user.service";
+import ActivityService from "../services/activity.service";
 
 const styles = {
   modalBox: {
@@ -159,6 +160,21 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
 
     try {
       await GroupService.createGroup(newGroup);
+
+      const log = {
+        logId: uuidv4(),
+        logType: "createGroup",
+        details: {
+          performedBy: currentUser?.email,
+          date: new Date(),
+          groupTitle: groupName,
+          groupId: newGroup?.id,
+          members: newGroup?.members,
+        },
+      };
+
+      await ActivityService.addActivityLog(log);
+
       // Reset form fields
       setGroupName("");
       setGroupDescription("");

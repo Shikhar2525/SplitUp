@@ -25,6 +25,7 @@ const Expenses = () => {
       {sortByISODate(currentGroup?.expenses)?.map((expense, index) => {
         return (
           <ExpenseCard
+            groupTitle={currentGroup?.title}
             transaction={{
               id: expense?.id,
               paidBy: expense?.paidBy,

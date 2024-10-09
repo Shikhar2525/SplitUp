@@ -6,6 +6,8 @@ import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCircularLoader } from "../contexts/CircularLoader.js";
 import { useAllGroups } from "../contexts/AllGroups.js";
 import { useCurrentUser } from "../contexts/CurrentUser.js";
+import { v4 as uuidv4 } from "uuid";
+import activityService from "../services/activity.service.js";
 
 const SettleTab = ({ members, groupID }) => {
   const { setSnackBar } = useTopSnackBar();
@@ -32,6 +34,20 @@ const SettleTab = ({ members, groupID }) => {
         memberEmail,
         !isCurrentlySettled // Send the opposite of the current state
       );
+
+      const log = {
+        logId: uuidv4(),
+        logType: isCurrentlySettled ? "unsettle" : "settle",
+        details: {
+          userAffected: memberEmail,
+          performedBy: currentUser?.email,
+          date: new Date(),
+          groupTitle: currentGroup?.title,
+          groupId: groupID,
+        },
+      };
+
+      await activityService.addActivityLog(log);
 
       // Show success message in the snackbar
       setSnackBar({

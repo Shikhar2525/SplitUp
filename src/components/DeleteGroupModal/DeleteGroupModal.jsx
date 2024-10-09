@@ -5,6 +5,9 @@ import { useLinearProgress } from "../contexts/LinearProgress";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCircularLoader } from "../contexts/CircularLoader";
+import { v4 as uuidv4 } from "uuid";
+import { useCurrentUser } from "../contexts/CurrentUser";
+import ActivityService from "../services/activity.service";
 
 const DeleteGroupModal = ({ open, onClose, groupId, groupName }) => {
   const [inputValue, setInputValue] = useState("");
@@ -12,16 +15,28 @@ const DeleteGroupModal = ({ open, onClose, groupId, groupName }) => {
   const { setLinearProgress } = useLinearProgress();
   const { refreshAllGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
+  const { currentUser } = useCurrentUser();
   const { setCircularLoader } = useCircularLoader();
 
-  console.log(groupId);
-  console.log(groupName);
   const handleDelete = async () => {
     if (inputValue === groupName) {
       try {
         setCircularLoader(true);
         setLinearProgress(true);
         await GroupService.deleteGroup(groupId);
+
+        const log = {
+          logId: uuidv4(),
+          logType: "deleteGroup",
+          details: {
+            performedBy: currentUser?.email,
+            date: new Date(),
+            groupTitle: groupName,
+            groupId: groupId,
+          },
+        };
+        await ActivityService.addActivityLog(log);
+
         onClose(); // Close the modal after deletion
         setSnackBar({ isOpen: true, message: "Group deleted" });
 

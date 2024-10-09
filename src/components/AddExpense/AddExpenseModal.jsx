@@ -27,6 +27,7 @@ import GroupService from "../services/group.service"; // Import the GroupService
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { v4 as uuidv4 } from "uuid";
+import ActivityService from "../services/activity.service";
 
 const styles = {
   modalBox: {
@@ -151,6 +152,24 @@ const AddExpenseModal = ({ open, handleClose }) => {
         (item) => item?.title === group
       )?.id;
       await GroupService.addExpenseToGroup(selectedGroupID, expense);
+
+      // Create activity log object
+      const log = {
+        logId: uuidv4(),
+        logType: "addExpense",
+        details: {
+          expenseTitle: description,
+          performedBy: currentUser?.email,
+          date: new Date(),
+          groupTitle: group,
+          groupId: selectedGroupID,
+          amount: Number(amount), // Ensure the amount is a number
+          splitBetween: splitOptions.map((option) => option.email), // Include the split options
+        },
+      };
+
+      // Log the activity
+      await ActivityService.addActivityLog(log);
 
       handleClose(); // Close the modal after successful submission
       setSnackBar({

@@ -29,8 +29,10 @@ import GroupService from "../services/group.service"; // Import your GroupServic
 import { useLinearProgress } from "../contexts/LinearProgress";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
+import ActivityService from "../services/activity.service";
+import { v4 as uuidv4 } from "uuid";
 
-const TransactionCard = ({ transaction, index, groupId }) => {
+const TransactionCard = ({ transaction, index, groupId, groupTitle }) => {
   const [expanded, setExpanded] = useState(false);
   const dateShort = formatTransactionDate(transaction?.date);
   const { currentUser } = useCurrentUser();
@@ -43,10 +45,27 @@ const TransactionCard = ({ transaction, index, groupId }) => {
     setExpanded(!expanded);
   };
 
+  console.log("transaction", transaction);
+
   const handleDeleteExpense = async () => {
     try {
       setLinearProgress(true);
       await GroupService.removeExpenseFromGroup(groupId, transaction?.id);
+
+      const log = {
+        logId: uuidv4(),
+        logType: "deleteExpense",
+        details: {
+          expenseTitle: transaction?.description,
+          performedBy: currentUser?.email,
+          date: new Date(),
+          groupTitle: groupTitle,
+          groupId: groupId,
+          amount: transaction?.amount,
+        },
+      };
+      await ActivityService.addActivityLog(log);
+
       setSnackBar({ isOpen: true, message: "Expense deleted" });
       refreshAllGroups();
     } catch (err) {
