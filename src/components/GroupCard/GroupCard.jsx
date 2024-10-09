@@ -1,9 +1,16 @@
 import { Box, Card, CardContent, CardMedia, Typography } from "@mui/material";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-function GroupCard({ title, subtitle }) {
+function GroupCard({ title, subtitle, groupID }) {
+  const navigate = useNavigate();
+
   return (
     <Card
+      onClick={() => {
+        localStorage.setItem("currentGroupID", JSON.stringify(groupID));
+        navigate("/groups");
+      }}
       sx={{
         display: "flex",
         alignItems: "center",
@@ -14,6 +21,7 @@ function GroupCard({ title, subtitle }) {
         position: "relative",
         boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.05)",
         overflow: "hidden",
+        cursor: "pointer", // Add this to show mouse cursor as a button
         transition:
           "transform 0.3s ease, box-shadow 0.3s ease, z-index  0s 0.3s", // Initial transition
         "&:hover": {

@@ -8,11 +8,13 @@ import Activity from "../Activity/Activity";
 import { useAllGroups } from "../contexts/AllGroups";
 import { calculateTotalsAcrossGroups } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import { useNavigate } from "react-router-dom";
 
 function HomeTab() {
   const isMobile = useScreenSize();
   const { allGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
+  const navigate = useNavigate();
 
   const { youGet, youGive, balance } = useMemo(() => {
     if (allGroups?.length > 0 && currentUser) {
@@ -74,31 +76,31 @@ function HomeTab() {
         </Grid>
       </Grid>
 
-      <Typography
-        variant="subtitle1"
-        marginTop={3}
-        marginLeft={0.5}
-        marginBottom={0.5}
-        sx={{ color: "#353E6C" }}
-      >
-        Recent Groups
-      </Typography>
-      <Grid container spacing={3} justifyContent="center">
-        <Grid item xs={12} sm={6} md={4}>
-          <GroupCard
-            title={"Trip to Mumbai"}
-            subtitle={"Carl added 460 to breakfast"}
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <GroupCard title={"School Picnic"} subtitle={"All Settled !"} />
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <GroupCard title={"Get together"} subtitle={"You owe 251 to joe"} />
-        </Grid>
+      {allGroups?.length > 0 && (
+        <Typography
+          variant="subtitle1"
+          marginTop={3}
+          marginLeft={0.5}
+          marginBottom={0.5}
+          sx={{ color: "#353E6C" }}
+        >
+          Recent Groups
+        </Typography>
+      )}
+      <Grid container spacing={3} justifyContent="flex-start">
+        {allGroups?.slice(0, 3).map((group) => {
+          return (
+            <Grid item xs={12} sm={6} md={4} key={group.id}>
+              <GroupCard
+                title={group?.title}
+                subtitle={"Carl added 460 to breakfast"}
+                groupID={group?.id}
+              />
+            </Grid>
+          );
+        })}
       </Grid>
+
       <Box
         sx={{
           display: "flex",
@@ -120,13 +122,15 @@ function HomeTab() {
             color: "#353E6C",
             fontSize: 12,
             textDecoration: "underline",
+            cursor: "pointer",
             ...(isMobile ? { marginRight: 6 } : {}),
           }}
+          onClick={() => navigate("/groups")}
         >
           Groups <ArrowRightAltIcon />
         </Typography>
       </Box>
-      <Activity></Activity>
+      <Activity isGroupsAvailable={allGroups?.length > 0}></Activity>
     </Box>
   );
 }
