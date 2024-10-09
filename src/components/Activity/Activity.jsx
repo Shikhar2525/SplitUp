@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Box, Typography } from "@mui/material";
+import { Alert, Box, CircularProgress, Typography } from "@mui/material";
 import "./Activity.scss";
 import { formatFirestoreTimestamp, sortLogsByDate } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useNavigate } from "react-router-dom";
 
-const Activity = ({ isGroupsAvailable, logs }) => {
+const Activity = ({ isGroupsAvailable, logs, loader }) => {
   // Sample data for activities
   const [activities, setActivities] = useState([]);
   const { currentUser } = useCurrentUser();
@@ -179,7 +179,6 @@ const Activity = ({ isGroupsAvailable, logs }) => {
     setActivities(newActivities);
   };
 
-  console.log(logs);
   useEffect(() => {
     if (logs.length) {
       // Only get logs view if there are logs
@@ -195,6 +194,7 @@ const Activity = ({ isGroupsAvailable, logs }) => {
         sx={{ color: "#353E6C" }}
       >
         Recent Activity
+        {loader && <CircularProgress size={15} sx={{ marginLeft: 1 }} />}
       </Typography>
       <Box
         sx={{

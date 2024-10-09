@@ -111,7 +111,7 @@ const GroupTab = () => {
       // Create an array of promises to fetch users
       const memberPromises = currentGroup?.members?.map(async (member) => {
         const user = await fetchUser(member?.email);
-        if (user) {
+        if (user && !user?.profilePicture) {
           updated = true;
           return {
             ...user, // If user exists, return the user object

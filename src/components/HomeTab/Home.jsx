@@ -17,8 +17,10 @@ function HomeTab() {
   const { currentUser } = useCurrentUser();
   const [logs, setLogs] = useState([]);
   const navigate = useNavigate();
+  const [loader, setLoader] = useState(false);
 
   const fetchLogs = async () => {
+    setLoader(true);
     try {
       const fetchedLogs = await activityService.fetchActivitiesByEmail(
         currentUser?.email
@@ -27,6 +29,7 @@ function HomeTab() {
     } catch (error) {
       console.error("Error fetching groups:", error);
     } finally {
+      setLoader(false);
     }
   };
   useEffect(() => {
@@ -152,6 +155,7 @@ function HomeTab() {
       <Activity
         isGroupsAvailable={allGroups?.length > 0}
         logs={logs}
+        loader={loader}
       ></Activity>
     </Box>
   );

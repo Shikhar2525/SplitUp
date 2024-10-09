@@ -1,12 +1,8 @@
 import { db } from "../../firebase";
 import {
   collection,
-  doc,
-  getDoc,
   getDocs,
   query,
-  updateDoc,
-  setDoc,
   where,
   addDoc, // Import addDoc to add a new document
 } from "firebase/firestore";
@@ -67,8 +63,6 @@ class ActivityService {
           activities.push(log); // Push the log if email is found in members array
         }
       });
-
-      console.log("Collected Activities: ", activities); // Log the activities collected
 
       // Filter unique activities by logId to avoid duplicates
       const uniqueActivities = Array.from(

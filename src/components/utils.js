@@ -31,8 +31,7 @@ export const sortByDate = (arr) => {
 
 export function formatTransactionDate(dateString) {
   const date = new Date(dateString);
-  console.log(date);
-  // Array of month abbreviations
+
   const monthAbbreviations = [
     "Jan",
     "Feb",
@@ -256,12 +255,3 @@ export function formatFirestoreTimestamp(timestamp) {
 
   return formattedDate;
 }
-
-// Example usage
-const firestoreTimestamp = {
-  seconds: 1728474579,
-  nanoseconds: 313000000,
-};
-
-console.log(formatFirestoreTimestamp(firestoreTimestamp));
-// Output: "November 7, 2024, 4:29 PM" (or similar, depending on the exact date and time)

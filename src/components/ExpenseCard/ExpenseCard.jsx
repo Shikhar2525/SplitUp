@@ -45,8 +45,6 @@ const TransactionCard = ({ transaction, index, groupId, groupTitle }) => {
     setExpanded(!expanded);
   };
 
-  console.log("transaction", transaction);
-
   const handleDeleteExpense = async () => {
     try {
       setLinearProgress(true);
