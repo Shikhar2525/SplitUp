@@ -9,6 +9,7 @@ import AccountMenu from "../AccountMenu/AccountMenu";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import { useAllGroups } from "../contexts/AllGroups";
 import NotificationsBox from "../NotificationBox/NotificationBox"; // Import the NotificationsBox
+import { useNavigate } from "react-router-dom";
 
 function BreadCrumbs() {
   const isMobile = useScreenSize();
@@ -17,6 +18,7 @@ function BreadCrumbs() {
   const [modelOpen, setModelOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false); // State for notifications box
   const { allGroups } = useAllGroups();
+  const navigate = useNavigate();
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
 
@@ -48,6 +50,7 @@ function BreadCrumbs() {
     >
       <Box
         className="leftSideButton"
+        onClick={() => navigate("/")}
         sx={{
           flex: 1,
           display: "flex",
@@ -59,6 +62,7 @@ function BreadCrumbs() {
           justifyContent: "flex-start",
           gap: 1,
           ...(isMobile && { flexBasis: "14%" }),
+          cursor: "pointer",
         }}
       >
         {currentTab === "Groups" && (

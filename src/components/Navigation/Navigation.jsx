@@ -18,7 +18,7 @@ import Diversity3Icon from "@mui/icons-material/Diversity3";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import "./Navigration.scss";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
 
 function Navigation() {
