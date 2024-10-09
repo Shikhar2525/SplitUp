@@ -1,13 +1,30 @@
 import { Box, Grid, Typography } from "@mui/material";
-import React from "react";
+import React, { useMemo } from "react";
 import OverViewCard from "../OverViewCard/OverViewCard";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import GroupCard from "../GroupCard/GroupCard";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import Activity from "../Activity/Activity";
+import { useAllGroups } from "../contexts/AllGroups";
+import { calculateTotalsAcrossGroups } from "../utils";
+import { useCurrentUser } from "../contexts/CurrentUser";
 
 function HomeTab() {
   const isMobile = useScreenSize();
+  const { allGroups } = useAllGroups();
+  const { currentUser } = useCurrentUser();
+
+  const { youGet, youGive, balance } = useMemo(() => {
+    if (allGroups?.length > 0 && currentUser) {
+      return calculateTotalsAcrossGroups(allGroups, currentUser.email);
+    }
+    return {
+      youGet: 0,
+      youGive: 0,
+      balance: 0,
+    };
+  }, [allGroups, currentUser]);
+
   return (
     <Box
       sx={{
@@ -29,7 +46,7 @@ function HomeTab() {
         <Grid item xs={12} sm={6} md={4}>
           <OverViewCard
             title={"You get"}
-            amount={100}
+            amount={youGet}
             backgroundStyle={{
               background: "linear-gradient(135deg, #f36, #f08)",
             }}
@@ -39,7 +56,7 @@ function HomeTab() {
         <Grid item xs={12} sm={6} md={4}>
           <OverViewCard
             title={"You give"}
-            amount={100}
+            amount={youGive}
             backgroundStyle={{
               background: "linear-gradient(135deg, #FF9A3E, #FF6F20)",
             }}
@@ -49,7 +66,7 @@ function HomeTab() {
         <Grid item xs={12} sm={6} md={4}>
           <OverViewCard
             title={"Balance"}
-            amount={100}
+            amount={balance}
             backgroundStyle={{
               background: "linear-gradient(135deg, #332A7C, #5A4B9A)",
             }}

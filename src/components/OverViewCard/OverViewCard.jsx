@@ -69,11 +69,10 @@ function OverViewCard({ title, amount, backgroundStyle }) {
         >
           {title}
         </Typography>
-        {amount && (
-          <Typography variant="h5" sx={{ textAlign: "left" }}>
-            {amount} Rs
-          </Typography>
-        )}
+
+        <Typography variant="h5" sx={{ textAlign: "left" }}>
+          {amount} Rs
+        </Typography>
       </CardContent>
     </Card>
   );

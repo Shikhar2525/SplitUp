@@ -189,3 +189,37 @@ export function isEmail(input) {
   // Return true if the input matches the pattern, otherwise false
   return emailRegex.test(input);
 }
+
+export function calculateTotalsAcrossGroups(groups, yourEmail) {
+  let totalYouGet = 0;
+  let totalYouGive = 0;
+
+  groups.forEach((group) => {
+    // Assuming calculateBalances(group) returns balances for each group
+    const balances = calculateBalances(group);
+
+    balances.forEach((balance) => {
+      // If you are the creditor, add the amount to totalYouGet
+      if (balance.creditor.email === yourEmail) {
+        totalYouGet += balance.amount;
+      }
+      // If you are the debtor, add the amount to totalYouGive
+      if (balance.debtor.email === yourEmail) {
+        totalYouGive += balance.amount;
+      }
+    });
+  });
+
+  // Calculate the total balance
+  const totalBalance = totalYouGet - totalYouGive;
+
+  // Add "+" sign for positive balances, "-" will be added automatically for negative
+  const formattedBalance =
+    totalBalance > 0 ? `+${totalBalance}` : `${totalBalance}`;
+
+  return {
+    youGet: totalYouGet,
+    youGive: totalYouGive,
+    balance: formattedBalance,
+  };
+}

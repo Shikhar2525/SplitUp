@@ -179,8 +179,6 @@ const GroupTab = () => {
     }
   }, [currentGroupID]);
 
-  console.log(groupsIDs);
-
   const dynamicTabs = useMemo(() => {
     const tabs = [
       { label: "Expenses", icon: <PaidIcon />, component: <Expenses /> },
