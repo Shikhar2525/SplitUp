@@ -1,5 +1,5 @@
 import { Box, Grid, Typography } from "@mui/material";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import OverViewCard from "../OverViewCard/OverViewCard";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import GroupCard from "../GroupCard/GroupCard";
@@ -9,12 +9,31 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { calculateTotalsAcrossGroups } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useNavigate } from "react-router-dom";
+import activityService from "../services/activity.service";
 
 function HomeTab() {
   const isMobile = useScreenSize();
   const { allGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
+  const [logs, setLogs] = useState([]);
   const navigate = useNavigate();
+
+  const fetchLogs = async () => {
+    try {
+      const fetchedLogs = await activityService.fetchActivitiesByEmail(
+        currentUser?.email
+      );
+      setLogs(fetchedLogs);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+    } finally {
+    }
+  };
+  useEffect(() => {
+    if (currentUser) {
+      fetchLogs();
+    }
+  }, [currentUser]);
 
   const { youGet, youGive, balance } = useMemo(() => {
     if (allGroups?.length > 0 && currentUser) {
@@ -130,7 +149,10 @@ function HomeTab() {
           Groups <ArrowRightAltIcon />
         </Typography>
       </Box>
-      <Activity isGroupsAvailable={allGroups?.length > 0}></Activity>
+      <Activity
+        isGroupsAvailable={allGroups?.length > 0}
+        logs={logs}
+      ></Activity>
     </Box>
   );
 }

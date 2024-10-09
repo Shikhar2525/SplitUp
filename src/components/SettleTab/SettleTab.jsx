@@ -37,10 +37,10 @@ const SettleTab = ({ members, groupID }) => {
 
       const log = {
         logId: uuidv4(),
-        logType: isCurrentlySettled ? "unsettle" : "settle",
+        logType: isCurrentlySettled ? "unSettle" : "settle",
         details: {
-          userAffected: memberEmail,
-          performedBy: currentUser?.email,
+          userAffected: { email: memberEmail, name: memberName },
+          performedBy: { email: currentUser?.email, name: currentUser?.name },
           date: new Date(),
           groupTitle: currentGroup?.title,
           groupId: groupID,

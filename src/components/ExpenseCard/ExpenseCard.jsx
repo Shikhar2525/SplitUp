@@ -57,13 +57,17 @@ const TransactionCard = ({ transaction, index, groupId, groupTitle }) => {
         logType: "deleteExpense",
         details: {
           expenseTitle: transaction?.description,
-          performedBy: currentUser?.email,
+          performedBy: {
+            email: currentUser?.email,
+            name: currentUser.name,
+          },
           date: new Date(),
           groupTitle: groupTitle,
           groupId: groupId,
           amount: transaction?.amount,
         },
       };
+
       await ActivityService.addActivityLog(log);
 
       setSnackBar({ isOpen: true, message: "Expense deleted" });

@@ -165,7 +165,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
         logId: uuidv4(),
         logType: "createGroup",
         details: {
-          performedBy: currentUser?.email,
+          performedBy: { email: currentUser?.email, name: currentUser?.name },
           date: new Date(),
           groupTitle: groupName,
           groupId: newGroup?.id,

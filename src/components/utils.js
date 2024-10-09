@@ -223,3 +223,11 @@ export function calculateTotalsAcrossGroups(groups, yourEmail) {
     balance: formattedBalance,
   };
 }
+
+export function sortLogsByDate(logs) {
+  return logs.sort((a, b) => {
+    const dateA = a.details.date.seconds + a.details.date.nanoseconds / 1e9; // Convert to a timestamp
+    const dateB = b.details.date.seconds + b.details.date.nanoseconds / 1e9; // Convert to a timestamp
+    return dateB - dateA; // Sort in descending order
+  });
+}

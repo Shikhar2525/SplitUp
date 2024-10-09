@@ -159,7 +159,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
         logType: "addExpense",
         details: {
           expenseTitle: description,
-          performedBy: currentUser?.email,
+          performedBy: { email: currentUser?.email, name: currentUser?.name },
           date: new Date(),
           groupTitle: group,
           groupId: selectedGroupID,

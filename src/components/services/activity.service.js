@@ -18,34 +18,57 @@ class ActivityService {
   // Fetch activities by user email
   fetchActivitiesByEmail = async (email) => {
     try {
-      // Query to fetch logs where performedBy matches the email
+      // Query to fetch logs where performedBy.email matches the email
       const performedByQuery = query(
         activityRef,
-        where("details.performedBy", "==", email)
-      );
-      // Query to fetch logs where userAffected matches the email
-      const userAffectedQuery = query(
-        activityRef,
-        where("details.userAffected", "==", email)
+        where("details.performedBy.email", "==", email)
       );
 
-      // Fetch documents for both queries
+      // Query to fetch logs where userAffected.email matches the email
+      const userAffectedQuery = query(
+        activityRef,
+        where("details.userAffected.email", "==", email)
+      );
+
+      // Query to fetch logs where splitBetween contains the email
+      const splitBetweenQuery = query(
+        activityRef,
+        where("details.splitBetween", "array-contains", email)
+      );
+
+      // Fetch documents for all queries
       const performedBySnapshot = await getDocs(performedByQuery);
       const userAffectedSnapshot = await getDocs(userAffectedQuery);
+      const splitBetweenSnapshot = await getDocs(splitBetweenQuery);
+      const allSnapshots = [
+        performedBySnapshot,
+        userAffectedSnapshot,
+        splitBetweenSnapshot,
+      ];
 
       const activities = [];
 
-      // Process results from performedByQuery
-      performedBySnapshot.forEach((doc) => {
-        const data = doc.data();
-        activities.push(...data.logs); // Assuming logs is an array in each document
+      // Process results from all queries
+      allSnapshots.forEach((snapshot) => {
+        snapshot.forEach((doc) => {
+          const log = doc.data();
+          activities.push(log); // Push the log document
+        });
       });
 
-      // Process results from userAffectedQuery
-      userAffectedSnapshot.forEach((doc) => {
-        const data = doc.data();
-        activities.push(...data.logs); // Assuming logs is an array in each document
+      // Fetch all documents and filter for members array containing email
+      const allLogsSnapshot = await getDocs(activityRef);
+      allLogsSnapshot.forEach((doc) => {
+        const log = doc.data();
+        const members = log.details.members || [];
+
+        // Client-side filtering: check if any member in the array has the given email
+        if (members.some((member) => member.email === email)) {
+          activities.push(log); // Push the log if email is found in members array
+        }
       });
+
+      console.log("Collected Activities: ", activities); // Log the activities collected
 
       // Filter unique activities by logId to avoid duplicates
       const uniqueActivities = Array.from(

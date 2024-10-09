@@ -29,7 +29,7 @@ const DeleteGroupModal = ({ open, onClose, groupId, groupName }) => {
           logId: uuidv4(),
           logType: "deleteGroup",
           details: {
-            performedBy: currentUser?.email,
+            performedBy: { email: currentUser?.email, name: currentUser?.name },
             date: new Date(),
             groupTitle: groupName,
             groupId: groupId,

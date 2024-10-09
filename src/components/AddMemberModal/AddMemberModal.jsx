@@ -161,8 +161,11 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
           logId: uuidv4(),
           logType: "deleteUser",
           details: {
-            userAffected: selectedMember?.email,
-            performedBy: currentUser?.email,
+            userAffected: {
+              email: selectedMember?.email,
+              name: selectedMember?.name,
+            },
+            performedBy: { email: currentUser?.email, name: currentUser?.name },
             date: new Date(),
             groupTitle: currentGroupObj?.title,
             groupId: currentGroupID,
@@ -210,8 +213,8 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
           logId: uuidv4(),
           logType: "addUser",
           details: {
-            userAffected: member?.email,
-            performedBy: currentUser?.email,
+            userAffected: { email: member?.email, name: member?.name },
+            performedBy: { email: currentUser?.email, name: currentUser?.name },
             date: new Date(),
             groupTitle: currentGroupObj?.title,
             groupId: currentGroupID,
