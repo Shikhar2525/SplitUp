@@ -6,7 +6,7 @@ import GroupCard from "../GroupCard/GroupCard";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import Activity from "../Activity/Activity";
 import { useAllGroups } from "../contexts/AllGroups";
-import { calculateTotalsAcrossGroups } from "../utils";
+import { calculateTotalsAcrossGroups, capitalizeFirstLetter } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useNavigate } from "react-router-dom";
 import activityService from "../services/activity.service";
@@ -111,8 +111,8 @@ function HomeTab() {
           return (
             <Grid item xs={12} sm={6} md={4} key={group.id}>
               <GroupCard
-                title={group?.title}
-                subtitle={"Carl added 460 to breakfast"}
+                title={capitalizeFirstLetter(group?.title)}
+                subtitle={capitalizeFirstLetter(group?.description)}
                 groupID={group?.id}
               />
             </Grid>

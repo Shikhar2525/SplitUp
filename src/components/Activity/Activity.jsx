@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Alert, Box, Typography } from "@mui/material";
 import "./Activity.scss";
-import { sortLogsByDate } from "../utils";
+import { formatFirestoreTimestamp, sortLogsByDate } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import { useNavigate } from "react-router-dom";
 
 const Activity = ({ isGroupsAvailable, logs }) => {
   // Sample data for activities
   const [activities, setActivities] = useState([]);
   const { currentUser } = useCurrentUser();
+  const navigate = useNavigate();
 
   const getLogsView = () => {
     const sortedLogs = sortLogsByDate(logs);
-    console?.log(sortedLogs);
-
     const newActivities = sortedLogs.map((log, index) => {
       let description = "";
 
@@ -171,14 +171,15 @@ const Activity = ({ isGroupsAvailable, logs }) => {
       return {
         id: index + 1,
         description,
-        date: new Date(log.details.date.seconds * 1000).toLocaleString(), // Convert seconds to a readable date format
+        date: formatFirestoreTimestamp(log.details.date),
+        groupID: log?.details?.groupId,
       };
     });
 
     setActivities(newActivities);
   };
 
-  console.log(activities);
+  console.log(logs);
   useEffect(() => {
     if (logs.length) {
       // Only get logs view if there are logs
@@ -202,28 +203,42 @@ const Activity = ({ isGroupsAvailable, logs }) => {
           height: isGroupsAvailable ? "26vh" : "50vh",
         }}
       >
-        {activities.slice(0, 10).map((item) => (
-          <Box
-            key={item.id} // Unique key for each item
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              borderRadius: "8px",
-              boxShadow: 2,
-              padding: 1,
-              marginTop: 1,
-              marginRight: 1,
-              backgroundColor: "#fff",
-            }}
-          >
-            <Typography variant="caption" sx={{ color: "#353E6C" }}>
-              {item.description}
-            </Typography>
-            <Typography variant="caption" sx={{ color: "#353E6C" }}>
-              {item.date}
-            </Typography>
-          </Box>
-        ))}
+        {activities?.length > 0 ? (
+          activities.slice(0, 10).map((item) => (
+            <Box
+              key={item.id} // Unique key for each item
+              onClick={() => {
+                localStorage.setItem(
+                  "currentGroupID",
+                  JSON.stringify(item.groupID)
+                );
+                navigate("/groups");
+              }}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                borderRadius: "8px",
+                boxShadow: 2,
+                padding: 1,
+                marginTop: 1,
+                marginRight: 1,
+                backgroundColor: "#fff",
+                cursor: "pointer",
+              }}
+            >
+              <Typography variant="caption" sx={{ color: "#353E6C" }}>
+                {item.description}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#353E6C" }}>
+                {item.date}
+              </Typography>
+            </Box>
+          ))
+        ) : (
+          <Alert variant="outlined" severity="info" sx={{ marginTop: 2 }}>
+            No recent activity
+          </Alert>
+        )}
       </Box>
     </Box>
   );

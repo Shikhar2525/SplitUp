@@ -33,7 +33,7 @@ function GroupCard({ title, subtitle, groupID }) {
       {/* Image Background */}
       <CardMedia
         component="img"
-        src="/assets/img/plane.png" // Ensure this path is correct
+        src="/assets/img/plane.jpg" // Ensure this path is correct
         alt={title}
         sx={{
           position: "absolute",
@@ -43,7 +43,7 @@ function GroupCard({ title, subtitle, groupID }) {
           bottom: 0,
           objectFit: "cover",
           zIndex: 1,
-          opacity: 0.7,
+          opacity: 0.9,
           filter: "blur(0.5px)",
         }}
       />

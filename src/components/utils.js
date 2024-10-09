@@ -231,3 +231,37 @@ export function sortLogsByDate(logs) {
     return dateB - dateA; // Sort in descending order
   });
 }
+
+export function capitalizeFirstLetter(sentence) {
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
+}
+
+export function formatFirestoreTimestamp(timestamp) {
+  // Extract seconds and nanoseconds from the Firestore timestamp
+  const seconds = timestamp.seconds;
+  const nanoseconds = timestamp.nanoseconds;
+
+  // Convert the Firestore timestamp to a JavaScript Date object
+  const date = new Date(seconds * 1000 + Math.floor(nanoseconds / 1000000));
+
+  // Format the date to the desired string format
+  const formattedDate = date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true, // To get AM/PM format
+  });
+
+  return formattedDate;
+}
+
+// Example usage
+const firestoreTimestamp = {
+  seconds: 1728474579,
+  nanoseconds: 313000000,
+};
+
+console.log(formatFirestoreTimestamp(firestoreTimestamp));
+// Output: "November 7, 2024, 4:29 PM" (or similar, depending on the exact date and time)
