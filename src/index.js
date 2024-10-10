@@ -13,6 +13,7 @@ import { TopSnackBarProvider } from "./components/contexts/TopSnackBar";
 import { LinerProgressProvider } from "./components/contexts/LinearProgress";
 import { AllGroupsProvider } from "./components/contexts/AllGroups";
 import { CircularLoaderProvider } from "./components/contexts/CircularLoader";
+import { CurrentCurrencyrProvider } from "./components/contexts/CurrentCurrency";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -28,19 +29,21 @@ root.render(
         <CurrentTabProvider>
           <CurrentGroupProvider>
             <CurrentUserProvider>
-              <TopSnackBarProvider>
-                <CircularLoaderProvider>
-                  <LinerProgressProvider>
-                    <AllGroupsProvider>
-                      <BrowserRouter>
-                        <ThemeProvider theme={theme}>
-                          <App />
-                        </ThemeProvider>
-                      </BrowserRouter>
-                    </AllGroupsProvider>
-                  </LinerProgressProvider>
-                </CircularLoaderProvider>
-              </TopSnackBarProvider>
+              <CurrentCurrencyrProvider>
+                <TopSnackBarProvider>
+                  <CircularLoaderProvider>
+                    <LinerProgressProvider>
+                      <AllGroupsProvider>
+                        <BrowserRouter>
+                          <ThemeProvider theme={theme}>
+                            <App />
+                          </ThemeProvider>
+                        </BrowserRouter>
+                      </AllGroupsProvider>
+                    </LinerProgressProvider>
+                  </CircularLoaderProvider>
+                </TopSnackBarProvider>
+              </CurrentCurrencyrProvider>
             </CurrentUserProvider>
           </CurrentGroupProvider>
         </CurrentTabProvider>

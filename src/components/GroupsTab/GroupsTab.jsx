@@ -40,6 +40,7 @@ import SettleTab from "../SettleTab/SettleTab";
 import { useCircularLoader } from "../contexts/CircularLoader";
 import userService from "../services/user.service";
 import groupService from "../services/group.service";
+import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -84,6 +85,7 @@ const GroupTab = () => {
   const [settledMemberStats, setSettledMemberStats] = useState({});
   const { setCircularLoader } = useCircularLoader();
   const [groupsIDs, setGroupIDs] = useState([]);
+  const { setCurrentCurrency } = useCurrentCurrency();
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
   const currentGroup = allGroups?.find((group) => group.id === currentGroupID);
@@ -182,6 +184,11 @@ const GroupTab = () => {
       }
     }
   }, [currentGroupID]);
+
+  useEffect(() => {
+    if (currentGroup)
+      setCurrentCurrency(currentGroup?.defaultCurrency || "INR");
+  }, [currentGroup, allGroups]);
 
   const dynamicTabs = useMemo(() => {
     const tabs = [

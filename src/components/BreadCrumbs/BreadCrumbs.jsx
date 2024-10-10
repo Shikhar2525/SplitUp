@@ -1,14 +1,12 @@
 import { Box, Button, Typography } from "@mui/material";
 import React, { useState } from "react";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { useCurrentTab } from "../contexts/CurrentTabContext";
 import AddExpenseButton from "../AddExpense/AddExpenseModal";
 import AccountMenu from "../AccountMenu/AccountMenu";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import { useAllGroups } from "../contexts/AllGroups";
-import NotificationsBox from "../NotificationBox/NotificationBox"; // Import the NotificationsBox
 import { useNavigate } from "react-router-dom";
 
 function BreadCrumbs() {
@@ -16,7 +14,7 @@ function BreadCrumbs() {
   const { currentGroupID } = useCurrentGroup();
   const { currentTab } = useCurrentTab();
   const [modelOpen, setModelOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false); // State for notifications box
+
   const { allGroups } = useAllGroups();
   const navigate = useNavigate();
 
@@ -24,10 +22,6 @@ function BreadCrumbs() {
 
   const handleClose = () => {
     setModelOpen(false);
-  };
-
-  const toggleNotifications = () => {
-    setNotificationsOpen((prev) => !prev); // Toggle notifications box
   };
 
   const iconStyles = {
@@ -114,18 +108,10 @@ function BreadCrumbs() {
         >
           Add {!isMobile && "Expense"}
         </Button>
-        <NotificationsIcon
-          sx={{ ...iconStyles }}
-          onClick={toggleNotifications}
-        />{" "}
-        {/* Click handler */}
+
         <AccountMenu />
       </Box>
       <AddExpenseButton open={modelOpen} handleClose={handleClose} />
-      <NotificationsBox
-        open={notificationsOpen}
-        handleClose={toggleNotifications}
-      />{" "}
       {/* Render notifications box */}
     </Box>
   );

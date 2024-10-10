@@ -8,18 +8,22 @@ import {
   ListItemIcon,
   Divider,
   Box,
+  Select,
+  InputLabel,
 } from "@mui/material";
-import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
-import PersonIcon from "@mui/icons-material/Person";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import { currencies } from "../../constants";
+import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 
 const AccountMenu = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const { logout } = useAuth0();
   const { currentUser } = useCurrentUser();
+
+  const { currentCurrency, setCurrentCurrency } = useCurrentCurrency();
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -80,17 +84,39 @@ const AccountMenu = () => {
           </Typography>
         </MenuItem>
         <Divider />
-        <MenuItem>
-          <ListItemIcon>
-            <PersonIcon fontSize="small" sx={{ color: "#8675FF" }} />
-          </ListItemIcon>
-          <Typography sx={{ color: "#353E6C" }}>Profile</Typography>
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <SettingsIcon fontSize="small" sx={{ color: "#FD7289" }} />
-          </ListItemIcon>
-          <Typography sx={{ color: "#353E6C" }}>Settings</Typography>
+
+        <MenuItem
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: 1,
+          }}
+        >
+          <InputLabel id="currency-select-label">
+            Select to view converted amounts
+          </InputLabel>
+          <Select
+            fullWidth
+            sx={{ height: "2.8rem" }}
+            labelId="currency-select-label"
+            id="currency-select"
+            value={currentCurrency}
+            onChange={(e) => setCurrentCurrency(e.target.value)}
+          >
+            {currencies.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                <img
+                  src={option.flag}
+                  alt={`${option.value} flag`}
+                  width="20"
+                  height="15"
+                  style={{ marginRight: "8px", verticalAlign: "middle" }}
+                />
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleClose}>

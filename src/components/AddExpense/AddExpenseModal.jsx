@@ -76,7 +76,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const [loading, setLoading] = useState(false);
   const { refreshAllGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
-  const [currency, setCurrency] = useState("INR");
+  const [currency, setCurrency] = useState("");
 
   const userNameByEmail = users?.find((item) => item.email === paidBy)?.name;
 
@@ -258,6 +258,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
               disabled={!group}
+              required
             >
               {currencies.map((option) => (
                 <MenuItem key={option.value} value={option.value}>

@@ -255,8 +255,9 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             fullWidth
             sx={{ ...styles.formControl, ...{ marginTop: 2, marginBottom: 2 } }}
           >
-            <InputLabel id="currency-select-label">Currency</InputLabel>
+            <InputLabel id="currency-select-label">Currency *</InputLabel>
             <Select
+              required
               labelId="currency-select-label"
               id="currency-select"
               value={defaultCurrency}
