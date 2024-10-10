@@ -153,26 +153,28 @@ function HomeTab() {
           alignItems: "flex-end",
         }}
       >
-        <Typography
-          variant="subtitle1"
-          marginTop={1}
-          marginRight={1}
-          sx={{
-            display: "flex",
-            width: "9%",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flex: 1,
-            color: "#353E6C",
-            fontSize: 12,
-            textDecoration: "underline",
-            cursor: "pointer",
-            ...(isMobile ? { marginRight: 6 } : {}),
-          }}
-          onClick={() => navigate("/groups")}
-        >
-          Groups <ArrowRightAltIcon />
-        </Typography>
+        {allGroups?.length > 0 && (
+          <Typography
+            variant="subtitle1"
+            marginTop={1}
+            marginRight={1}
+            sx={{
+              display: "flex",
+              width: "9%",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flex: 1,
+              color: "#353E6C",
+              fontSize: 12,
+              textDecoration: "underline",
+              cursor: "pointer",
+              ...(isMobile ? { marginRight: 6 } : {}),
+            }}
+            onClick={() => navigate("/groups")}
+          >
+            Groups <ArrowRightAltIcon />
+          </Typography>
+        )}
       </Box>
       <Activity
         isGroupsAvailable={allGroups?.length > 0}

@@ -209,7 +209,7 @@ const Activity = ({ isGroupsAvailable, logs, loader }) => {
   }, [currentUser, logs, currentCurrency]);
 
   return (
-    <Box sx={{ width: "100%", marginTop: isGroupsAvailable ? 0 : 1 }}>
+    <Box sx={{ width: "100%", marginTop: isGroupsAvailable ? 0 : 4 }}>
       <Typography
         variant="subtitle1"
         marginLeft={0.5}
