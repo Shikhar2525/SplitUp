@@ -115,9 +115,7 @@ const Activity = ({ isGroupsAvailable, logs, loader }) => {
                 : log?.details.performedBy.name}{" "}
               removed{" "}
               <span style={{ textDecoration: "underline" }}>
-                {log.details.userAffected.email === currentUser.email
-                  ? "yourself"
-                  : log.details.userAffected.name}
+                {log.details.userAffected.name}
               </span>{" "}
               from group:{" "}
               <span style={{ textDecoration: "underline" }}>

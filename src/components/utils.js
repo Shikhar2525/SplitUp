@@ -255,3 +255,33 @@ export function formatFirestoreTimestamp(timestamp) {
 
   return formattedDate;
 }
+
+export async function convertCurrency(amount, toCurrency, fromCurrency) {
+  // Create the API URL dynamically based on the currency pair
+  const apiUrl = `https://raw.githubusercontent.com/WoXy-Sensei/currency-api/main/api/${fromCurrency}_${toCurrency}.json`;
+
+  try {
+    // Fetch the currency conversion data from the API
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error(`Error fetching data: ${response.statusText}`);
+    }
+    const currencyData = await response.json();
+
+    // Extract the necessary data
+    const { rate } = currencyData;
+
+    // Convert the amount
+    if (fromCurrency === toCurrency) {
+      return amount; // No conversion needed
+    }
+
+    const convertedAmount = amount * rate;
+    return {
+      amount: convertedAmount.toFixed(2), // Format to 2 decimal places
+      toCurrency: fromCurrency,
+    };
+  } catch (error) {
+    console.error("Error fetching currency data:", error);
+  }
+}

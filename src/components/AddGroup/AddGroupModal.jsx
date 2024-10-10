@@ -23,6 +23,7 @@ import { useCurrentUser } from "../contexts/CurrentUser";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import userService from "../services/user.service";
 import ActivityService from "../services/activity.service";
+import { currencies } from "../../constants";
 
 const styles = {
   modalBox: {
@@ -52,7 +53,7 @@ const styles = {
     alignItems: "center",
   },
   formControl: {
-    marginBottom: "1rem",
+    marginBottom: "0.6rem",
     width: "100%",
   },
   searchingMessage: {
@@ -74,6 +75,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
   const [showNameField, setShowNameField] = useState(false);
   const { currentUser } = useCurrentUser();
   const { setSnackBar } = useTopSnackBar();
+  const [defaultCurrency, setDefaultCurrency] = useState("INR");
 
   const userObjWithName = { email: inputEmail, name: name };
 
@@ -156,6 +158,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
       isAllSettled: false,
       expenses: [],
       admin: adminUserObject,
+      defaultCurrency,
     };
 
     try {
@@ -247,6 +250,34 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
               <MenuItem value="Other">Other</MenuItem>
             </Select>
           </FormControl>
+
+          <FormControl
+            fullWidth
+            sx={{ ...styles.formControl, ...{ marginTop: 2, marginBottom: 2 } }}
+          >
+            <InputLabel id="currency-select-label">Currency</InputLabel>
+            <Select
+              labelId="currency-select-label"
+              id="currency-select"
+              value={defaultCurrency}
+              label="Currency"
+              onChange={(e) => setDefaultCurrency(e.target.value)}
+            >
+              {currencies.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  <img
+                    src={option.flag}
+                    alt={`${option.value} flag`}
+                    width="20"
+                    height="15"
+                    style={{ marginRight: "8px", verticalAlign: "middle" }}
+                  />
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <FormControl fullWidth sx={styles.formControl}>
             <div>
               {members?.map((member, index) => (
@@ -271,7 +302,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
               onChange={(e) => setInputEmail(e.target.value)}
               onKeyDown={handleEmailAdd}
               fullWidth
-              sx={{ marginTop: "1rem" }}
+              sx={{ marginTop: members.length > 0 ? "1rem" : 0 }}
               helperText="Press 'Enter' to add a member"
             />
 

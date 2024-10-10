@@ -25,7 +25,7 @@ import Expenses from "../Expenses/Expenses";
 import AddGroupModal from "../AddGroup/AddGroupModal";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
-import { formatDate } from "../utils";
+import { convertCurrency, formatDate } from "../utils";
 import { useAllGroups } from "../contexts/AllGroups";
 import { Tooltip } from "@mui/material"; // Import Tooltip from MUI
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
@@ -103,6 +103,8 @@ const GroupTab = () => {
       setSettledMemberStats({ totalMembers, settledMembers });
     }
   };
+
+  convertCurrency(1, "USD", "INR").then((result) => console.log(result));
 
   const updateMembersIsUserExist = async () => {
     let updated = false;
