@@ -8,6 +8,7 @@ import { useCircularLoader } from "../contexts/CircularLoader";
 import { v4 as uuidv4 } from "uuid";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import ActivityService from "../services/activity.service";
+import activityService from "../services/activity.service";
 
 const DeleteGroupModal = ({ open, onClose, groupId, groupName }) => {
   const [inputValue, setInputValue] = useState("");
@@ -24,6 +25,8 @@ const DeleteGroupModal = ({ open, onClose, groupId, groupName }) => {
         setCircularLoader(true);
         setLinearProgress(true);
         await GroupService.deleteGroup(groupId);
+
+        await activityService.deleteLogsByGroupId(groupId);
 
         const log = {
           logId: uuidv4(),

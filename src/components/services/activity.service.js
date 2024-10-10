@@ -4,7 +4,9 @@ import {
   getDocs,
   query,
   where,
-  addDoc, // Import addDoc to add a new document
+  addDoc,
+  deleteDoc,
+  doc, // Import addDoc to add a new document
 } from "firebase/firestore";
 
 // Reference to the 'Activity' collection in Firestore
@@ -90,6 +92,36 @@ class ActivityService {
     } catch (error) {
       console.error("Error adding activity: ", error);
       return { success: false, message: "Failed to add activity" };
+    }
+  };
+
+  deleteLogsByGroupId = async (groupId) => {
+    try {
+      // Query to fetch logs where details.grouped matches the groupId
+      const groupedQuery = query(
+        activityRef,
+        where("details.groupId", "==", groupId)
+      );
+
+      // Fetch documents for the query
+      const groupedSnapshot = await getDocs(groupedQuery);
+
+      // Prepare an array of promises for deletion
+      const deletePromises = [];
+
+      // Loop through each document and prepare to delete
+      groupedSnapshot.forEach((docSnapshot) => {
+        const docRef = doc(db, "Activity", docSnapshot.id); // Correctly create document reference
+        deletePromises.push(deleteDoc(docRef)); // Add deletion promise
+      });
+
+      // Wait for all deletion promises to complete
+      await Promise.all(deletePromises);
+
+      return { success: true, message: "Logs deleted successfully" };
+    } catch (error) {
+      console.error("Error deleting logs: ", error);
+      return { success: false, message: "Failed to delete logs" };
     }
   };
 }
