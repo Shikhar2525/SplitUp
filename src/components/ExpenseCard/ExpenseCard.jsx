@@ -23,7 +23,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
 import PersonIcon from "@mui/icons-material/Person";
-import { formatTransactionDate } from "../utils";
+import { formatTransactionDate, getCurrencySymbol } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import GroupService from "../services/group.service"; // Import your GroupService
 import { useLinearProgress } from "../contexts/LinearProgress";
@@ -162,7 +162,7 @@ const TransactionCard = ({ transaction, index, groupId, groupTitle }) => {
               flexShrink: 0,
             }}
           >
-            {transaction.amount} Rs
+            {transaction.amount} {getCurrencySymbol(transaction?.currency)}
           </Typography>
         </Box>
       </AccordionSummary>
@@ -251,9 +251,9 @@ const TransactionCard = ({ transaction, index, groupId, groupTitle }) => {
                     <MonetizationOnIcon sx={{ marginRight: 1 }} />
                     Spent Amount
                   </TableCell>
-                  <TableCell
-                    sx={{ padding: "8px", paddingLeft: 2.2 }}
-                  >{`${transaction.amount} Rs`}</TableCell>
+                  <TableCell sx={{ padding: "8px", paddingLeft: 2.2 }}>{`${
+                    transaction.amount
+                  }  ${getCurrencySymbol(transaction?.currency)}`}</TableCell>
                 </TableRow>
                 <TableRow
                   sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}

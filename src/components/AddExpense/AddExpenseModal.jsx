@@ -28,6 +28,7 @@ import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { v4 as uuidv4 } from "uuid";
 import ActivityService from "../services/activity.service";
+import { currencies } from "../../constants";
 
 const styles = {
   modalBox: {
@@ -75,12 +76,14 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const [loading, setLoading] = useState(false);
   const { refreshAllGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
+  const [currency, setCurrency] = useState("INR");
 
   const userNameByEmail = users?.find((item) => item.email === paidBy)?.name;
 
   useEffect(() => {
     if (group) {
       const selectedGroup = allGroups.find((g) => g.title === group);
+      setCurrency(selectedGroup?.defaultCurrency || "INR");
       if (selectedGroup && selectedGroup.members) {
         setUsers(
           selectedGroup.members.map((member) => ({
@@ -144,6 +147,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
       splitBetween: splitOptions, // Now stores emails
       createdDate: selectedDate.toISOString(), // Format the date as needed
       createdBy: { email: currentUser?.email, name: currentUser?.name },
+      currency,
     };
 
     try {
@@ -229,17 +233,46 @@ const AddExpenseModal = ({ open, handleClose }) => {
             helperText={`${35 - description.length} characters remaining`}
           />
 
-          <TextField
-            fullWidth
-            sx={styles.formControl}
-            label="Amount"
-            variant="outlined"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            required
-            disabled={!group} // Disable until group is selected
-          />
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 1,
+            }}
+          >
+            <TextField
+              sx={{ ...styles.formControl, ...{ width: "70%" } }}
+              label="Amount"
+              variant="outlined"
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+              disabled={!group} // Disable until group is selected
+            />
+            <Select
+              sx={{ width: "30%" }}
+              labelId="currency-select-label"
+              id="currency-select"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              disabled={!group}
+            >
+              {currencies.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  <img
+                    src={option.flag}
+                    alt={`${option.value} flag`}
+                    width="20"
+                    height="15"
+                    style={{ marginRight: "8px", verticalAlign: "middle" }}
+                  />
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
 
           <FormControl fullWidth sx={styles.formControl} required>
             <InputLabel>Paid By</InputLabel>

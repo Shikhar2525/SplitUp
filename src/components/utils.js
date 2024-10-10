@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { currencies } from "../constants";
 
 export const formatDate = (timestamp) => {
   if (timestamp?.seconds) {
@@ -284,4 +285,9 @@ export async function convertCurrency(amount, toCurrency, fromCurrency) {
   } catch (error) {
     console.error("Error fetching currency data:", error);
   }
+}
+
+export function getCurrencySymbol(value) {
+  const currency = currencies.find((currency) => currency.value === value);
+  return currency ? currency.label.split(" - ")[0].trim() : null; // Return only the symbol part
 }

@@ -31,10 +31,10 @@ const Expenses = () => {
               paidBy: expense?.paidBy,
               description: expense?.description,
               amount: expense?.amount,
-              currency: "USD",
               date: expense?.createdDate,
               splitBetween: expense?.splitBetween,
               createdBy: expense?.createdBy,
+              currency: expense?.currency,
             }}
             index={index}
             groupId={currentGroupID}
