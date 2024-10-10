@@ -1,7 +1,10 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import React from "react";
+import { getCurrencySymbol } from "../utils";
+import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 
 function OverViewCard({ title, amount, backgroundStyle }) {
+  const { currentCurrency } = useCurrentCurrency();
   return (
     <Card
       sx={{
@@ -71,7 +74,7 @@ function OverViewCard({ title, amount, backgroundStyle }) {
         </Typography>
 
         <Typography variant="h5" sx={{ textAlign: "left" }}>
-          {amount} Rs
+          {amount} {getCurrencySymbol(currentCurrency)}
         </Typography>
       </CardContent>
     </Card>

@@ -17,13 +17,17 @@ import {
   DialogActions,
   Button,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import React, { useState } from "react";
 import GradingIcon from "@mui/icons-material/Grading";
+import { getCurrencyLabel, getCurrencySymbol } from "../utils";
+import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 
 function BalanceCard({ balances }) {
   const [openModal, setOpenModal] = useState(false);
   const [selectedBreakdown, setSelectedBreakdown] = useState([]);
+  const { currentCurrency } = useCurrentCurrency();
 
   console.log(selectedBreakdown);
 
@@ -53,6 +57,9 @@ function BalanceCard({ balances }) {
       >
         {balances?.length > 0 ? (
           <CardContent sx={{ padding: "0 !important" }}>
+            <Alert severity="info">
+              Currency conversion rates may vary; results are approximate.
+            </Alert>
             <Typography
               variant="subtitle1"
               margin={2}
@@ -102,20 +109,23 @@ function BalanceCard({ balances }) {
                         padding: "4px 16px",
                       }}
                     >
+                      Currency
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        backgroundColor: "#8675FF",
+                        color: "white",
+                        padding: "4px 16px",
+                      }}
+                    >
                       View all transactions
                     </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {balances?.map(
-                    ({
-                      id,
-                      debtor,
-                      creditor,
-                      amount,
-                      breakdown,
-                      isSettled,
-                    }) => (
+                    ({ id, debtor, creditor, amount, breakdown, currency }) => (
                       <TableRow
                         key={id}
                         sx={{
@@ -166,7 +176,7 @@ function BalanceCard({ balances }) {
                         </TableCell>
                         <TableCell>
                           <Chip
-                            label={`${amount} Rs`}
+                            label={`${amount} ${getCurrencySymbol(currency)}`}
                             variant="outlined"
                             sx={{
                               fontSize: "0.85rem",
@@ -175,6 +185,28 @@ function BalanceCard({ balances }) {
                               color: "#8675FF",
                             }}
                           />
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" alignItems="center">
+                            <Tooltip
+                              title={currentCurrency}
+                              placement="top"
+                              arrow
+                            >
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontWeight: 600,
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "160px",
+                                }}
+                              >
+                                ({currentCurrency})
+                              </Typography>
+                            </Tooltip>
+                          </Box>
                         </TableCell>
                         <TableCell>
                           <Button
@@ -288,7 +320,10 @@ function BalanceCard({ balances }) {
                     <TableCell>{transaction.description}</TableCell>
                     <TableCell>{transaction.owedBy?.name}</TableCell>
                     <TableCell>{transaction.paidBy?.name}</TableCell>
-                    <TableCell>{transaction.amount} Rs</TableCell>
+                    <TableCell>
+                      {transaction.amount}{" "}
+                      {getCurrencySymbol(transaction.currency)}
+                    </TableCell>
                     <TableCell>
                       {new Date(transaction.createdDate).toLocaleDateString()}
                     </TableCell>

@@ -29,6 +29,7 @@ import { useCurrentUser } from "../contexts/CurrentUser";
 import { v4 as uuidv4 } from "uuid";
 import ActivityService from "../services/activity.service";
 import { currencies } from "../../constants";
+import { useRefetchLogs } from "../contexts/RefetchLogs";
 
 const styles = {
   modalBox: {
@@ -77,6 +78,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const { refreshAllGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
   const [currency, setCurrency] = useState("");
+  const { refetchLogs, setRefetchLogs } = useRefetchLogs();
 
   const userNameByEmail = users?.find((item) => item.email === paidBy)?.name;
 
@@ -169,12 +171,14 @@ const AddExpenseModal = ({ open, handleClose }) => {
           groupId: selectedGroupID,
           amount: Number(amount), // Ensure the amount is a number
           splitBetween: splitOptions.map((option) => option.email), // Include the split options
+          currency,
         },
       };
 
       // Log the activity
       await ActivityService.addActivityLog(log);
 
+      setRefetchLogs(!refetchLogs);
       handleClose(); // Close the modal after successful submission
       setSnackBar({
         isOpen: true,

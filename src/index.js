@@ -14,6 +14,7 @@ import { LinerProgressProvider } from "./components/contexts/LinearProgress";
 import { AllGroupsProvider } from "./components/contexts/AllGroups";
 import { CircularLoaderProvider } from "./components/contexts/CircularLoader";
 import { CurrentCurrencyrProvider } from "./components/contexts/CurrentCurrency";
+import { RefetchLogsProvider } from "./components/contexts/RefetchLogs";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -34,11 +35,13 @@ root.render(
                   <CircularLoaderProvider>
                     <LinerProgressProvider>
                       <AllGroupsProvider>
-                        <BrowserRouter>
-                          <ThemeProvider theme={theme}>
-                            <App />
-                          </ThemeProvider>
-                        </BrowserRouter>
+                        <RefetchLogsProvider>
+                          <BrowserRouter>
+                            <ThemeProvider theme={theme}>
+                              <App />
+                            </ThemeProvider>
+                          </BrowserRouter>
+                        </RefetchLogsProvider>
                       </AllGroupsProvider>
                     </LinerProgressProvider>
                   </CircularLoaderProvider>

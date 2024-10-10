@@ -63,6 +63,7 @@ const TransactionCard = ({ transaction, index, groupId, groupTitle }) => {
           groupTitle: groupTitle,
           groupId: groupId,
           amount: transaction?.amount,
+          currency: transaction?.currency,
         },
       };
 

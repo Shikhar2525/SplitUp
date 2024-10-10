@@ -66,11 +66,6 @@ export const currencies = [
     flag: "https://flagcdn.com/w320/mx.png",
   },
   {
-    value: "RUB",
-    label: "₽ - Russian Ruble",
-    flag: "https://flagcdn.com/w320/ru.png",
-  },
-  {
     value: "KRW",
     label: "₩ - South Korean Won",
     flag: "https://flagcdn.com/w320/kr.png",
@@ -84,15 +79,5 @@ export const currencies = [
     value: "HKD",
     label: "HK$ - Hong Kong Dollar",
     flag: "https://flagcdn.com/w320/hk.png",
-  },
-  {
-    value: "AED",
-    label: "د.إ - UAE Dirham",
-    flag: "https://flagcdn.com/w320/ae.png",
-  },
-  {
-    value: "SAR",
-    label: "﷼ - Saudi Riyal",
-    flag: "https://flagcdn.com/w320/sa.png",
   },
 ];

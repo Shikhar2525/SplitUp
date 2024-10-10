@@ -10,6 +10,8 @@ import { calculateTotalsAcrossGroups, capitalizeFirstLetter } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useNavigate } from "react-router-dom";
 import activityService from "../services/activity.service";
+import { useCurrentCurrency } from "../contexts/CurrentCurrency";
+import { useRefetchLogs } from "../contexts/RefetchLogs";
 
 function HomeTab() {
   const isMobile = useScreenSize();
@@ -18,6 +20,37 @@ function HomeTab() {
   const [logs, setLogs] = useState([]);
   const navigate = useNavigate();
   const [loader, setLoader] = useState(false);
+  const { currentCurrency } = useCurrentCurrency();
+  const [totals, setTotals] = useState({
+    youGet: 0,
+    youGive: 0,
+    balance: 0,
+  });
+  const { refetchLogs } = useRefetchLogs();
+
+  useEffect(() => {
+    if (allGroups?.length > 0 && currentUser) {
+      const fetchTotals = async () => {
+        const result = await calculateTotalsAcrossGroups(
+          allGroups,
+          currentUser.email,
+          currentCurrency
+        );
+        setTotals(result);
+      };
+
+      fetchTotals();
+    } else {
+      // If no groups or currentUser, reset the totals
+      setTotals({
+        youGet: 0,
+        youGive: 0,
+        balance: 0,
+      });
+    }
+  }, [allGroups, currentUser, currentCurrency]);
+
+  const { youGet, youGive, balance } = totals;
 
   const fetchLogs = async () => {
     setLoader(true);
@@ -36,18 +69,7 @@ function HomeTab() {
     if (currentUser) {
       fetchLogs();
     }
-  }, [currentUser]);
-
-  const { youGet, youGive, balance } = useMemo(() => {
-    if (allGroups?.length > 0 && currentUser) {
-      return calculateTotalsAcrossGroups(allGroups, currentUser.email);
-    }
-    return {
-      youGet: 0,
-      youGive: 0,
-      balance: 0,
-    };
-  }, [allGroups, currentUser]);
+  }, [currentUser, refetchLogs]);
 
   return (
     <Box

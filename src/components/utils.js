@@ -68,7 +68,7 @@ export function sortByISODate(arr) {
   });
 }
 
-export function calculateBalances(group) {
+export async function calculateBalances(group, finalCurrency) {
   const balances = {};
   const transactions = {}; // To track the transactions between members
 
@@ -77,17 +77,29 @@ export function calculateBalances(group) {
     balances[member?.email] = 0;
   });
 
-  // Process each expense
-  group?.expenses?.forEach((expense) => {
-    const amount = expense.amount;
+  // Process each expense with currency conversion
+  for (const expense of group?.expenses || []) {
+    const amount = expense.amount || 0; // Ensure amount is not undefined
     const paidBy = expense.paidBy; // Object with email and name
-    const splitBetween = expense.splitBetween; // Array of objects with email and name
+    const splitBetween = expense.splitBetween || []; // Array of objects with email and name
+    let currency = expense.currency || finalCurrency; // Use expense currency or final currency
+
+    // If currency is missing or empty, default to finalCurrency
+    if (!currency || currency.trim() === "") {
+      currency = finalCurrency;
+    }
+
+    // Convert the amount to the final currency if needed
+    const convertedAmount =
+      currency !== finalCurrency
+        ? (await convertCurrency(amount, currency, finalCurrency))?.amount || 0 // Fallback to 0 if conversion fails
+        : amount;
 
     // Calculate the share for each member involved in the expense
-    const share = amount / (splitBetween.length + 1); // +1 to include the payer
+    const share = convertedAmount / (splitBetween.length + 1); // +1 to include the payer
 
     // Update balances and add records of each individual transaction
-    splitBetween.forEach(({ email, name }) => {
+    for (const { email, name } of splitBetween) {
       balances[email] -= share; // Each member owes their share
       balances[paidBy.email] += share; // The payer is owed that amount
 
@@ -110,17 +122,18 @@ export function calculateBalances(group) {
         paidBy: { email: paidBy.email, name: paidBy.name }, // Include name and email
         owedBy: { email: email, name: name }, // Include name and email
         createdDate: expense.createdDate,
+        currency: finalCurrency, // Include the final currency
       });
-    });
-  });
+    }
+  }
 
   // Create a result array showing only the final settlements
   const result = [];
   const processedPairs = new Set(); // Track processed pairs to avoid duplication
 
   // Loop through the transactions and calculate net settlements
-  Object.keys(transactions).forEach((debtor) => {
-    Object.keys(transactions[debtor]).forEach((creditor) => {
+  for (const debtor of Object.keys(transactions)) {
+    for (const creditor of Object.keys(transactions[debtor])) {
       const pairKey = [debtor, creditor].sort().join("-"); // Unique pair key
 
       if (!processedPairs.has(pairKey)) {
@@ -165,6 +178,7 @@ export function calculateBalances(group) {
                   creditor + " (left)",
               }, // Include name and email
               amount: parseFloat(Math.abs(netAmount).toFixed(2)), // Round to 2 decimals
+              currency: finalCurrency, // Include the final currency for the transaction
               breakdown: [
                 ...transactions[debtor][creditor].breakdown,
                 ...(transactions[creditor]?.[debtor]?.breakdown || []),
@@ -176,8 +190,8 @@ export function calculateBalances(group) {
         // Mark this pair as processed
         processedPairs.add(pairKey);
       }
-    });
-  });
+    }
+  }
 
   return result;
 }
@@ -189,26 +203,43 @@ export function isEmail(input) {
   // Return true if the input matches the pattern, otherwise false
   return emailRegex.test(input);
 }
-
-export function calculateTotalsAcrossGroups(groups, yourEmail) {
+export async function calculateTotalsAcrossGroups(
+  groups,
+  yourEmail,
+  finalCurrency
+) {
   let totalYouGet = 0;
   let totalYouGive = 0;
 
-  groups.forEach((group) => {
-    // Assuming calculateBalances(group) returns balances for each group
-    const balances = calculateBalances(group);
+  for (const group of groups) {
+    // Assuming calculateBalances(group, finalCurrency) returns balances in the desired currency
+    const balances = await calculateBalances(group, finalCurrency);
 
-    balances.forEach((balance) => {
+    for (const balance of balances) {
+      // Convert the balance to the final currency if necessary
+      const balanceAmount =
+        balance.currency !== finalCurrency
+          ? (
+              await convertCurrency(
+                balance.amount,
+                balance.currency,
+                finalCurrency
+              )
+            ).amount
+          : balance.amount;
+
       // If you are the creditor, add the amount to totalYouGet
       if (balance.creditor.email === yourEmail) {
-        totalYouGet += balance.amount;
+        totalYouGet += balanceAmount;
       }
       // If you are the debtor, add the amount to totalYouGive
       if (balance.debtor.email === yourEmail) {
-        totalYouGive += balance.amount;
+        totalYouGive += balanceAmount;
       }
-    });
-  });
+    }
+
+    console.log(balances);
+  }
 
   // Calculate the total balance
   const totalBalance = totalYouGet - totalYouGive;
@@ -218,9 +249,10 @@ export function calculateTotalsAcrossGroups(groups, yourEmail) {
     totalBalance > 0 ? `+${totalBalance}` : `${totalBalance}`;
 
   return {
-    youGet: totalYouGet,
-    youGive: totalYouGive,
+    youGet: parseFloat(totalYouGet.toFixed(2)),
+    youGive: parseFloat(totalYouGive.toFixed(2)),
     balance: formattedBalance,
+    currency: finalCurrency, // Include the final currency for clarity
   };
 }
 
@@ -260,6 +292,7 @@ export function formatFirestoreTimestamp(timestamp) {
 export async function convertCurrency(amount, toCurrency, fromCurrency) {
   // Create the API URL dynamically based on the currency pair
   const apiUrl = `https://raw.githubusercontent.com/WoXy-Sensei/currency-api/main/api/${fromCurrency}_${toCurrency}.json`;
+  console.log(apiUrl);
 
   try {
     // Fetch the currency conversion data from the API
@@ -274,20 +307,61 @@ export async function convertCurrency(amount, toCurrency, fromCurrency) {
 
     // Convert the amount
     if (fromCurrency === toCurrency) {
-      return amount; // No conversion needed
+      return {
+        amount: amount.toFixed(2), // No conversion needed
+        toCurrency: fromCurrency,
+      };
     }
 
     const convertedAmount = amount * rate;
     return {
       amount: convertedAmount.toFixed(2), // Format to 2 decimal places
-      toCurrency: fromCurrency,
+      toCurrency,
     };
   } catch (error) {
     console.error("Error fetching currency data:", error);
+
+    // Attempt conversion by switching from and to currencies
+    const fallbackApiUrl = `https://raw.githubusercontent.com/WoXy-Sensei/currency-api/main/api/${toCurrency}_${fromCurrency}.json`;
+    console.log(fallbackApiUrl);
+
+    try {
+      const fallbackResponse = await fetch(fallbackApiUrl);
+      if (!fallbackResponse.ok) {
+        throw new Error(`Error fetching data: ${fallbackResponse.statusText}`);
+      }
+      const fallbackCurrencyData = await fallbackResponse.json();
+      const { rate } = fallbackCurrencyData;
+
+      // Convert the amount with the fallback rate
+      const convertedAmount = amount / rate; // Reverse the conversion
+      return {
+        amount: convertedAmount.toFixed(2), // Format to 2 decimal places
+        toCurrency: fromCurrency, // Set the toCurrency as the original fromCurrency
+      };
+    } catch (fallbackError) {
+      console.error("Error fetching fallback currency data:", fallbackError);
+      // If both attempts fail, return the original amount with the original currency
+      return {
+        amount: amount.toFixed(2), // Return original amount
+        toCurrency: fromCurrency,
+      };
+    }
   }
 }
 
 export function getCurrencySymbol(value) {
   const currency = currencies.find((currency) => currency.value === value);
   return currency ? currency.label.split(" - ")[0].trim() : null; // Return only the symbol part
+}
+
+export function getCurrencyLabel(value) {
+  const currency = currencies.find((currency) => currency.value === value);
+
+  // Return the part after the dash for the specified currency
+  if (currency) {
+    return currency.label.split(" - ")[1]?.trim() || null; // Return only the part after the dash
+  }
+
+  return null; // Return null if currency not found
 }
