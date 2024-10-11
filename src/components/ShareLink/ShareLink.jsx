@@ -26,11 +26,15 @@ const ShareLinkPopover = () => {
     if (currentGroupID) {
       const baseUrl = window.location.origin;
 
+      // Encode group title and currentGroupID to handle spaces and special characters
+      const encodedGroupName = encodeURIComponent(currentGroup?.title);
+      const encodedJoinGroupId = encodeURIComponent(currentGroupID);
+
       setLink(
-        `${baseUrl}/groups?groupName=${currentGroup?.title}&joinGroupId=${currentGroupID}`
+        `${baseUrl}/groups?groupName=${encodedGroupName}&joinGroupId=${encodedJoinGroupId}`
       );
     }
-  }, [currentGroupID]);
+  }, [currentGroupID, currentGroup]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
