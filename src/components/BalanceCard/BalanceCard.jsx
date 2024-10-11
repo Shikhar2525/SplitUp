@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import GradingIcon from "@mui/icons-material/Grading";
-import { getCurrencyLabel, getCurrencySymbol } from "../utils";
+import { formatIsoDate, getCurrencyLabel, getCurrencySymbol } from "../utils";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 
 function BalanceCard({ balances }) {
@@ -325,7 +325,7 @@ function BalanceCard({ balances }) {
                       {getCurrencySymbol(transaction.currency)}
                     </TableCell>
                     <TableCell>
-                      {new Date(transaction.createdDate).toLocaleDateString()}
+                      {formatIsoDate(transaction.createdDate)}
                     </TableCell>
                   </TableRow>
                 ))}

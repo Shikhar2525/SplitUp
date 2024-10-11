@@ -365,3 +365,11 @@ export function getCurrencyLabel(value) {
 
   return null; // Return null if currency not found
 }
+
+export function formatIsoDate(isoDate) {
+  const date = new Date(isoDate);
+
+  const options = { year: "numeric", month: "long", day: "numeric" };
+
+  return date.toLocaleDateString("en-US", options);
+}
