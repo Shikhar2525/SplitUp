@@ -1,13 +1,14 @@
 import { Box, Button, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { useCurrentTab } from "../contexts/CurrentTabContext";
-import AddExpenseButton from "../AddExpense/AddExpenseModal";
 import AccountMenu from "../AccountMenu/AccountMenu";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useNavigate } from "react-router-dom";
+import AddGroupModal from "../AddGroup/AddGroupModal";
+import AddIcon from "@mui/icons-material/Add";
 
 function BreadCrumbs() {
   const isMobile = useScreenSize();
@@ -15,19 +16,12 @@ function BreadCrumbs() {
   const { currentTab } = useCurrentTab();
   const [modelOpen, setModelOpen] = useState(false);
 
-  const { allGroups } = useAllGroups();
+  const { allGroups, refreshAllGroups } = useAllGroups();
   const navigate = useNavigate();
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
 
-  const handleClose = () => {
-    setModelOpen(false);
-  };
-
-  const iconStyles = {
-    color: "#3C3F88",
-    cursor: "pointer", // Change cursor to pointer
-  };
+  const toggleModal = useCallback(() => setModelOpen((prev) => !prev), []);
 
   return (
     <Box
@@ -96,22 +90,32 @@ function BreadCrumbs() {
         }}
       >
         <Button
-          size="small"
           variant="contained"
-          onClick={() => setModelOpen(true)}
+          color="primary"
+          onClick={toggleModal}
           sx={{
             backgroundColor: "#8675FF",
-            borderRadius: "20px",
             color: "#FFF",
             "&:hover": { backgroundColor: "#FD7289" },
+            borderRadius: "8px",
+            p: "2px 8px",
+            display: "flex",
+            alignItems: "center",
+
+            ...(isMobile && { minWidth: "38px" }),
           }}
         >
-          Add {!isMobile && "Expense"}
+          <AddIcon />
+          New Group
         </Button>
-
         <AccountMenu />
       </Box>
-      <AddExpenseButton open={modelOpen} handleClose={handleClose} />
+
+      <AddGroupModal
+        open={modelOpen}
+        handleClose={toggleModal}
+        refreshGroups={() => refreshAllGroups()}
+      />
       {/* Render notifications box */}
     </Box>
   );

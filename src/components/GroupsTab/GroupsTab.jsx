@@ -16,13 +16,12 @@ import {
   Button,
   IconButton,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import AddExpenseButton from "../AddExpense/AddExpenseModal";
 import PaidIcon from "@mui/icons-material/Paid";
 import BalanceIcon from "@mui/icons-material/Balance";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import Expenses from "../Expenses/Expenses";
-import AddGroupModal from "../AddGroup/AddGroupModal";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
 import { convertCurrency, formatDate } from "../utils";
@@ -275,7 +274,10 @@ const GroupTab = () => {
     []
   );
 
-  const toggleModal = useCallback(() => setModelOpen((prev) => !prev), []);
+  const handleClose = () => {
+    setModelOpen(false);
+  };
+
   const toggleMembersModal = useCallback(
     () => setMemberModal((prev) => !prev),
     []
@@ -336,22 +338,18 @@ const GroupTab = () => {
           </Typography>
         )}
         <Button
+          size="small"
           variant="contained"
-          color="primary"
-          onClick={toggleModal}
+          onClick={() => setModelOpen(true)}
           sx={{
+            fontSize: 12,
             backgroundColor: "#8675FF",
+            borderRadius: "20px",
             color: "#FFF",
             "&:hover": { backgroundColor: "#FD7289" },
-            borderRadius: "8px",
-            p: isMobile ? 0 : "2px 8px",
-            display: "flex",
-            alignItems: "center",
-            ...(isMobile && { minWidth: "38px" }),
           }}
         >
-          <AddIcon />
-          {!isMobile && "New Group"}
+          Add {!isMobile && "Expense"}
         </Button>
         {allGroups?.length > 0 && (
           <Box
@@ -407,12 +405,6 @@ const GroupTab = () => {
         <NoDataScreen message="No groups, create new" />
       )}
 
-      <AddGroupModal
-        open={modelOpen}
-        handleClose={toggleModal}
-        refreshGroups={() => refreshAllGroups()}
-      />
-
       <AddMemberModal
         open={memberModal}
         handleClose={toggleMembersModal}
@@ -420,6 +412,8 @@ const GroupTab = () => {
           allGroups.find((member) => member.id === currentGroupID)?.members
         }
       />
+
+      <AddExpenseButton open={modelOpen} handleClose={handleClose} />
 
       <GroupComponent></GroupComponent>
     </Box>
