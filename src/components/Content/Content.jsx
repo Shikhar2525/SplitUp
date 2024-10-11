@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import BreadCrumbs from "../BreadCrumbs/BreadCrumbs";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import HomeTab from "../HomeTab/Home";
 import GroupsTab from "../GroupsTab/GroupsTab";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -10,7 +10,36 @@ import Welcome from "../Welcome/Welcome";
 
 function Content() {
   const isMobile = useScreenSize();
-  const { isAuthenticated } = useAuth0();
+  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const joinGroupId = new URLSearchParams(location.search).get("joinGroupId");
+  const groupName = new URLSearchParams(location.search).get("groupName");
+
+  // Effect to handle redirecting for login
+  useEffect(() => {
+    if (!isAuthenticated && !isLoading && joinGroupId) {
+      // Store joinGroupId in local storage or context
+      localStorage.setItem("joinGroupId", joinGroupId);
+      localStorage.setItem("groupName", groupName);
+      loginWithRedirect();
+    } else if (isAuthenticated) {
+      // After successful login, check if joinGroupId is stored
+      const storedJoinGroupId = localStorage.getItem("joinGroupId");
+      const storedGroupName = localStorage.getItem("groupName");
+      console.log(storedJoinGroupId);
+      if (storedJoinGroupId) {
+        // Redirect to the appropriate group page or perform any logic
+        navigate(
+          `/groups?groupName=${
+            storedGroupName || "group"
+          }&joinGroupId=${storedJoinGroupId}`
+        );
+        localStorage.removeItem("joinGroupId"); // Clear it after use
+        localStorage.removeItem("groupName");
+      }
+    }
+  }, [isAuthenticated, isLoading, loginWithRedirect, joinGroupId, navigate]);
 
   return (
     <Box

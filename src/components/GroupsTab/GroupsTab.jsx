@@ -41,6 +41,8 @@ import { useCircularLoader } from "../contexts/CircularLoader";
 import userService from "../services/user.service";
 import groupService from "../services/group.service";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
+import ShareLink from "../ShareLink/ShareLink";
+import GroupComponent from "../JoinGroup/JoinGroup";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -418,6 +420,8 @@ const GroupTab = () => {
           allGroups.find((member) => member.id === currentGroupID)?.members
         }
       />
+
+      <GroupComponent></GroupComponent>
     </Box>
   );
 };
@@ -510,9 +514,20 @@ const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {
         </Typography>
       </Tooltip>
 
-      <Typography variant="subtitle2" color="textSecondary">
-        Created on: {formatDate(selectedGroupDetails?.createdDate) ?? "N/A"}
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 1,
+        }}
+      >
+        <Typography variant="subtitle2" color="textSecondary">
+          Created on: {formatDate(selectedGroupDetails?.createdDate) ?? "N/A"}
+        </Typography>
+
+        <ShareLink></ShareLink>
+      </Box>
     </Box>
   );
 });

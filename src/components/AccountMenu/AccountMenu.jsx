@@ -35,6 +35,7 @@ const AccountMenu = () => {
         returnTo: window.location.origin,
       },
     });
+    localStorage.removeItem("joinGroupId");
     setAnchorEl(null);
   };
 

@@ -23,7 +23,10 @@ root.render(
       domain="dev-n4n2az6w.us.auth0.com"
       clientId="pPfQpRGUOECwoaVhoxOlc3jFGXQ9u8wR"
       authorizationParams={{
-        redirect_uri: window.location.origin,
+        redirect_uri:
+          window.location.origin +
+          window.location.pathname +
+          window.location.search,
       }}
     >
       <ScreenSizeProvider>
