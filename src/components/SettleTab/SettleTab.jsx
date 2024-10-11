@@ -102,7 +102,7 @@ const SettleTab = ({ members, groupID }) => {
         sx={{
           padding: 1,
           backgroundColor: "#fff",
-          maxHeight: "40vh",
+          maxHeight: "35vh",
           marginBottom: 2,
           overflowX: "hidden",
           whiteSpace: "nowrap",
