@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { calculateBalances } from "../utils";
 import BalanceCard from "../BalanceCard/BalanceCard";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 
 function GroupBalances({ group }) {
@@ -19,7 +19,7 @@ function GroupBalances({ group }) {
   }, [group, currentCurrency]);
 
   return (
-    <Box sx={{ height: "53vh", overflow: "auto" }}>
+    <Box sx={{ height: "51vh", overflow: "auto" }}>
       <BalanceCard balances={balances} groupId={group?.id} />
     </Box>
   );
