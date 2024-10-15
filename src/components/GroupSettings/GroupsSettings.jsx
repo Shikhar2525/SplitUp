@@ -22,7 +22,7 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCircularLoader } from "../contexts/CircularLoader";
 
-function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
+function GroupsSettings({ groupID, groupName, defaultCurrency }) {
   const isMobile = useScreenSize();
   const [openModal, setOpenModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState(groupName);
@@ -87,6 +87,10 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
     }
   };
 
+  // Determine if the save button should be disabled
+  const isSaveDisabled =
+    newGroupName.trim() === "" || newGroupName === groupName;
+
   return (
     <Box
       sx={{
@@ -118,12 +122,17 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
                     value={newGroupName}
                     onChange={handleNameChange}
                     variant="outlined"
+                    inputProps={{ maxLength: 25 }}
+                    helperText={`${
+                      25 - newGroupName.length
+                    } characters remaining`}
                     sx={{ backgroundColor: "#f0f0f0", borderRadius: 2 }}
                   />
                   <Button
                     variant="contained"
                     color="primary"
                     onClick={handleSubmitNameChange}
+                    disabled={isSaveDisabled} // Disable save button based on the condition
                     sx={{
                       backgroundColor: "#007AFF",
                       color: "#FFF",
