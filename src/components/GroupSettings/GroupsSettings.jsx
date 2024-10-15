@@ -119,7 +119,14 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
             </TableCell>
             <TableCell>
               {isEditing ? (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: isMobile ? "flex-start" : "center",
+                    gap: 2,
+                    flexDirection: isMobile ? "column" : "row",
+                  }}
+                >
                   <TextField
                     label="Rename Group"
                     value={newGroupName}
@@ -131,25 +138,27 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
                     } characters remaining`}
                     sx={{ backgroundColor: "#f0f0f0", borderRadius: 2 }}
                   />
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSubmitNameChange}
-                    disabled={!isGroupNameChanged} // Disable if name is not changed or empty
-                    sx={{
-                      backgroundColor: "#007AFF",
-                      color: "#FFF",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    Save
-                  </Button>
-                  <IconButton
-                    onClick={handleCancelEdit}
-                    sx={{ color: "#FF0000" }}
-                  >
-                    <CancelIcon />
-                  </IconButton>
+                  <Box>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSubmitNameChange}
+                      disabled={!isGroupNameChanged} // Disable if name is not changed or empty
+                      sx={{
+                        backgroundColor: "#007AFF",
+                        color: "#FFF",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      Save
+                    </Button>
+                    <IconButton
+                      onClick={handleCancelEdit}
+                      sx={{ color: "#FF0000" }}
+                    >
+                      <CancelIcon />
+                    </IconButton>
+                  </Box>
                 </Box>
               ) : (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
