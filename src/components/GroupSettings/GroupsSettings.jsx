@@ -22,7 +22,7 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCircularLoader } from "../contexts/CircularLoader";
 
-function GroupsSettings({ groupID, groupName, defaultCurrency }) {
+function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   const isMobile = useScreenSize();
   const [openModal, setOpenModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState(groupName);
@@ -87,9 +87,12 @@ function GroupsSettings({ groupID, groupName, defaultCurrency }) {
     }
   };
 
-  // Determine if the save button should be disabled
-  const isSaveDisabled =
-    newGroupName.trim() === "" || newGroupName === groupName;
+  // Check if group name is valid for enabling the save button
+  const isGroupNameChanged =
+    newGroupName.trim() !== "" && newGroupName !== groupName;
+
+  // Check if currency is changed for enabling the save button
+  const isCurrencyChanged = currency !== defaultCurrency;
 
   return (
     <Box
@@ -132,7 +135,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency }) {
                     variant="contained"
                     color="primary"
                     onClick={handleSubmitNameChange}
-                    disabled={isSaveDisabled} // Disable save button based on the condition
+                    disabled={!isGroupNameChanged} // Disable if name is not changed or empty
                     sx={{
                       backgroundColor: "#007AFF",
                       color: "#FFF",
@@ -210,6 +213,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency }) {
                   variant="contained"
                   color="primary"
                   onClick={handleSaveCurrency}
+                  disabled={!isCurrencyChanged} // Disable if currency is not changed
                   sx={{
                     width: "10%",
                     backgroundColor: "#007AFF",
