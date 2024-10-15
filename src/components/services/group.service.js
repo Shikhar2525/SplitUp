@@ -288,6 +288,62 @@ class GroupService {
       throw error;
     }
   };
+
+  updateGroupName = async (groupIdField, newGroupName) => {
+    try {
+      // Query to find the group by its ID
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("No document found with ID:", groupIdField);
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      const groupDocRef = querySnapshot.docs[0].ref;
+
+      // Update the group name (assuming the field is 'title')
+      await updateDoc(groupDocRef, {
+        title: newGroupName,
+      });
+
+      console.log(`Group name updated to ${newGroupName}`);
+    } catch (error) {
+      console.error("Error updating group name: ", error);
+      throw error;
+    }
+  };
+
+  updateDefaultCurrency = async (groupIdField, newDefaultCurrency) => {
+    try {
+      // Query to find the group by its ID
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("No document found with ID:", groupIdField);
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      const groupDocRef = querySnapshot.docs[0].ref;
+
+      // Update the defaultCurrency field in Firestore
+      await updateDoc(groupDocRef, {
+        defaultCurrency: newDefaultCurrency,
+      });
+
+      console.log(`Default currency updated to ${newDefaultCurrency}`);
+    } catch (error) {
+      console.error("Error updating default currency: ", error);
+      throw error;
+    }
+  };
 }
 
 export default new GroupService();

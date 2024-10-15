@@ -218,6 +218,7 @@ const GroupTab = () => {
           <GroupsSettings
             groupID={currentGroupID}
             groupName={currentGroup?.title}
+            defaultCurrency={currentGroup?.defaultCurrency}
           />
         ),
       });
