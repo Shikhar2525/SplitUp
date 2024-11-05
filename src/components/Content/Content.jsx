@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import React, { useEffect } from "react";
 import BreadCrumbs from "../BreadCrumbs/BreadCrumbs";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
@@ -27,7 +27,6 @@ function Content() {
       // After successful login, check if joinGroupId is stored
       const storedJoinGroupId = localStorage.getItem("joinGroupId");
       const storedGroupName = localStorage.getItem("groupName");
-      console.log(storedJoinGroupId);
       if (storedJoinGroupId) {
         // Redirect to the appropriate group page or perform any logic
         navigate(
@@ -40,6 +39,21 @@ function Content() {
       }
     }
   }, [isAuthenticated, isLoading, loginWithRedirect, joinGroupId, navigate]);
+
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh", // Full viewport height for a centered loader
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box
