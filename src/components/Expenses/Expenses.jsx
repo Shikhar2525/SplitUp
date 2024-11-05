@@ -26,6 +26,7 @@ const Expenses = () => {
         return (
           <ExpenseCard
             groupTitle={currentGroup?.title}
+            groupAdmin={currentGroup?.admin?.email}
             transaction={{
               id: expense?.id,
               paidBy: expense?.paidBy,

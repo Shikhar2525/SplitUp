@@ -32,7 +32,13 @@ import { useTopSnackBar } from "../contexts/TopSnackBar";
 import ActivityService from "../services/activity.service";
 import { v4 as uuidv4 } from "uuid";
 
-const TransactionCard = ({ transaction, index, groupId, groupTitle }) => {
+const TransactionCard = ({
+  transaction,
+  index,
+  groupId,
+  groupTitle,
+  groupAdmin,
+}) => {
   const [expanded, setExpanded] = useState(false);
   const dateShort = formatTransactionDate(transaction?.date);
   const { currentUser } = useCurrentUser();
@@ -44,7 +50,6 @@ const TransactionCard = ({ transaction, index, groupId, groupTitle }) => {
   const handleAccordionChange = () => {
     setExpanded(!expanded);
   };
-
   const handleDeleteExpense = async () => {
     try {
       setLinearProgress(true);
@@ -303,7 +308,8 @@ const TransactionCard = ({ transaction, index, groupId, groupTitle }) => {
                     />
                   </TableCell>
                 </TableRow>
-                {transaction?.createdBy?.email === currentUser?.email && (
+                {(transaction?.createdBy?.email === currentUser?.email ||
+                  groupAdmin === currentUser?.email) && (
                   <TableRow
                     sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
                   >

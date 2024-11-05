@@ -30,6 +30,7 @@ import { v4 as uuidv4 } from "uuid";
 import ActivityService from "../services/activity.service";
 import { currencies } from "../../constants";
 import { useRefetchLogs } from "../contexts/RefetchLogs";
+import { useCurrentGroup } from "../contexts/CurrentGroup";
 
 const styles = {
   modalBox: {
@@ -79,8 +80,17 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const { currentUser } = useCurrentUser();
   const [currency, setCurrency] = useState("");
   const { refetchLogs, setRefetchLogs } = useRefetchLogs();
+  const { currentGroupID } = useCurrentGroup();
+
+  const currentGroupObj = allGroups.find(
+    (group) => group?.id === currentGroupID
+  );
 
   const userNameByEmail = users?.find((item) => item.email === paidBy)?.name;
+
+  useEffect(() => {
+    setGroup(currentGroupObj?.title);
+  }, [currentGroupObj]);
 
   useEffect(() => {
     if (group) {
