@@ -39,7 +39,7 @@ function MainContainer() {
         flex: 1,
         display: "flex",
         flexDirection: isMobile ? "column" : "row",
-        alignItems: "flex-start",
+        alignItems: isMobile ? "center" : "flex-start",
         justifyContent: "center",
         overflow: isNineHundredPixels ? "auto" : "hidden",
         borderRadius: "30px",
