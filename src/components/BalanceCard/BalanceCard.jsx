@@ -18,18 +18,21 @@ import {
   Button,
   Tooltip,
   Alert,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import React, { useState } from "react";
 import GradingIcon from "@mui/icons-material/Grading";
-import { formatIsoDate, getCurrencyLabel, getCurrencySymbol } from "../utils";
+import { formatIsoDate, getCurrencySymbol } from "../utils";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
+import { useCurrentUser } from "../contexts/CurrentUser";
 
 function BalanceCard({ balances }) {
   const [openModal, setOpenModal] = useState(false);
   const [selectedBreakdown, setSelectedBreakdown] = useState([]);
+  const [showRelatedToMe, setShowRelatedToMe] = useState(true);
   const { currentCurrency } = useCurrentCurrency();
-
-  console.log(selectedBreakdown);
+  const { currentUser } = useCurrentUser();
 
   const handleOpenModal = (breakdown) => {
     setSelectedBreakdown(breakdown);
@@ -41,7 +44,13 @@ function BalanceCard({ balances }) {
     setSelectedBreakdown([]);
   };
 
-  const handleSettleUp = async (balanceId, settleStatus) => {};
+  const filteredBalances = showRelatedToMe
+    ? balances.filter(
+        (balance) =>
+          balance.debtor?.name === currentUser.name ||
+          balance.creditor?.name === currentUser.name
+      )
+    : balances;
 
   return (
     <>
@@ -60,6 +69,24 @@ function BalanceCard({ balances }) {
             <Alert severity="info">
               Currency conversion rates may vary; results are approximate.
             </Alert>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  size="small"
+                  checked={showRelatedToMe}
+                  onChange={(e) => setShowRelatedToMe(e.target.checked)}
+                  color="secondary"
+                />
+              }
+              label="View Balances Involving Me"
+              sx={{
+                ml: 1,
+                mt: 1,
+                "& .MuiFormControlLabel-label": {
+                  fontSize: "0.9rem", // Adjust the font size as desired
+                },
+              }}
+            />
             <Typography
               variant="subtitle1"
               margin={2}
@@ -124,7 +151,7 @@ function BalanceCard({ balances }) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {balances?.map(
+                  {filteredBalances?.map(
                     ({ id, debtor, creditor, amount, breakdown, currency }) => (
                       <TableRow
                         key={id}
