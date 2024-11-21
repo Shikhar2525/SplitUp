@@ -15,6 +15,7 @@ import {
   Tab,
   Button,
   IconButton,
+  Alert,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import AddExpenseButton from "../AddExpense/AddExpenseModal";
@@ -42,6 +43,7 @@ import groupService from "../services/group.service";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import ShareLink from "../ShareLink/ShareLink";
 import GroupComponent from "../JoinGroup/JoinGroup";
+import { useAllUserSettled } from "../contexts/AllUserSettled";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -87,6 +89,7 @@ const GroupTab = () => {
   const { setCircularLoader } = useCircularLoader();
   const [groupsIDs, setGroupIDs] = useState([]);
   const { setCurrentCurrency } = useCurrentCurrency();
+  const { allUserSettled, setAllUserSettled } = useAllUserSettled();
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
   const currentGroup = allGroups?.find((group) => group.id === currentGroupID);
@@ -176,6 +179,11 @@ const GroupTab = () => {
       console.error(error.message);
     }
   };
+
+  useEffect(() => {
+    const isSettled = currentGroup?.members?.every((item) => item.userSettled);
+    setAllUserSettled(isSettled);
+  }, [currentGroup]);
 
   useEffect(() => {
     if (currentGroupID && !groupsIDs.includes(currentGroupID)) {
@@ -294,6 +302,24 @@ const GroupTab = () => {
         height: "81vh",
       }}
     >
+      {allUserSettled && (
+        <Alert
+          variant="filled"
+          severity="success"
+          sx={{
+            height: 30, // Decrease height
+            padding: "0 8px", // Reduce padding
+            fontSize: "0.8rem", // Adjust font size for smaller height
+            display: "flex", // Ensure proper alignment
+            alignItems: "center", // Vertically center content
+            margin: 1,
+            backgroundColor: "#3ea843",
+          }}
+        >
+          Group settled
+        </Alert>
+      )}
+
       <Box
         sx={{
           p: 1,

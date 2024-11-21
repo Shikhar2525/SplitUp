@@ -8,6 +8,7 @@ import { useAllGroups } from "../contexts/AllGroups.js";
 import { useCurrentUser } from "../contexts/CurrentUser.js";
 import { v4 as uuidv4 } from "uuid";
 import activityService from "../services/activity.service.js";
+import { useAllUserSettled } from "../contexts/AllUserSettled.js";
 
 const SettleTab = ({ members, groupID }) => {
   const { setSnackBar } = useTopSnackBar();
@@ -15,6 +16,7 @@ const SettleTab = ({ members, groupID }) => {
   const { refreshAllGroups } = useAllGroups();
   const { allGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
+  const { allUserSettled } = useAllUserSettled();
 
   const currentGroup = allGroups?.find((item) => item.id === groupID);
 
@@ -102,7 +104,7 @@ const SettleTab = ({ members, groupID }) => {
         sx={{
           padding: 1,
           backgroundColor: "#fff",
-          maxHeight: "35vh",
+          maxHeight: allUserSettled ? "31vh" : "35vh",
           marginBottom: 2,
           overflowX: "hidden",
           whiteSpace: "nowrap",
