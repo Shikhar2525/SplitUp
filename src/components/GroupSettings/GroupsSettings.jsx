@@ -21,6 +21,7 @@ import GroupService from "../services/group.service";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCircularLoader } from "../contexts/CircularLoader";
+import { useAllUserSettled } from "../contexts/AllUserSettled";
 
 function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   const isMobile = useScreenSize();
@@ -31,6 +32,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   const { refreshAllGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
   const { setCircularLoader } = useCircularLoader();
+  const { allUserSettled } = useAllUserSettled();
 
   const handleOpenModal = () => {
     setOpenModal(true);
@@ -97,7 +99,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   return (
     <Box
       sx={{
-        height: "53vh",
+        height: allUserSettled ? "46vh" : "53vh",
         overflow: "auto",
         padding: isMobile ? 1 : 2,
         display: "flex",
