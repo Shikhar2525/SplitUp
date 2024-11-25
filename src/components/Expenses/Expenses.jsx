@@ -7,17 +7,19 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import { sortByISODate } from "../utils";
 import { Empty } from "antd";
+import { useAllUserSettled } from "../contexts/AllUserSettled";
 
 const Expenses = () => {
   const isMobile = useScreenSize();
   const { allGroups } = useAllGroups();
   const { currentGroupID } = useCurrentGroup();
   const currentGroup = allGroups?.find((item) => item?.id === currentGroupID);
+  const { allUserSettled } = useAllUserSettled();
 
   return (
     <Box
       sx={{
-        height: "53vh",
+        height: allUserSettled ? (isMobile ? "50vh" : "45vh") : "53vh",
         overflow: "auto",
         paddingRight: isMobile ? 1 : 2,
       }}
