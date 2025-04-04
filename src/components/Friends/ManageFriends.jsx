@@ -53,11 +53,16 @@ const ManageFriends = () => {
   const [addingFriendMap, setAddingFriendMap] = useState({});
   const [myFriends, setMyFriends] = useState([]);
   const [removingFriend, setRemovingFriend] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchFriends = async () => {
     try {
+      setIsLoading(true);
       const user = await userService.getUserByEmail(currentUser.email);
-      if (!user || !user.friends) return;
+      if (!user || !user.friends) {
+        setMyFriends([]);
+        return;
+      }
 
       const friendPromises = user.friends.map((friendEmail) =>
         userService.getUserByEmail(friendEmail)
@@ -67,6 +72,9 @@ const ManageFriends = () => {
       setMyFriends(friendsData.filter((friend) => friend !== null));
     } catch (error) {
       console.error("Error fetching friends:", error);
+      setMyFriends([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -446,93 +454,108 @@ const ManageFriends = () => {
             scrollbarColor: "rgba(94, 114, 228, 0.2) rgba(94, 114, 228, 0.05)"
           }}
         >
-          {myFriends.map((friend) => (
-            <ListItem
-              key={friend.id}
-              secondaryAction={
-                <IconButton
-                  edge="end"
-                  onClick={() => handleRemoveFriend(friend.email)}
-                  disabled={removingFriend === friend.email}
-                  sx={{
-                    color: "#F5365C",
-                    opacity: 1,
-                    transition: "all 0.2s ease-in-out",
-                    width: 40,
-                    height: 40,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    "&:hover": {
-                      backgroundColor: "rgba(245, 54, 92, 0.05)",
-                    },
-                  }}
-                >
-                  {removingFriend === friend.email ? (
-                    <CircularProgress size={20} color="error" />
-                  ) : (
-                    <PersonRemoveIcon />
-                  )}
-                </IconButton>
-              }
-              sx={{
-                mb: { xs: 1, sm: 2 },
-                background: "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)",
-                backdropFilter: "blur(10px)",
-                borderRadius: { xs: "16px", sm: "24px" },
-                border: "1px solid rgba(255,255,255,0.8)",
-                boxShadow: "0 4px 16px rgba(94, 114, 228, 0.1)",
-                transition: "all 0.3s ease-in-out",
-                "&:hover": {
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 8px 32px rgba(94, 114, 228, 0.2)",
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)",
-                },
-                p: { xs: 1.5, sm: 2 },
+          {isLoading ? (
+            <Box 
+              sx={{ 
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '200px'
               }}
             >
-              <ListItemAvatar>
-                <Avatar
-                  src={friend.profilePicture || ""}
-                  alt={friend.name}
-                  sx={{
-                    width: { xs: 40, sm: 50 },
-                    height: { xs: 40, sm: 50 },
-                    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                    border: "3px solid white",
-                  }}
-                >
-                  {getInitials(friend.name)}
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText
-                primary={friend.name}
-                secondary={friend.email}
-                primaryTypographyProps={{
-                  fontWeight: 600,
-                  color: "#32325d",
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  noWrap: true,
-                  sx: {
-                    maxWidth: { xs: '140px', sm: '200px', md: 'none' }
-                  }
-                }}
-                secondaryTypographyProps={{
-                  color: "#525F7F",
-                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                  noWrap: true,
-                  sx: {
-                    maxWidth: { xs: '140px', sm: '200px', md: 'none' }
-                  }
-                }}
-                sx={{
-                  minWidth: 0, // Enable text truncation
-                  mr: { xs: 1, sm: 2 } // Add margin for remove button
-                }}
+              <CircularProgress 
+                size={40}
+                sx={{ color: '#5e72e4' }}
               />
-            </ListItem>
-          ))}
-          {myFriends.length === 0 && (
+            </Box>
+          ) : myFriends.length > 0 ? (
+            myFriends.map((friend) => (
+              <ListItem
+                key={friend.id}
+                secondaryAction={
+                  <IconButton
+                    edge="end"
+                    onClick={() => handleRemoveFriend(friend.email)}
+                    disabled={removingFriend === friend.email}
+                    sx={{
+                      color: "#F5365C",
+                      opacity: 1,
+                      transition: "all 0.2s ease-in-out",
+                      width: 40,
+                      height: 40,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      "&:hover": {
+                        backgroundColor: "rgba(245, 54, 92, 0.05)",
+                      },
+                    }}
+                  >
+                    {removingFriend === friend.email ? (
+                      <CircularProgress size={20} color="error" />
+                    ) : (
+                      <PersonRemoveIcon />
+                    )}
+                  </IconButton>
+                }
+                sx={{
+                  mb: { xs: 1, sm: 2 },
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)",
+                  backdropFilter: "blur(10px)",
+                  borderRadius: { xs: "16px", sm: "24px" },
+                  border: "1px solid rgba(255,255,255,0.8)",
+                  boxShadow: "0 4px 16px rgba(94, 114, 228, 0.1)",
+                  transition: "all 0.3s ease-in-out",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 32px rgba(94, 114, 228, 0.2)",
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)",
+                  },
+                  p: { xs: 1.5, sm: 2 },
+                }}
+              >
+                <ListItemAvatar>
+                  <Avatar
+                    src={friend.profilePicture || ""}
+                    alt={friend.name}
+                    sx={{
+                      width: { xs: 40, sm: 50 },
+                      height: { xs: 40, sm: 50 },
+                      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                      border: "3px solid white",
+                    }}
+                  >
+                    {getInitials(friend.name)}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={friend.name}
+                  secondary={friend.email}
+                  primaryTypographyProps={{
+                    fontWeight: 600,
+                    color: "#32325d",
+                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                    noWrap: true,
+                    sx: {
+                      maxWidth: { xs: '140px', sm: '200px', md: 'none' }
+                    }
+                  }}
+                  secondaryTypographyProps={{
+                    color: "#525F7F",
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    noWrap: true,
+                    sx: {
+                      maxWidth: { xs: '140px', sm: '200px', md: 'none' }
+                    }
+                  }}
+                  sx={{
+                    minWidth: 0, // Enable text truncation
+                    mr: { xs: 1, sm: 2 } // Add margin for remove button
+                  }}
+                />
+              </ListItem>
+            ))
+          ) : (
             <Box 
               sx={{ 
                 textAlign: "center", 

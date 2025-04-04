@@ -1,5 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { useCurrentTab } from "../contexts/CurrentTabContext";
@@ -9,12 +9,18 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { useNavigate } from "react-router-dom";
 import AddGroupModal from "../AddGroup/AddGroupModal";
 import AddIcon from "@mui/icons-material/Add";
+import Notifications from "../Notifications/Notifications";
+import ActivityService from "../services/activity.service";
+import { useCurrentUser } from "../contexts/CurrentUser";
 
 function BreadCrumbs() {
   const isMobile = useScreenSize();
   const { currentGroupID } = useCurrentGroup();
   const { currentTab } = useCurrentTab();
   const [modelOpen, setModelOpen] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [loader, setLoader] = useState(false);
+  const { currentUser } = useCurrentUser();
 
   const { allGroups, refreshAllGroups } = useAllGroups();
   const navigate = useNavigate();
@@ -22,6 +28,25 @@ function BreadCrumbs() {
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
 
   const toggleModal = useCallback(() => setModelOpen((prev) => !prev), []);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      setLoader(true);
+      try {
+        const fetchedLogs = await ActivityService.fetchActivitiesByEmail(currentUser?.email);
+        setLogs(fetchedLogs || []);
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+        setLogs([]);
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    if (currentUser?.email) {
+      fetchLogs();
+    }
+  }, [currentUser?.email]);
 
   return (
     <Box
@@ -53,7 +78,7 @@ function BreadCrumbs() {
           cursor: "pointer",
         }}
       >
-        {(currentTab === "Groups" || "Friends") && (
+        {(currentTab === "Groups" || currentTab === "Friends") && (
           <KeyboardBackspaceIcon sx={{ color: "#3C3F88" }} />
         )}
         <Typography
@@ -108,6 +133,7 @@ function BreadCrumbs() {
           <AddIcon />
           New Group
         </Button>
+        <Notifications logs={logs} loader={loader} />
         <AccountMenu />
       </Box>
 
