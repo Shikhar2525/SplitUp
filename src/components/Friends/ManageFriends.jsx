@@ -18,11 +18,14 @@ import {
   ClickAwayListener,
   CircularProgress,
   Tooltip,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { InfoOutlined } from "@mui/icons-material";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import userService from "../services/user.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 
@@ -44,6 +47,53 @@ const StyledSearchResults = styled(Box)(({ theme }) => ({
   },
 }));
 
+const CustomSwitch = styled(Switch)(({ theme }) => ({
+  width: 60,
+  height: 34,
+  padding: 7,
+  '& .MuiSwitch-switchBase': {
+    margin: 1,
+    padding: 0,
+    transform: 'translateX(6px)',
+    '&.Mui-checked': {
+      color: '#fff',
+      transform: 'translateX(22px)',
+      '& .MuiSwitch-thumb:before': {
+        backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
+          '#fff',
+        )}" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>')`,
+      },
+      '& + .MuiSwitch-track': {
+        opacity: 1,
+        backgroundColor: '#5e72e4',
+      },
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    backgroundColor: '#5e72e4',
+    width: 32,
+    height: 32,
+    '&:before': {
+      content: "''",
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      left: 0,
+      top: 0,
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center',
+      backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
+        '#fff',
+      )}" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>')`,
+    },
+  },
+  '& .MuiSwitch-track': {
+    opacity: 1,
+    backgroundColor: '#aab4c8',
+    borderRadius: 20 / 2,
+  },
+}));
+
 const ManageFriends = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,6 +104,7 @@ const ManageFriends = () => {
   const [myFriends, setMyFriends] = useState([]);
   const [removingFriend, setRemovingFriend] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isHidden, setIsHidden] = useState(false);
 
   const fetchFriends = async () => {
     try {
@@ -96,17 +147,32 @@ const ManageFriends = () => {
     }
   }, [currentUser]);
 
+  useEffect(() => {
+    const fetchUserVisibility = async () => {
+      const user = await userService.getUserByEmail(currentUser?.email);
+      setIsHidden(user?.isHidden || false);
+    };
+    if (currentUser?.email) {
+      fetchUserVisibility();
+    }
+  }, [currentUser]);
+
   const filteredUsers = useMemo(() => {
-    if (!searchQuery) return [];
+    if (!searchQuery || !currentUser) return [];
+    
     return allUsers
-      .filter(
-        (user) =>
-          !myFriends.some(friend => friend.email === user.email) && // Filter out existing friends
-          (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
+      .filter(user => {
+        const isNotCurrentUser = user.email !== currentUser.email;
+        const isNotHidden = user.isHidden !== true;
+        const isNotFriend = !myFriends.some(friend => friend.email === user.email);
+        const matchesSearch = 
+          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase());
+
+        return isNotCurrentUser && isNotHidden && isNotFriend && matchesSearch;
+      })
       .slice(0, 5);
-  }, [searchQuery, allUsers, myFriends]); // Add myFriends as dependency
+  }, [searchQuery, allUsers, myFriends, currentUser]);
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -115,6 +181,12 @@ const ManageFriends = () => {
 
   const handleClickAway = () => {
     setAnchorEl(null);
+  };
+
+  const handleVisibilityChange = async (event) => {
+    const newHiddenState = event.target.checked;
+    setIsHidden(newHiddenState);
+    await userService.updateUserVisibility(currentUser?.email, newHiddenState);
   };
 
   const open = Boolean(anchorEl) && searchQuery.length > 0;
@@ -236,6 +308,42 @@ const ManageFriends = () => {
               {myFriends.length} total
             </Typography>
           </Box>
+          <Tooltip
+            title="When enabled, other users won't find you in search results"
+            arrow
+            placement="bottom"
+          >
+            <FormControlLabel
+              control={
+                <CustomSwitch
+                  checked={isHidden}
+                  onChange={handleVisibilityChange}
+                />
+              }
+              label={
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1,
+                  color: '#5e72e4',
+                  fontSize: '0.875rem',
+                  fontWeight: 600
+                }}>
+                  Hide Me
+                </Box>
+              }
+              sx={{
+                border: '1px dashed rgba(94, 114, 228, 0.3)',
+                borderRadius: 2,
+                padding: '4px 12px',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  backgroundColor: 'rgba(94, 114, 228, 0.05)',
+                  borderColor: 'rgba(94, 114, 228, 0.5)',
+                }
+              }}
+            />
+          </Tooltip>
           <Tooltip 
             title="People added here can't see you as a friend. This list is just for your convenience when creating groups."
             arrow
@@ -288,7 +396,7 @@ const ManageFriends = () => {
                   letterSpacing: '0.01em'
                 }}
               >
-                Info about friends list
+                Info
               </Typography>
             </Box>
           </Tooltip>

@@ -47,21 +47,15 @@ class UserService {
       
       querySnapshot.forEach((doc) => {
         const userData = doc.data();
-        // Only include users with name property and skip current user
         if (userData.name) {
           users.push({ id: doc.id, ...userData });
         }
       });
-
-      // Sort users by name with null check
-      return users.sort((a, b) => {
-        if (!a.name) return 1;
-        if (!b.name) return -1;
-        return a.name.localeCompare(b.name);
-      });
+      
+      return users.sort((a, b) => a.name.localeCompare(b.name));
     } catch (error) {
-      console.error("Error fetching users: ", error);
-      return []; // Return empty array instead of throwing
+      console.error("Error fetching users:", error);
+      return [];
     }
   };
 
@@ -139,6 +133,25 @@ class UserService {
       return { success: true, message: "Friend removed successfully" };
     } catch (error) {
       console.error("Error in removeFriend:", error);
+      return { success: false, message: error.message };
+    }
+  };
+
+  updateUserVisibility = async (email, isHidden) => {
+    try {
+      const userQuery = query(userRef, where("email", "==", email));
+      const userSnapshot = await getDocs(userQuery);
+      
+      if (!userSnapshot.empty) {
+        const userDoc = userSnapshot.docs[0];
+        await updateDoc(doc(userRef, userDoc.id), {
+          isHidden: isHidden
+        });
+        return { success: true };
+      }
+      return { success: false, message: "User not found" };
+    } catch (error) {
+      console.error("Error updating user visibility:", error);
       return { success: false, message: error.message };
     }
   };
