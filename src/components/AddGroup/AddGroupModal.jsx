@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Box,
@@ -24,6 +24,8 @@ import { useTopSnackBar } from "../contexts/TopSnackBar";
 import userService from "../services/user.service";
 import ActivityService from "../services/activity.service";
 import { currencies } from "../../constants";
+import { Box as MuiBox } from "@mui/material";
+import { useFriends } from "../contexts/FriendsContext";
 
 const styles = {
   modalBox: {
@@ -58,7 +60,27 @@ const styles = {
   },
   searchingMessage: {
     marginTop: "0.5rem",
-    color: "#FFBB38", // Customize the color as needed
+    color: "#FFBB38",
+  },
+  suggestionBox: {
+    position: "absolute",
+    width: "100%",
+    maxHeight: "200px",
+    overflowY: "auto",
+    backgroundColor: "white",
+    borderRadius: "0 0 8px 8px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+    zIndex: 1000,
+  },
+  suggestionItem: {
+    padding: "8px 16px",
+    cursor: "pointer",
+    "&:hover": {
+      backgroundColor: "rgba(94, 114, 228, 0.05)",
+    },
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
   },
 };
 
@@ -76,8 +98,16 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
   const { currentUser } = useCurrentUser();
   const { setSnackBar } = useTopSnackBar();
   const [defaultCurrency, setDefaultCurrency] = useState("INR");
+  const [suggestions, setSuggestions] = useState([]);
+  const { userFriends, refreshFriends } = useFriends();
 
   const userObjWithName = { email: inputEmail, name: name };
+
+  useEffect(() => {
+    if (open && currentUser?.email) {
+      refreshFriends(currentUser.email);
+    }
+  }, [open, currentUser]);
 
   const resetAddMembers = (e) => {
     e.preventDefault();
@@ -105,7 +135,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
           if (fetchedUser) {
             setMembers((prevMembers) => [...prevMembers, fetchedUser]);
             setError("");
-            setInputEmail(""); // Reset the input field
+            setInputEmail("");
           } else {
             setShowNameField(true);
             setError("User not found, enter name");
@@ -140,6 +170,32 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
     return regex.test(email);
   };
 
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setInputEmail(value);
+
+    if (value) {
+      const filtered = userFriends.filter(
+        (friend) =>
+          !members.some((member) => member.email === friend.email) && // Filter out already added members
+          ((friend.name && friend.name.toLowerCase().includes(value.toLowerCase())) ||
+          friend.email.toLowerCase().includes(value.toLowerCase()))
+      );
+      setSuggestions(filtered);
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const handleSelectFriend = (friend) => {
+    if (!members.some((member) => member.email === friend.email)) {
+      setMembers((prev) => [...prev, friend]);
+    }
+    setInputEmail("");
+    setSuggestions([]);
+    setError("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -153,7 +209,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
       title: groupName,
       description: groupDescription,
       category: category,
-      members: [adminUserObject, ...members], // Send the complete members array
+      members: [adminUserObject, ...members],
       createdDate: new Date(),
       isAllSettled: false,
       expenses: [],
@@ -178,11 +234,10 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
 
       await ActivityService.addActivityLog(log);
 
-      // Reset form fields
       setGroupName("");
       setGroupDescription("");
       setCategory("");
-      setMembers([]); // Reset members
+      setMembers([]);
       setInputEmail("");
       setError("");
 
@@ -230,7 +285,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             variant="outlined"
             value={groupDescription}
             onChange={(e) => setGroupDescription(e.target.value)}
-            inputProps={{ maxLength: 35 }} // Enforces max length
+            inputProps={{ maxLength: 35 }}
             helperText={`${35 - groupDescription.length} characters remaining`}
           />
           <FormControl fullWidth sx={styles.formControl}>
@@ -283,30 +338,58 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
             <div>
               {members?.map((member, index) => (
                 <Chip
-                  key={index} // Using index as key since member object can change
+                  key={index}
                   label={member?.name}
                   avatar={
                     <Avatar alt={member?.email} src={member?.profilePicture}>
                       {member?.email.charAt(0)}
                     </Avatar>
                   }
-                  onDelete={() => handleDeleteMember(member?.email)} // Directly remove the chip
+                  onDelete={() => handleDeleteMember(member?.email)}
                   sx={{ marginRight: 1, marginTop: 1 }}
                 />
               ))}
             </div>
-            <TextField
-              disabled={showNameField}
-              label="Add Members"
-              variant="outlined"
-              value={inputEmail}
-              onChange={(e) => setInputEmail(e.target.value)}
-              onKeyDown={handleEmailAdd}
-              fullWidth
-              sx={{ marginTop: members.length > 0 ? "1rem" : 0 }}
-              helperText="Press 'Enter' to add a member"
-            />
-
+            <Box sx={{ position: "relative" }}>
+              <TextField
+                disabled={showNameField}
+                label="Add Members"
+                variant="outlined"
+                value={inputEmail}
+                onChange={handleEmailChange}
+                onKeyDown={handleEmailAdd}
+                fullWidth
+                sx={{ marginTop: members.length > 0 ? "1rem" : 0 }}
+                helperText="Type to search friends or press 'Enter' to add new member"
+              />
+              {suggestions.length > 0 && inputEmail && (
+                <MuiBox sx={styles.suggestionBox}>
+                  {suggestions.map((friend) => (
+                    <Box
+                      key={friend.email}
+                      sx={styles.suggestionItem}
+                      onClick={() => handleSelectFriend(friend)}
+                    >
+                      <Avatar
+                        src={friend.profilePicture}
+                        alt={friend.name}
+                        sx={{ width: 32, height: 32 }}
+                      >
+                        {friend.name?.charAt(0)}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {friend.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {friend.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </MuiBox>
+              )}
+            </Box>
             {showNameField && (
               <TextField
                 label="Enter Name"
