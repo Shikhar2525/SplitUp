@@ -27,12 +27,20 @@ import { useCurrentUser } from "../contexts/CurrentUser";
 
 const StyledSearchResults = styled(Box)(({ theme }) => ({
   width: "100%",
-  maxHeight: "300px",
+  maxHeight: { xs: "250px", sm: "300px" },
   overflowY: "auto",
   backgroundColor: "white",
-  borderRadius: "8px",
-  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+  borderRadius: "0 0 24px 24px",
+  boxShadow: "0 8px 32px rgba(94, 114, 228, 0.1)",
+  backdropFilter: "blur(10px)",
   padding: "8px 0",
+  "&::-webkit-scrollbar": {
+    width: "8px",
+  },
+  "&::-webkit-scrollbar-thumb": {
+    backgroundColor: "rgba(94, 114, 228, 0.2)",
+    borderRadius: "4px",
+  },
 }));
 
 const ManageFriends = () => {
@@ -148,175 +156,254 @@ const ManageFriends = () => {
     }
   };
 
+  const isAlreadyFriend = (email) => {
+    return myFriends.some(friend => friend.email === email);
+  };
+
   return (
     <Box
       sx={{
         width: "100%",
-        height: "100%",
-        p: { xs: 2, md: 4 },
-        backgroundColor: "#f8f9fe",
-        overflowY: "auto",
+        height: "100vh",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        p: { xs: 1.5, sm: 2, md: 4 },
+        mt: { xs: 2, sm: 0 },
       }}
     >
+      {/* Fixed Header Section */}
       <Paper
         elevation={0}
         sx={{
-          p: 3,
-          borderRadius: 4,
-          background: "linear-gradient(135deg, #fff 0%, #f8f9fe 100%)",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-          mb: 3,
+          p: { xs: 2, sm: 3, md: 4 },
+          borderRadius: { xs: "16px", sm: "24px" },
+          background: "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)",
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 8px 32px rgba(94, 114, 228, 0.1)",
+          mb: 4,
+          border: "1px solid rgba(255,255,255,0.8)",
+          flexShrink: 0, // Prevent header from shrinking
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography
-            variant="h5"
-            sx={{
-              color: "#2C3E50",
-              fontWeight: 900,
-              background: "linear-gradient(135deg, #5E72E4 0%, #825EE4 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          gap: { xs: 2, sm: 0 },
+          justifyContent: 'space-between' 
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: { xs: 1, sm: 2 }
+          }}>
+            <Typography
+              variant="h5"
+              sx={{
+                fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
+                color: "#2C3E50",
+                fontWeight: 800,
+                background: "linear-gradient(135deg, #5E72E4 0%, #825EE4 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              My Friends
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: '#8898aa',
+                backgroundColor: 'rgba(94, 114, 228, 0.1)',
+                px: { xs: 1.5, sm: 2 },
+                py: { xs: 0.25, sm: 0.5 },
+                borderRadius: 2,
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                fontWeight: 600,
+              }}
+            >
+              {myFriends.length} total
+            </Typography>
+          </Box>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              backgroundColor: 'rgba(136, 152, 170, 0.1)',
+              px: { xs: 1.5, sm: 2 },
+              py: { xs: 0.5, sm: 1 },
+              borderRadius: 2
             }}
           >
-            My Friends
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <InfoOutlined sx={{ color: '#8898aa', fontSize: 16 }} />
-            <Typography variant="caption" sx={{ color: '#8898aa', fontStyle: 'italic' }}>
+            <InfoOutlined sx={{ color: '#8898aa', fontSize: { xs: 12, sm: 14 } }} />
+            <Typography variant="caption" sx={{ color: '#8898aa', fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
               Personal reference list only
             </Typography>
           </Box>
         </Box>
-      </Paper>
 
-      <ClickAwayListener onClickAway={handleClickAway}>
-        <Box sx={{ position: "relative", width: "100%" }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Search users by name or email..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            sx={{
-              mb: open ? 0 : 3,
-              width: "100%",
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "white",
-                borderRadius: "8px 8px",
-                borderBottomLeftRadius: open ? 0 : "8px",
-                borderBottomRightRadius: open ? 0 : "8px",
-                transition: "all 0.2s ease-in-out",
-                "&:hover": {
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                },
-                "&.Mui-focused": {
-                  boxShadow: "0 4px 20px rgba(94, 114, 228, 0.15)",
-                },
-              },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          {open && (
-            <StyledSearchResults>
-              {filteredUsers.length === 0 ? (
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    py: 3,
-                    px: 2,
-                    textAlign: "center",
-                    color: "#525F7F",
-                  }}
-                >
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    No users found matching "{searchQuery}"
-                  </Typography>
-                </Box>
-              ) : (
-                filteredUsers.map((user) => (
-                  <ListItem
-                    key={user.id}
-                    sx={{
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        backgroundColor: "rgba(94, 114, 228, 0.05)",
-                      },
-                    }}
-                  >
-                    <ListItemAvatar>
-                      <Avatar
-                        src={user.profilePicture || ""}
-                        alt={user.name}
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          border: "2px solid #E8E8E8",
-                          bgcolor: "#2C3E50",
-                          color: "white",
-                          fontWeight: 600,
-                          fontSize: "1rem",
-                        }}
-                      >
-                        {getInitials(user.name)}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={user.name}
-                      secondary={user.email}
-                      primaryTypographyProps={{
-                        fontWeight: 600,
-                        fontSize: "0.9rem",
-                      }}
-                      secondaryTypographyProps={{
-                        fontSize: "0.8rem",
-                      }}
-                    />
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={
-                        addingFriendMap[user.email] ? (
-                          <CircularProgress size={16} color="primary" />
-                        ) : (
-                          <PersonAddIcon />
-                        )
-                      }
-                      onClick={() => handleAddFriend(user.email)}
-                      disabled={addingFriendMap[user.email]}
+        <Box sx={{ mt: { xs: 2, sm: 3, md: 4 } }}>
+          <ClickAwayListener onClickAway={handleClickAway}>
+            <Box sx={{ position: "relative", width: "100%" }}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Add friends by name or email..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.8)",
+                    backdropFilter: "blur(10px)",
+                    borderRadius: open ? "24px 24px 0 0" : "24px",
+                    transition: "all 0.2s ease-in-out",
+                    height: "60px",
+                    border: "1px solid rgba(94, 114, 228, 0.1)",
+                    "&:hover": {
+                      boxShadow: "0 4px 20px rgba(94, 114, 228, 0.15)",
+                      backgroundColor: "rgba(255,255,255,0.95)",
+                    },
+                    "&.Mui-focused": {
+                      boxShadow: "0 4px 20px rgba(94, 114, 228, 0.2)",
+                      backgroundColor: "white",
+                    },
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: '#8898aa' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              {open && (
+                <StyledSearchResults>
+                  {filteredUsers.length === 0 ? (
+                    <Box
                       sx={{
-                        ml: 2,
-                        minWidth: "100px",
-                        borderColor: "#5E72E4",
-                        color: "#5E72E4",
-                        "&:hover": {
-                          borderColor: "#4B54B9",
-                          backgroundColor: "rgba(94, 114, 228, 0.05)",
-                        },
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        py: 3,
+                        px: 2,
+                        textAlign: "center",
+                        color: "#525F7F",
                       }}
                     >
-                      {addingFriendMap[user.email] ? "Adding..." : "Add"}
-                    </Button>
-                  </ListItem>
-                ))
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        No users found matching "{searchQuery}"
+                      </Typography>
+                    </Box>
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <ListItem
+                        key={user.id}
+                        sx={{
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            backgroundColor: "rgba(94, 114, 228, 0.05)",
+                          },
+                        }}
+                      >
+                        <ListItemAvatar>
+                          <Avatar
+                            src={user.profilePicture || ""}
+                            alt={user.name}
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              border: "2px solid #E8E8E8",
+                              bgcolor: "#2C3E50",
+                              color: "white",
+                              fontWeight: 600,
+                              fontSize: "1rem",
+                            }}
+                          >
+                            {getInitials(user.name)}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={user.name}
+                          secondary={user.email}
+                          primaryTypographyProps={{
+                            fontWeight: 600,
+                            fontSize: "0.9rem",
+                          }}
+                          secondaryTypographyProps={{
+                            fontSize: "0.8rem",
+                          }}
+                        />
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={
+                            addingFriendMap[user.email] ? (
+                              <CircularProgress size={16} color="primary" />
+                            ) : (
+                              isAlreadyFriend(user.email) ? null : <PersonAddIcon />
+                            )
+                          }
+                          onClick={() => handleAddFriend(user.email)}
+                          disabled={addingFriendMap[user.email] || isAlreadyFriend(user.email)}
+                          sx={{
+                            ml: 2,
+                            minWidth: "100px",
+                            borderColor: isAlreadyFriend(user.email) ? "#82C7A4" : "#5E72E4",
+                            color: isAlreadyFriend(user.email) ? "#82C7A4" : "#5E72E4",
+                            "&:hover": {
+                              borderColor: isAlreadyFriend(user.email) ? "#82C7A4" : "#4B54B9",
+                              backgroundColor: isAlreadyFriend(user.email) 
+                                ? "rgba(130, 199, 164, 0.05)" 
+                                : "rgba(94, 114, 228, 0.05)",
+                            },
+                            cursor: isAlreadyFriend(user.email) ? "default" : "pointer",
+                          }}
+                        >
+                          {addingFriendMap[user.email] ? "Adding..." : 
+                           isAlreadyFriend(user.email) ? "Added" : "Add"}
+                        </Button>
+                      </ListItem>
+                    ))
+                  )}
+                </StyledSearchResults>
               )}
-            </StyledSearchResults>
-          )}
+            </Box>
+          </ClickAwayListener>
         </Box>
-      </ClickAwayListener>
+      </Paper>
 
+      {/* Scrollable Friends List */}
       <Fade in={true}>
-        <List sx={{ width: "100%", gap: 2 }}>
+        <List 
+          sx={{ 
+            width: "100%", 
+            gap: { xs: 1, sm: 2 },
+            flexGrow: 1,
+            overflowY: "auto",
+            maxHeight: {
+              xs: "calc(100vh - 380px)",
+              sm: "calc(100vh - 400px)",
+              md: "calc(100vh - 420px)"
+            },
+            "&::-webkit-scrollbar": {
+              width: "8px",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "rgba(94, 114, 228, 0.2)",
+              borderRadius: "4px",
+            },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "rgba(94, 114, 228, 0.05)",
+              borderRadius: "4px",
+            },
+            scrollbarWidth: "thin",
+            scrollbarColor: "rgba(94, 114, 228, 0.2) rgba(94, 114, 228, 0.05)"
+          }}
+        >
           {myFriends.map((friend) => (
             <ListItem
               key={friend.id}
@@ -347,16 +434,19 @@ const ManageFriends = () => {
                 </IconButton>
               }
               sx={{
-                mb: 2,
-                backgroundColor: "white",
-                borderRadius: 3,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                transition: "all 0.2s ease-in-out",
+                mb: { xs: 1, sm: 2 },
+                background: "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)",
+                backdropFilter: "blur(10px)",
+                borderRadius: { xs: "16px", sm: "24px" },
+                border: "1px solid rgba(255,255,255,0.8)",
+                boxShadow: "0 4px 16px rgba(94, 114, 228, 0.1)",
+                transition: "all 0.3s ease-in-out",
                 "&:hover": {
                   transform: "translateY(-2px)",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                  backgroundColor: "rgba(94, 114, 228, 0.05)",
+                  boxShadow: "0 8px 32px rgba(94, 114, 228, 0.2)",
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)",
                 },
+                p: { xs: 1.5, sm: 2 },
               }}
             >
               <ListItemAvatar>
@@ -364,8 +454,8 @@ const ManageFriends = () => {
                   src={friend.profilePicture || ""}
                   alt={friend.name}
                   sx={{
-                    width: 50,
-                    height: 50,
+                    width: { xs: 40, sm: 50 },
+                    height: { xs: 40, sm: 50 },
                     boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
                     border: "3px solid white",
                   }}
@@ -379,16 +469,45 @@ const ManageFriends = () => {
                 primaryTypographyProps={{
                   fontWeight: 600,
                   color: "#32325d",
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  noWrap: true,
+                  sx: {
+                    maxWidth: { xs: '140px', sm: '200px', md: 'none' }
+                  }
                 }}
                 secondaryTypographyProps={{
                   color: "#525F7F",
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  noWrap: true,
+                  sx: {
+                    maxWidth: { xs: '140px', sm: '200px', md: 'none' }
+                  }
+                }}
+                sx={{
+                  minWidth: 0, // Enable text truncation
+                  mr: { xs: 1, sm: 2 } // Add margin for remove button
                 }}
               />
             </ListItem>
           ))}
           {myFriends.length === 0 && (
-            <Box sx={{ textAlign: "center", py: 4, color: "#525F7F" }}>
-              <Typography>No friends added yet</Typography>
+            <Box 
+              sx={{ 
+                textAlign: "center", 
+                py: 8,
+                background: "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)",
+                backdropFilter: "blur(10px)",
+                borderRadius: "24px",
+                border: "1px solid rgba(255,255,255,0.8)",
+                boxShadow: "0 4px 16px rgba(94, 114, 228, 0.1)",
+              }}
+            >
+              <Typography variant="h6" sx={{ color: '#8898aa', fontWeight: 500 }}>
+                No friends added yet
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#8898aa', mt: 1 }}>
+                Search for users above to add them to your friends list
+              </Typography>
             </Box>
           )}
         </List>
