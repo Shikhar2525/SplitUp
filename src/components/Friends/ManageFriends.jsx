@@ -92,11 +92,12 @@ const ManageFriends = () => {
     return allUsers
       .filter(
         (user) =>
-          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase())
+          !myFriends.some(friend => friend.email === user.email) && // Filter out existing friends
+          (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase()))
       )
       .slice(0, 5);
-  }, [searchQuery, allUsers]);
+  }, [searchQuery, allUsers, myFriends]); // Add myFriends as dependency
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
