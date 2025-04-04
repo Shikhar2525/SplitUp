@@ -7,6 +7,7 @@ import HomeTab from "../HomeTab/Home";
 import GroupsTab from "../GroupsTab/GroupsTab";
 import { useAuth0 } from "@auth0/auth0-react";
 import Welcome from "../Welcome/Welcome";
+import ManageFriends from "../Friends/ManageFriends";
 
 function Content() {
   const isMobile = useScreenSize();
@@ -79,6 +80,10 @@ function Content() {
         <Route
           path="groups"
           element={isAuthenticated ? <GroupsTab /> : <Welcome />}
+        />
+        <Route
+          path="friends"
+          element={isAuthenticated ? <ManageFriends /> :  <Welcome />}
         />
       </Routes>
     </Box>

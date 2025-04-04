@@ -20,6 +20,7 @@ import { useScreenSize } from "../contexts/ScreenSizeContext";
 import "./Navigration.scss";
 import { useNavigate } from "react-router-dom";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 
 function Navigation() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -60,6 +61,18 @@ function Navigation() {
             <Diversity3Icon />
           </ListItemIcon>
           <ListItemText primary="Groups" />
+        </ListItem>
+        <ListItem
+          sx={{ padding: 0 }}
+          button
+          onClick={() => {
+            navigate("/friends");
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 30 }}>
+            <GroupAddIcon />
+          </ListItemIcon>
+          <ListItemText primary="Friends" />
         </ListItem>
       </List>
     );

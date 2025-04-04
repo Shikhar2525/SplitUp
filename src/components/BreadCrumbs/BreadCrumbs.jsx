@@ -53,7 +53,7 @@ function BreadCrumbs() {
           cursor: "pointer",
         }}
       >
-        {currentTab === "Groups" && (
+        {(currentTab === "Groups" || "Friends") && (
           <KeyboardBackspaceIcon sx={{ color: "#3C3F88" }} />
         )}
         <Typography
