@@ -16,6 +16,7 @@ import { CircularLoaderProvider } from "./components/contexts/CircularLoader";
 import { CurrentCurrencyrProvider } from "./components/contexts/CurrentCurrency";
 import { RefetchLogsProvider } from "./components/contexts/RefetchLogs";
 import { AllUserSettledProvider } from "./components/contexts/AllUserSettled";
+import { FriendsProvider } from "./components/contexts/FriendsContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -30,33 +31,35 @@ root.render(
           window.location.search,
       }}
     >
-      <ScreenSizeProvider>
-        <CurrentTabProvider>
-          <CurrentGroupProvider>
-            <CurrentUserProvider>
-              <CurrentCurrencyrProvider>
-                <TopSnackBarProvider>
-                  <CircularLoaderProvider>
-                    <LinerProgressProvider>
-                      <AllGroupsProvider>
-                        <RefetchLogsProvider>
-                          <AllUserSettledProvider>
-                            <BrowserRouter>
-                              <ThemeProvider theme={theme}>
-                                <App />
-                              </ThemeProvider>
-                            </BrowserRouter>
-                          </AllUserSettledProvider>
-                        </RefetchLogsProvider>
-                      </AllGroupsProvider>
-                    </LinerProgressProvider>
-                  </CircularLoaderProvider>
-                </TopSnackBarProvider>
-              </CurrentCurrencyrProvider>
-            </CurrentUserProvider>
-          </CurrentGroupProvider>
-        </CurrentTabProvider>
-      </ScreenSizeProvider>
+      <FriendsProvider>
+        <ScreenSizeProvider>
+          <CurrentTabProvider>
+            <CurrentGroupProvider>
+              <CurrentUserProvider>
+                <CurrentCurrencyrProvider>
+                  <TopSnackBarProvider>
+                    <CircularLoaderProvider>
+                      <LinerProgressProvider>
+                        <AllGroupsProvider>
+                          <RefetchLogsProvider>
+                            <AllUserSettledProvider>
+                              <BrowserRouter>
+                                <ThemeProvider theme={theme}>
+                                  <App />
+                                </ThemeProvider>
+                              </BrowserRouter>
+                            </AllUserSettledProvider>
+                          </RefetchLogsProvider>
+                        </AllGroupsProvider>
+                      </LinerProgressProvider>
+                    </CircularLoaderProvider>
+                  </TopSnackBarProvider>
+                </CurrentCurrencyrProvider>
+              </CurrentUserProvider>
+            </CurrentGroupProvider>
+          </CurrentTabProvider>
+        </ScreenSizeProvider>
+      </FriendsProvider>
     </Auth0Provider>
   </React.StrictMode>
 );
