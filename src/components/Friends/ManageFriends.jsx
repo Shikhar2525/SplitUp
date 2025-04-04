@@ -17,6 +17,7 @@ import {
   Popper,
   ClickAwayListener,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
@@ -227,22 +228,62 @@ const ManageFriends = () => {
               {myFriends.length} total
             </Typography>
           </Box>
-          <Box 
+          <Tooltip 
+            title="People added here can't see you as a friend. This list is just for your convenience when creating groups."
+            arrow
+            placement="bottom"
             sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 1,
-              backgroundColor: 'rgba(136, 152, 170, 0.1)',
-              px: { xs: 1.5, sm: 2 },
-              py: { xs: 0.5, sm: 1 },
-              borderRadius: 2
+              fontSize: '1rem',
+              '& .MuiTooltip-tooltip': {
+                backgroundColor: '#32325d',
+                padding: '12px 16px',
+                fontSize: '0.875rem'
+              }
             }}
           >
-            <InfoOutlined sx={{ color: '#8898aa', fontSize: { xs: 12, sm: 14 } }} />
-            <Typography variant="caption" sx={{ color: '#8898aa', fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-              Personal reference list only
-            </Typography>
-          </Box>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1.5,
+                backgroundColor: 'rgba(94, 114, 228, 0.1)',
+                px: { xs: 2, sm: 2.5 },
+                py: { xs: 1, sm: 1.2 },
+                borderRadius: 2,
+                cursor: 'help',
+                transition: 'all 0.2s ease',
+                border: '1px dashed rgba(94, 114, 228, 0.3)',
+                '&:hover': {
+                  backgroundColor: 'rgba(94, 114, 228, 0.15)',
+                  border: '1px dashed rgba(94, 114, 228, 0.5)',
+                }
+              }}
+            >
+              <InfoOutlined 
+                sx={{ 
+                  color: '#5e72e4', 
+                  fontSize: { xs: 16, sm: 18 },
+                  animation: 'pulse 2s infinite',
+                  '@keyframes pulse': {
+                    '0%': { opacity: 0.6 },
+                    '50%': { opacity: 1 },
+                    '100%': { opacity: 0.6 }
+                  }
+                }} 
+              />
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  color: '#5e72e4', 
+                  fontWeight: 600,
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                  letterSpacing: '0.01em'
+                }}
+              >
+                Info about friends list
+              </Typography>
+            </Box>
+          </Tooltip>
         </Box>
 
         <Box sx={{ mt: { xs: 2, sm: 3, md: 4 } }}>
