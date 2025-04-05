@@ -19,6 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import notesService from '../services/notes.service';
 import userService from '../services/user.service';
 import { useCurrentUser } from '../contexts/CurrentUser';
+import { useAllGroups } from '../contexts/AllGroups';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -30,6 +31,7 @@ const Notes = ({ groupId }) => {
   const [editText, setEditText] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const { currentUser } = useCurrentUser();
+  const { allGroups } = useAllGroups();
 
   const fetchUserProfilePicture = async (note) => {
     try {
@@ -143,6 +145,13 @@ const Notes = ({ groupId }) => {
       return 'Just now';
     }
     return formatDistanceToNow(new Date(timestamp.seconds * 1000), { addSuffix: true });
+  };
+
+  const canModifyNote = (note) => {
+    const currentGroup = allGroups.find(group => group.id === groupId);
+    const isAdmin = currentGroup?.admin?.email === currentUser?.email;
+    const isNoteOwner = note.createdBy?.email === currentUser?.email;
+    return isAdmin || isNoteOwner;
   };
 
   return (
@@ -297,25 +306,27 @@ const Notes = ({ groupId }) => {
                           </Typography>
                         </Box>
                       </Box>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <IconButton
-                          onClick={() => {
-                            setEditingNote(note.id);
-                            setEditText(note.content);
-                          }}
-                          size="small"
-                          sx={{ color: '#5e72e4' }}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          onClick={() => handleDeleteNote(note.id)}
-                          size="small"
-                          sx={{ color: '#f5365c' }}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
+                      {canModifyNote(note) && (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <IconButton
+                            onClick={() => {
+                              setEditingNote(note.id);
+                              setEditText(note.content);
+                            }}
+                            size="small"
+                            sx={{ color: '#5e72e4' }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => handleDeleteNote(note.id)}
+                            size="small"
+                            sx={{ color: '#f5365c' }}
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      )}
                     </Box>
                   </>
                 )}

@@ -9,9 +9,11 @@ import {
   doc,
   updateDoc,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  getDoc
 } from "firebase/firestore";
 import userService from "./user.service";
+import groupService from './group.service';
 
 const notesRef = collection(db, "Notes");
 
@@ -60,13 +62,29 @@ class NotesService {
     }
   };
 
-  updateNote = async (noteId, updatedData) => {
+  updateNote = async (noteId, updatedData, userEmail) => {
     try {
+      // Get the note first
       const noteRef = doc(db, "Notes", noteId);
+      const noteDoc = await getDoc(noteRef);
+      const note = noteDoc.data();
+
+      // Get group data to check admin status
+      const group = await groupService.getGroupById(note.groupId);
+      
+      // Check permissions
+      if (!group || (group.admin?.email !== userEmail && note.createdBy?.email !== userEmail)) {
+        return { 
+          success: false, 
+          message: "You don't have permission to modify this note" 
+        };
+      }
+
       await updateDoc(noteRef, {
         ...updatedData,
         updatedAt: serverTimestamp()
       });
+      
       return { success: true };
     } catch (error) {
       console.error("Error updating note:", error);
@@ -74,9 +92,25 @@ class NotesService {
     }
   };
 
-  deleteNote = async (noteId) => {
+  deleteNote = async (noteId, userEmail) => {
     try {
-      await deleteDoc(doc(db, "Notes", noteId));
+      // Get the note first
+      const noteRef = doc(db, "Notes", noteId);
+      const noteDoc = await getDoc(noteRef);
+      const note = noteDoc.data();
+
+      // Get group data to check admin status
+      const group = await groupService.getGroupById(note.groupId);
+      
+      // Check permissions
+      if (!group || (group.admin?.email !== userEmail && note.createdBy?.email !== userEmail)) {
+        return { 
+          success: false, 
+          message: "You don't have permission to delete this note" 
+        };
+      }
+
+      await deleteDoc(noteRef);
       return { success: true };
     } catch (error) {
       console.error("Error deleting note:", error);
