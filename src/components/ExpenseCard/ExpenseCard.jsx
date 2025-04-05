@@ -237,9 +237,9 @@ const TransactionCard = ({
                           label={transaction?.paidBy?.name}
                         />
                         <Chip
-                          label={transaction.excludePayer ? "Not added in split" : "Added in split"}
+                          label={!transaction.excludePayer ? "Included in split" : "Not included in split"}
                           size="small"
-                          color={transaction.excludePayer ? "error" : "success"}
+                          color={!transaction.excludePayer ? "success" : "error"}
                           variant="outlined"
                         />
                       </Box>

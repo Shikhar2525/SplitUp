@@ -38,6 +38,7 @@ const Expenses = () => {
               splitBetween: expense?.splitBetween,
               createdBy: expense?.createdBy,
               currency: expense?.currency,
+              excludePayer: expense?.excludePayer
             }}
             index={index}
             groupId={currentGroupID}
