@@ -112,11 +112,13 @@ const Notes = ({ groupId }) => {
 
     try {
       const result = await notesService.updateNote(noteId, {
-        content: editText
+        content: editText,
+        updatedAt: new Date() // Add timestamp
       });
 
       if (result.success) {
         setEditingNote(null);
+        // Fetch notes immediately after update
         await fetchNotes();
       } else {
         console.error("Failed to update note:", result.message);
@@ -128,9 +130,10 @@ const Notes = ({ groupId }) => {
 
   const handleDeleteNote = async (noteId) => {
     try {
-      const result = await notesService.deleteNote(noteId);
+      const result = await notesService.deleteNote(noteId, currentUser?.email);
       
       if (result.success) {
+        // Immediately fetch notes after successful deletion
         await fetchNotes();
       } else {
         console.error("Failed to delete note:", result.message);

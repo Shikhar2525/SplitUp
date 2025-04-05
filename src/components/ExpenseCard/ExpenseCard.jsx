@@ -49,7 +49,12 @@ const TransactionCard = ({
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const dateShort = formatTransactionDate(transaction?.date);
   const { currentUser } = useCurrentUser();
-  const colors = ["#FFBB38", "#F44771", "#332A7C", "#16DBCC"];
+  const colors = [
+    "#4F46E5", // Indigo
+    "#3B82F6", // Blue
+    "#6366F1", // Violet
+    "#8B5CF6", // Purple
+  ];
   const { setLinearProgress } = useLinearProgress();
   const { refreshAllGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
@@ -104,218 +109,280 @@ const TransactionCard = ({
     <>
       <Accordion
         sx={{
-          marginBottom: 1.5,
-          borderRadius: 2,
-          boxShadow: 3,
-          width: "100%",
-          fontFamily: "Poppins, sans-serif",
+          marginBottom: 1.5, // Reduced from 2.5
+          borderRadius: "12px",
+          background: "linear-gradient(180deg, #FFFFFF 0%, #FAFBFF 100%)",
+          boxShadow: "0 4px 18px 0px rgba(0, 0, 0, 0.08)",
+          border: "1px solid rgba(226, 232, 240, 0.8)",
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          overflow: "hidden",
+          "&:hover": {
+            transform: "translateY(-2px)",
+            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+          },
+          "&.Mui-expanded": {
+            margin: "0 0 1.5rem 0",
+          },
         }}
         expanded={expanded}
         onChange={handleAccordionChange}
       >
         <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
+          expandIcon={
+            <ExpandMoreIcon
+              sx={{
+                color: colors[index % colors.length],
+                transition: "transform 0.3s ease",
+                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              }}
+            />
+          }
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: 0,
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderBottom: expanded
+              ? "1px solid rgba(226, 232, 240, 0.8)"
+              : "none",
+            minHeight: "56px", // Reduced from 72
+            padding: "8px 16px", // Reduced padding
           }}
         >
           <Box
             sx={{
               backgroundColor: colors[index % colors.length],
+              width: 90,
               height: "100%",
-              width: 50,
               position: "absolute",
               left: 0,
               top: 0,
               display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
               flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                right: -15,
+                top: "50%",
+                transform: "translateY(-50%)",
+                borderLeft: `15px solid ${colors[index % colors.length]}`,
+                borderTop: "15px solid transparent",
+                borderBottom: "15px solid transparent",
+              },
             }}
           >
-            <Typography
-              variant="subtitle1"
-              component="div"
-              sx={{ color: "white" }}
-            >
+            <Typography sx={{ color: "white", fontWeight: 600, fontSize: "0.9rem" }}>
               {dateShort?.month}
             </Typography>
-            <Typography
-              variant="subtitle2"
-              component="div"
-              sx={{ color: "white" }}
-            >
+            <Typography sx={{ color: "white", fontSize: "1.5rem", fontWeight: 700 }}>
               {dateShort?.day}
             </Typography>
           </Box>
+
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
               flexGrow: 1,
-              marginLeft: 8,
+              marginLeft: 14,
+              alignItems: "center",
             }}
           >
             <Typography
-              variant="subtitle1"
-              color="text.secondary"
-              component="div"
               sx={{
+                color: "#1E293B",
+                fontSize: "1rem",
+                fontWeight: 600,
                 flexGrow: 1,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                marginRight: 2,
               }}
             >
               {transaction?.description}
             </Typography>
             <Typography
-              variant="body1"
-              color="text.primary"
               sx={{
+                color: colors[index % colors.length],
+                fontSize: "1.25rem",
+                fontWeight: 700,
                 display: "flex",
-                alignItems: "center",
-                color: "#353E6C",
-                minWidth: "80px",
-                textAlign: "right",
-                flexShrink: 0,
+                alignItems: "baseline",
+                gap: 0.5,
               }}
             >
-              {transaction.amount} {getCurrencySymbol(transaction?.currency)}
+              {transaction.amount}
+              <span style={{ fontSize: "0.875rem", opacity: 0.9 }}>
+                {getCurrencySymbol(transaction?.currency)}
+              </span>
             </Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails>
-          <CardContent sx={{ padding: "0 !important" }}>
-            <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
-              <Table
-                aria-label="transaction details table"
-                size="small"
-                sx={{ border: "1px solid rgba(224, 224, 224, 1)" }}
-              >
-                <TableBody>
-                  <TableRow
-                    sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
-                  >
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      sx={{
-                        padding: "8px",
-                        borderRight: "1px solid rgba(224, 224, 224, 1)",
-                      }}
-                    >
-                      Description
-                    </TableCell>
-                    <TableCell sx={{ padding: "8px", paddingLeft: 2.2 }}>
-                      {transaction.description}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow
-                    sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
-                  >
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      sx={{
-                        padding: "8px",
-                        borderRight: "1px solid rgba(224, 224, 224, 1)",
-                      }}
-                    >
-                      <ReceiptIcon sx={{ marginRight: 1 }} />
-                      Transaction done by
-                    </TableCell>
-                    <TableCell sx={{ padding: "8px" }}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+
+        <AccordionDetails sx={{ padding: "8px 12px" }}>
+          <TableContainer
+            sx={{
+              borderRadius: "8px",
+              border: "1px solid rgba(224, 224, 224, 1)",
+            }}
+          >
+            <Table
+              sx={{
+                tableLayout: "fixed",
+                "& .MuiTableCell-root": {
+                  padding: "8px 12px", // Reduced padding
+                  fontSize: "0.85rem",
+                  borderColor: "#E9ECEF",
+                  height: "48px", // Fixed height for all cells
+                  minHeight: "48px",
+                  maxHeight: "48px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                },
+                "& .MuiChip-root": {
+                  height: "28px", // Smaller chip height
+                  padding: "0 8px", // Reduced chip padding
+                  "& .MuiChip-label": {
+                    padding: "0 6px", // Reduced label padding
+                    fontSize: "0.8rem",
+                  },
+                },
+                "& .MuiTableCell-head": {
+                  backgroundColor: "#F8FAFC",
+                  fontWeight: 600,
+                },
+                "& tr:last-child td": {
+                  borderBottom: "none",
+                },
+                "& tr td:first-of-type": {
+                  width: "30%",
+                  backgroundColor: "#F8FAFC",
+                  borderRight: "1px solid #E9ECEF",
+                },
+                "& tr td:last-child": {
+                  width: "70%",
+                },
+              }}
+            >
+              <TableBody>
+                {[
+                  {
+                    id: "description",
+                    label: "Description",
+                    icon: null,
+                    content: (
+                      <Typography sx={{ fontWeight: 500 }}>
+                        {transaction.description}
+                      </Typography>
+                    ),
+                  },
+                  {
+                    id: "paidBy",
+                    label: "Transaction done by",
+                    icon: <ReceiptIcon sx={{ color: colors[index % colors.length] }} />,
+                    content: (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                         <Chip
-                          key={transaction?.paidBy?.name}
                           label={transaction?.paidBy?.name}
+                          sx={{
+                            backgroundColor: `${colors[index % colors.length]}15`,
+                            color: colors[index % colors.length],
+                            fontWeight: 500,
+                          }}
                         />
                         <Chip
                           label={!transaction.excludePayer ? "Included in split" : "Not included in split"}
                           size="small"
                           color={!transaction.excludePayer ? "success" : "error"}
                           variant="outlined"
+                          sx={{
+                            height: "24px",
+                            fontSize: "0.75rem",
+                          }}
                         />
                       </Box>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow
-                    sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
-                  >
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      sx={{
-                        padding: "8px",
-                        borderRight: "1px solid rgba(224, 224, 224, 1)",
-                      }}
-                    >
-                      <AccessTimeIcon sx={{ marginRight: 1 }} />
-                      Transaction Date
-                    </TableCell>
-                    <TableCell sx={{ padding: "8px" }}>
+                    ),
+                  },
+                  {
+                    id: "date",
+                    label: "Transaction Date",
+                    icon: <AccessTimeIcon sx={{ color: colors[index % colors.length] }} />,
+                    content: (
                       <Chip
-                        label={new Date(transaction.date).toLocaleDateString(
-                          "en-US",
-                          { year: "numeric", month: "long", day: "numeric" }
-                        )}
+                        label={new Date(transaction.date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
                         variant="outlined"
+                        sx={{ fontWeight: 500 }}
                       />
-                    </TableCell>
-                  </TableRow>
-                  <TableRow
-                    sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
-                  >
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      sx={{
-                        padding: "8px",
-                        borderRight: "1px solid rgba(224, 224, 224, 1)",
-                      }}
-                    >
-                      <MonetizationOnIcon sx={{ marginRight: 1 }} />
-                      Spent Amount
-                    </TableCell>
-                    <TableCell sx={{ padding: "8px", paddingLeft: 2.2 }}>{`${
-                      transaction.amount
-                    }  ${getCurrencySymbol(transaction?.currency)}`}</TableCell>
-                  </TableRow>
-                  <TableRow
-                    sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
-                  >
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      sx={{
-                        padding: "8px",
-                        borderRight: "1px solid rgba(224, 224, 224, 1)",
-                      }}
-                    >
-                      <AltRouteIcon sx={{ marginRight: 1 }} />
-                      Split Between
-                    </TableCell>
-                    <TableCell sx={{ padding: "8px" }}>
+                    ),
+                  },
+                  {
+                    id: "amount",
+                    label: "Spent Amount",
+                    icon: <MonetizationOnIcon sx={{ color: colors[index % colors.length] }} />,
+                    content: `${transaction.amount} ${getCurrencySymbol(transaction?.currency)}`,
+                  },
+                  {
+                    id: "splitBetween",
+                    label: "Split Between",
+                    icon: <AltRouteIcon sx={{ color: colors[index % colors.length] }} />,
+                    content: (
                       <Box>
                         {transaction.splitBetween?.map((item) => (
                           <Chip
                             key={item?.name}
                             label={item?.name}
-                            sx={{ margin: "0.2rem" }}
+                            sx={{
+                              margin: "0.2rem",
+                              backgroundColor: `${colors[index % colors.length]}15`,
+                              color: colors[index % colors.length],
+                              fontWeight: 600,
+                              borderRadius: "6px",
+                            }}
                           />
                         ))}
                       </Box>
+                    ),
+                  },
+                  {
+                    id: "createdBy",
+                    label: "Expense added by",
+                    icon: <PersonIcon sx={{ color: colors[index % colors.length] }} />,
+                    content: (
+                      <Chip
+                        key={transaction?.createdBy?.name}
+                        label={transaction?.createdBy?.name}
+                        sx={{
+                          backgroundColor: `${colors[index % colors.length]}15`,
+                          color: colors[index % colors.length],
+                          fontWeight: 600,
+                          borderRadius: "6px",
+                        }}
+                      />
+                    ),
+                  },
+                ].map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        fontWeight: 500,
+                        color: "#2D3748",
+                      }}
+                    >
+                      {row.icon}
+                      {row.label}
                     </TableCell>
+                    <TableCell>{row.content}</TableCell>
                   </TableRow>
-                  <TableRow
-                    sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
-                  >
+                ))}
+                {(transaction?.createdBy?.email === currentUser?.email ||
+                  groupAdmin === currentUser?.email) && (
+                  <TableRow>
                     <TableCell
                       component="th"
                       scope="row"
@@ -324,52 +391,26 @@ const TransactionCard = ({
                         borderRight: "1px solid rgba(224, 224, 224, 1)",
                       }}
                     >
-                      <PersonIcon sx={{ marginRight: 1 }} />
-                      Expense added by
+                      Actions:
                     </TableCell>
                     <TableCell sx={{ padding: "8px" }}>
-                      <Chip
-                        key={transaction?.createdBy?.name}
-                        label={transaction?.createdBy?.name}
-                      />
+                      <Grid container spacing={1}>
+                        <Grid item>
+                          <IconButton
+                            color="error"
+                            aria-label="delete"
+                            onClick={handleOpenConfirmDialog}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Grid>
+                      </Grid>
                     </TableCell>
                   </TableRow>
-                  {(transaction?.createdBy?.email === currentUser?.email ||
-                    groupAdmin === currentUser?.email) && (
-                    <TableRow
-                      sx={{
-                        borderBottom: "1px solid rgba(224, 224, 224, 1)",
-                      }}
-                    >
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        sx={{
-                          padding: "8px",
-                          borderRight: "1px solid rgba(224, 224, 224, 1)",
-                        }}
-                      >
-                        Actions:
-                      </TableCell>
-                      <TableCell sx={{ padding: "8px" }}>
-                        <Grid container spacing={1}>
-                          <Grid item>
-                            <IconButton
-                              color="error"
-                              aria-label="delete"
-                              onClick={handleOpenConfirmDialog}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Grid>
-                        </Grid>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CardContent>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </AccordionDetails>
       </Accordion>
 

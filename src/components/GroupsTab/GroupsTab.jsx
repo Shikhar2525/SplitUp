@@ -44,6 +44,8 @@ import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import ShareLink from "../ShareLink/ShareLink";
 import GroupComponent from "../JoinGroup/JoinGroup";
 import { useAllUserSettled } from "../contexts/AllUserSettled";
+import StickyNote2Icon from "@mui/icons-material/StickyNote2"; // Add this import
+import Notes from "../Notes/Notes"; // Add this import
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -218,6 +220,14 @@ const GroupTab = () => {
       });
     }
 
+    // Add Notes tab before Settings
+    tabs.push({
+      label: "Notes",
+      icon: <StickyNote2Icon />,
+      component: <Notes groupId={currentGroupID} />,
+    });
+
+    // Add Settings tab last if user is admin
     if (currentGroupAdminEmail === currentUser?.email) {
       tabs.push({
         label: "Settings",
@@ -233,7 +243,7 @@ const GroupTab = () => {
     }
 
     return tabs;
-  }, [settledMemberStats, currentGroup]);
+  }, [settledMemberStats, currentGroup, currentGroupAdminEmail, currentUser?.email]);
 
   useEffect(() => {
     setLinearProgress(true);

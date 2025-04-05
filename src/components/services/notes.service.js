@@ -62,29 +62,13 @@ class NotesService {
     }
   };
 
-  updateNote = async (noteId, updatedData, userEmail) => {
+  updateNote = async (noteId, updatedData) => {
     try {
-      // Get the note first
       const noteRef = doc(db, "Notes", noteId);
-      const noteDoc = await getDoc(noteRef);
-      const note = noteDoc.data();
-
-      // Get group data to check admin status
-      const group = await groupService.getGroupById(note.groupId);
-      
-      // Check permissions
-      if (!group || (group.admin?.email !== userEmail && note.createdBy?.email !== userEmail)) {
-        return { 
-          success: false, 
-          message: "You don't have permission to modify this note" 
-        };
-      }
-
       await updateDoc(noteRef, {
         ...updatedData,
         updatedAt: serverTimestamp()
       });
-      
       return { success: true };
     } catch (error) {
       console.error("Error updating note:", error);
@@ -92,24 +76,9 @@ class NotesService {
     }
   };
 
-  deleteNote = async (noteId, userEmail) => {
+  deleteNote = async (noteId) => {
     try {
-      // Get the note first
       const noteRef = doc(db, "Notes", noteId);
-      const noteDoc = await getDoc(noteRef);
-      const note = noteDoc.data();
-
-      // Get group data to check admin status
-      const group = await groupService.getGroupById(note.groupId);
-      
-      // Check permissions
-      if (!group || (group.admin?.email !== userEmail && note.createdBy?.email !== userEmail)) {
-        return { 
-          success: false, 
-          message: "You don't have permission to delete this note" 
-        };
-      }
-
       await deleteDoc(noteRef);
       return { success: true };
     } catch (error) {

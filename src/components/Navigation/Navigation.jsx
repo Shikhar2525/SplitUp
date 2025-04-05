@@ -208,7 +208,7 @@ function Navigation() {
               letterSpacing: '0.02em'
             }}
           >
-            v1.0.0
+            v2.0.0
           </Typography>
         </Box>
       </Box>
@@ -280,7 +280,7 @@ function Navigation() {
             letterSpacing: '0.02em',
           }}
         >
-          v1.0.0
+          v2.0.0
         </Typography>
       </Box>
     </Box>
