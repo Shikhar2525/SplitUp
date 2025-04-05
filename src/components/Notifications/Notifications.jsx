@@ -14,6 +14,7 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { useNavigate } from 'react-router-dom';
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import { useCurrentGroup } from "../contexts/CurrentGroup"; // Add this import
 import {
   convertCurrency,
   formatFirestoreTimestamp,
@@ -30,6 +31,7 @@ const Notifications = ({ logs = [], loader }) => {
   });
   const { currentUser } = useCurrentUser();
   const { currentCurrency } = useCurrentCurrency();
+  const { setCurrentGroupID } = useCurrentGroup(); // Add this
   const navigate = useNavigate();
 
   const handleClick = (event) => {
@@ -155,9 +157,12 @@ const Notifications = ({ logs = [], loader }) => {
   }, [logs, currentUser, currentCurrency]);
 
   const handleNotificationClick = (groupId) => {
-    localStorage.setItem("currentGroupID", JSON.stringify(groupId));
-    navigate("/groups");
-    handleClose();
+    if (groupId) {
+      localStorage.setItem("currentGroupID", JSON.stringify(groupId));
+      setCurrentGroupID(groupId); // Set the current group ID
+      navigate("/groups");
+      handleClose();
+    }
   };
 
   const unreadCount = activities.filter(
@@ -293,15 +298,15 @@ const Notifications = ({ logs = [], loader }) => {
                               onClick={() => handleNotificationClick(activity.groupId)}
                               sx={{
                                 p: 2.5,
-                                cursor: 'pointer',
+                                cursor: activity.groupId ? 'pointer' : 'default',
                                 display: 'flex',
                                 gap: 2,
                                 transition: 'all 0.2s ease',
                                 position: 'relative',
-                                '&:hover': { 
+                                '&:hover': activity.groupId ? { 
                                   backgroundColor: 'rgba(94, 114, 228, 0.05)',
                                   transform: 'translateX(4px)'
-                                },
+                                } : {},
                               }}
                             >
                               <Avatar 
@@ -375,15 +380,15 @@ const Notifications = ({ logs = [], loader }) => {
                               onClick={() => handleNotificationClick(activity.groupId)}
                               sx={{
                                 p: 2.5,
-                                cursor: 'pointer',
+                                cursor: activity.groupId ? 'pointer' : 'default',
                                 display: 'flex',
                                 gap: 2,
                                 transition: 'all 0.2s ease',
                                 position: 'relative',
-                                '&:hover': { 
+                                '&:hover': activity.groupId ? { 
                                   backgroundColor: 'rgba(94, 114, 228, 0.05)',
                                   transform: 'translateX(4px)'
-                                },
+                                } : {},
                               }}
                             >
                               <Avatar 

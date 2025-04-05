@@ -9,6 +9,7 @@ import {
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useNavigate } from "react-router-dom";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
+import { useCurrentGroup } from "../contexts/CurrentGroup"; // Add this import
 
 const Activity = ({ isGroupsAvailable, logs, loader }) => {
   // Sample data for activities
@@ -16,6 +17,7 @@ const Activity = ({ isGroupsAvailable, logs, loader }) => {
   const { currentUser } = useCurrentUser();
   const navigate = useNavigate();
   const { currentCurrency } = useCurrentCurrency();
+  const { setCurrentGroupID } = useCurrentGroup(); // Add this
 
   const getLogsView = async () => {
     const sortedLogs = sortLogsByDate(logs);
@@ -201,6 +203,14 @@ const Activity = ({ isGroupsAvailable, logs, loader }) => {
     setActivities(newActivities);
   };
 
+  const handleActivityClick = (groupId) => {
+    if (groupId) {
+      localStorage.setItem("currentGroupID", JSON.stringify(groupId));
+      setCurrentGroupID(groupId); // Set the current group ID
+      navigate("/groups");
+    }
+  };
+
   useEffect(() => {
     if (logs.length) {
       // Only get logs view if there are logs
@@ -229,13 +239,7 @@ const Activity = ({ isGroupsAvailable, logs, loader }) => {
           activities.slice(0, 10).map((item) => (
             <Box
               key={item.id} // Unique key for each item
-              onClick={() => {
-                localStorage.setItem(
-                  "currentGroupID",
-                  JSON.stringify(item.groupID)
-                );
-                navigate("/groups");
-              }}
+              onClick={() => handleActivityClick(item.groupID)}
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -245,7 +249,7 @@ const Activity = ({ isGroupsAvailable, logs, loader }) => {
                 marginTop: 1,
                 marginRight: 1,
                 backgroundColor: "#fff",
-                cursor: "pointer",
+                cursor: item.groupID ? "pointer" : "default",
               }}
             >
               <Typography variant="caption" sx={{ color: "#353E6C" }}>
