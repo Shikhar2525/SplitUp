@@ -29,6 +29,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
 import PersonIcon from "@mui/icons-material/Person";
+import DescriptionIcon from "@mui/icons-material/Description";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { formatTransactionDate, getCurrencySymbol } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import GroupService from "../services/group.service";
@@ -215,33 +217,55 @@ const TransactionCard = ({
           </Box>
         </AccordionSummary>
 
-        <AccordionDetails sx={{ padding: "8px 12px" }}>
+        <AccordionDetails
+          sx={{
+            padding: { xs: "4px 8px", sm: "8px 12px" },
+            overflow: "hidden",
+          }}
+        >
           <TableContainer
             sx={{
               borderRadius: "8px",
               border: "1px solid rgba(224, 224, 224, 1)",
+              overflow: "hidden",
+              "& .MuiTableCell-root": {
+                border: "1px solid rgba(224, 224, 224, 1)",
+                borderCollapse: "collapse",
+                padding: { xs: "6px 8px", sm: "8px 12px" },
+              },
+              "& .MuiTable-root": {
+                borderCollapse: "separate",
+                borderSpacing: 0,
+                "& td, & th": {
+                  border: "1px solid rgba(224, 224, 224, 1)",
+                },
+              },
             }}
           >
             <Table
               sx={{
                 tableLayout: "fixed",
                 "& .MuiTableCell-root": {
-                  padding: "8px 12px", // Reduced padding
-                  fontSize: "0.85rem",
+                  padding: { xs: "6px 8px", sm: "8px 12px" },
+                  fontSize: { xs: "0.75rem", sm: "0.85rem" },
                   borderColor: "#E9ECEF",
-                  height: "48px", // Fixed height for all cells
-                  minHeight: "48px",
-                  maxHeight: "48px",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  height: { xs: "auto", sm: "48px" },
+                  minHeight: { xs: "36px", sm: "48px" },
+                  overflowWrap: "break-word",
+                  wordWrap: "break-word",
+                  hyphens: "auto",
                 },
                 "& .MuiChip-root": {
-                  height: "28px", // Smaller chip height
-                  padding: "0 8px", // Reduced chip padding
+                  height: { xs: "24px", sm: "28px" },
+                  maxWidth: "100%",
+                  padding: "0 8px",
                   "& .MuiChip-label": {
-                    padding: "0 6px", // Reduced label padding
-                    fontSize: "0.8rem",
+                    padding: "0 6px",
+                    fontSize: { xs: "0.7rem", sm: "0.8rem" },
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    display: "block",
                   },
                 },
                 "& .MuiTableCell-head": {
@@ -252,12 +276,25 @@ const TransactionCard = ({
                   borderBottom: "none",
                 },
                 "& tr td:first-of-type": {
-                  width: "30%",
+                  width: { xs: "40%", sm: "30%" },
                   backgroundColor: "#F8FAFC",
                   borderRight: "1px solid #E9ECEF",
+                  position: "sticky",
+                  left: 0,
                 },
                 "& tr td:last-child": {
-                  width: "70%",
+                  width: { xs: "60%", sm: "70%" },
+                },
+                "& .split-between-box": {
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  maxHeight: { xs: "none", sm: "80px" },
+                  "& .MuiChip-root": {
+                    margin: "2px",
+                    flexGrow: 0,
+                    flexShrink: 0,
+                  },
                 },
               }}
             >
@@ -266,7 +303,7 @@ const TransactionCard = ({
                   {
                     id: "description",
                     label: "Description",
-                    icon: null,
+                    icon: <DescriptionIcon sx={{ color: colors[index % colors.length] }} />,
                     content: (
                       <Typography sx={{ fontWeight: 500 }}>
                         {transaction.description}
@@ -278,7 +315,12 @@ const TransactionCard = ({
                     label: "Transaction done by",
                     icon: <ReceiptIcon sx={{ color: colors[index % colors.length] }} />,
                     content: (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Box sx={{ 
+                        display: "flex", 
+                        flexDirection: { xs: "column", sm: "row" },
+                        alignItems: { xs: "flex-start", sm: "center" }, 
+                        gap: 1.5 
+                      }}>
                         <Chip
                           label={transaction?.paidBy?.name}
                           sx={{
@@ -295,6 +337,7 @@ const TransactionCard = ({
                           sx={{
                             height: "24px",
                             fontSize: "0.75rem",
+                            display: "flex"
                           }}
                         />
                       </Box>
@@ -327,13 +370,12 @@ const TransactionCard = ({
                     label: "Split Between",
                     icon: <AltRouteIcon sx={{ color: colors[index % colors.length] }} />,
                     content: (
-                      <Box>
-                        {transaction.splitBetween?.map((item) => (
+                      <Box className="split-between-box">
+                        {transaction.splitBetween?.map((item, idx) => (
                           <Chip
-                            key={item?.name}
+                            key={idx}
                             label={item?.name}
                             sx={{
-                              margin: "0.2rem",
                               backgroundColor: `${colors[index % colors.length]}15`,
                               color: colors[index % colors.length],
                               fontWeight: 600,
@@ -361,6 +403,22 @@ const TransactionCard = ({
                       />
                     ),
                   },
+                  {
+                    id: "actions",
+                    label: "Actions",
+                    icon: <SettingsIcon sx={{ color: colors[index % colors.length] }} />,
+                    content:
+                      transaction?.createdBy?.email === currentUser?.email ||
+                      groupAdmin === currentUser?.email ? (
+                        <IconButton
+                          color="error"
+                          aria-label="delete"
+                          onClick={handleOpenConfirmDialog}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      ) : null,
+                  },
                 ].map((row) => (
                   <TableRow key={row.id}>
                     <TableCell
@@ -380,34 +438,6 @@ const TransactionCard = ({
                     <TableCell>{row.content}</TableCell>
                   </TableRow>
                 ))}
-                {(transaction?.createdBy?.email === currentUser?.email ||
-                  groupAdmin === currentUser?.email) && (
-                  <TableRow>
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      sx={{
-                        padding: "8px",
-                        borderRight: "1px solid rgba(224, 224, 224, 1)",
-                      }}
-                    >
-                      Actions:
-                    </TableCell>
-                    <TableCell sx={{ padding: "8px" }}>
-                      <Grid container spacing={1}>
-                        <Grid item>
-                          <IconButton
-                            color="error"
-                            aria-label="delete"
-                            onClick={handleOpenConfirmDialog}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Grid>
-                      </Grid>
-                    </TableCell>
-                  </TableRow>
-                )}
               </TableBody>
             </Table>
           </TableContainer>
