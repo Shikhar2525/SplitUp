@@ -27,7 +27,7 @@ import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
 import { convertCurrency, formatDate } from "../utils";
 import { useAllGroups } from "../contexts/AllGroups";
-import { Tooltip } from "@mui/material"; // Import Tooltip from MUI
+import { Tooltip } from "@mui/material";
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
 import Groups2Icon from "@mui/icons-material/Groups2";
 import { useLinearProgress } from "../contexts/LinearProgress";
@@ -44,8 +44,13 @@ import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import ShareLink from "../ShareLink/ShareLink";
 import GroupComponent from "../JoinGroup/JoinGroup";
 import { useAllUserSettled } from "../contexts/AllUserSettled";
-import StickyNote2Icon from "@mui/icons-material/StickyNote2"; // Add this import
-import Notes from "../Notes/Notes"; // Add this import
+import StickyNote2Icon from "@mui/icons-material/StickyNote2";
+import Notes from "../Notes/Notes";
+import InfoIcon from "@mui/icons-material/Info";
+import GroupIcon from "@mui/icons-material/Group";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import { useNavigate } from "react-router-dom";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -302,6 +307,184 @@ const GroupTab = () => {
     []
   );
 
+  const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {
+    const totalExpenses = selectedGroupDetails?.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
+    const memberCount = selectedGroupDetails?.members?.length || 1;
+    const perHeadCost = (totalExpenses / memberCount).toFixed(2);
+
+    return (
+      <Box sx={{
+        p: { xs: 1.5, sm: 2 },
+        backgroundColor: "rgba(94, 114, 228, 0.03)",
+        borderRadius: "12px",
+        display: "flex",
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'stretch', sm: 'center' },
+        justifyContent: "space-between",
+        gap: { xs: 1.5, sm: 2 },
+        border: '1px solid rgba(94, 114, 228, 0.1)',
+      }}>
+        {/* Left Section - Group Info */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2,
+          flex: { xs: '1', sm: '2' },
+          minWidth: 0 // Enable text truncation
+        }}>
+          <Box sx={{
+            backgroundColor: 'rgba(94, 114, 228, 0.1)',
+            borderRadius: '12px',
+            width: { xs: 40, sm: 45, md: 50 },
+            height: { xs: 40, sm: 45, md: 50 },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <InfoIcon sx={{ color: '#5e72e4', fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' } }} />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Tooltip title={selectedGroupDetails?.description || selectedGroupDetails?.title} arrow>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: "#525f7f",
+                  fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                  fontWeight: 600,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                {selectedGroupDetails?.description || selectedGroupDetails?.title}
+              </Typography>
+            </Tooltip>
+          </Box>
+        </Box>
+
+        {/* Center Section - Stats */}
+        <Box sx={{ 
+          display: 'flex',
+          alignItems: 'center',
+          gap: { xs: 2, sm: 3 },
+          justifyContent: { xs: 'space-between', sm: 'center' },
+          flex: { xs: '1', sm: '2' },
+          borderLeft: { xs: 'none', sm: '1px solid rgba(136, 152, 170, 0.2)' },
+          paddingLeft: { xs: 0, sm: 3 }
+        }}>
+          {/* Total Amount */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            gap: 0.5,
+            minWidth: 0
+          }}>
+            <Typography variant="caption" sx={{ 
+              color: '#8898aa', 
+              fontWeight: 500,
+              fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' }
+            }}>
+              Total Amount
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <AccountBalanceWalletIcon sx={{ 
+                color: '#5e72e4', 
+                fontSize: { xs: '1rem', sm: '1.1rem' } 
+              }} />
+              <Typography sx={{ 
+                color: '#5e72e4', 
+                fontWeight: 600,
+                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
+              }}>
+                {totalExpenses} {selectedGroupDetails?.defaultCurrency}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Per Head Cost */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            gap: 0.5,
+            borderLeft: { xs: 'none', sm: '1px solid rgba(136, 152, 170, 0.2)' },
+            paddingLeft: { xs: 0, sm: 3 },
+            minWidth: 0
+          }}>
+            <Typography variant="caption" sx={{ 
+              color: '#8898aa', 
+              fontWeight: 500,
+              fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' }
+            }}>
+              Appx Per Person
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <AccountBalanceWalletIcon sx={{ 
+                color: '#2dce89', 
+                fontSize: { xs: '1rem', sm: '1.1rem' } 
+              }} />
+              <Typography sx={{ 
+                color: '#2dce89', 
+                fontWeight: 600,
+                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
+              }}>
+                {perHeadCost} {selectedGroupDetails?.defaultCurrency}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Right Section - Date and Share */}
+        <Box sx={{ 
+          display: 'flex',
+          alignItems: 'center',
+          gap: { xs: 2, sm: 3 },
+          justifyContent: { xs: 'space-between', sm: 'flex-end' },
+          flex: { xs: '1', sm: '1.5' },
+          borderLeft: { xs: 'none', sm: '1px solid rgba(136, 152, 170, 0.2)' },
+          paddingLeft: { xs: 0, sm: 3 }
+        }}>
+          {/* Created Date */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            gap: 1,
+            minWidth: 0
+          }}>
+            <CalendarTodayIcon sx={{ 
+              fontSize: { xs: '1rem', sm: '1.1rem' }, 
+              color: '#8898aa' 
+            }} />
+            <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <Typography variant="caption" sx={{ 
+                color: '#8898aa', 
+                fontWeight: 600, 
+                fontSize: { xs: '0.65rem', sm: '0.7rem' }
+              }}>
+                Created
+              </Typography>
+              <Tooltip title={formatDate(selectedGroupDetails?.createdDate) ?? "N/A"} arrow>
+                <Typography sx={{ 
+                  color: '#525f7f', 
+                  fontWeight: 600, 
+                  fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: { xs: '100px', sm: '120px', md: '150px' }
+                }}>
+                  {formatDate(selectedGroupDetails?.createdDate) ?? "N/A"}
+                </Typography>
+              </Tooltip>
+            </Box>
+          </Box>
+
+          <ShareLink />
+        </Box>
+      </Box>
+    );
+  });
+
   return (
     <Box
       sx={{
@@ -506,59 +689,6 @@ const AvatarGroupSection = React.memo(({ members }) => {
           ))}
         </AvatarGroup>
       </Tooltip>
-    </Box>
-  );
-});
-
-// Memoized group info bar
-const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {
-  const descriptionOrTitle = selectedGroupDetails?.description
-    ? `Description: ${selectedGroupDetails?.description}`
-    : `Group: ${selectedGroupDetails?.title}`;
-
-  return (
-    <Box
-      sx={{
-        p: 2,
-        backgroundColor: "#f0f0f0",
-        borderRadius: "8px",
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center", // Align items horizontally in the center
-        justifyContent: "space-between",
-        gap: 2, // Space between elements
-      }}
-    >
-      <Tooltip title={descriptionOrTitle} arrow>
-        <Typography
-          variant="subtitle2"
-          color="textSecondary"
-          sx={{
-            overflow: "hidden", // Hide overflowing text
-            textOverflow: "ellipsis", // Add ellipsis when text is truncated
-            whiteSpace: "nowrap", // Prevent text wrapping
-            maxWidth: "60%", // Set a specific width to limit the text (adjust as needed)
-            cursor: "pointer", // Show pointer on hover
-          }}
-        >
-          {descriptionOrTitle}
-        </Typography>
-      </Tooltip>
-
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 1,
-        }}
-      >
-        <Typography variant="subtitle2" color="textSecondary">
-          Created on: {formatDate(selectedGroupDetails?.createdDate) ?? "N/A"}
-        </Typography>
-
-        <ShareLink></ShareLink>
-      </Box>
     </Box>
   );
 });
