@@ -496,21 +496,98 @@ const GroupTab = () => {
       }}
     >
       {allUserSettled && (
-        <Alert
-          variant="filled"
-          severity="success"
+        <Box
           sx={{
-            height: 30, // Decrease height
-            padding: "0 8px", // Reduce padding
-            fontSize: "0.8rem", // Adjust font size for smaller height
-            display: "flex", // Ensure proper alignment
-            alignItems: "center", // Vertically center content
-            margin: 1,
-            backgroundColor: "#3ea843",
+            mx: { xs: 1.5, sm: 2 },
+            my: { xs: 1, sm: 1.5 },
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: { xs: 45, sm: 50 },
+            borderRadius: '12px',
+            background: 'linear-gradient(120deg, #4CAF50 0%, #45B649 100%)',
+            overflow: 'hidden',
+            animation: 'slideDown 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+            '@keyframes slideDown': {
+              from: { transform: 'translateY(-100%)', opacity: 0 },
+              to: { transform: 'translateY(0)', opacity: 1 }
+            }
           }}
         >
-          Group settled
-        </Alert>
+          {/* Success Icon */}
+          <Box
+            sx={{
+              position: 'absolute',
+              left: { xs: '15px', sm: '20px' },
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: { xs: '32px', sm: '36px' },
+              height: { xs: '32px', sm: '36px' },
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              animation: 'pulse 2s infinite',
+              '@keyframes pulse': {
+                '0%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(255, 255, 255, 0.4)' },
+                '70%': { transform: 'scale(1.1)', boxShadow: '0 0 0 10px rgba(255, 255, 255, 0)' },
+                '100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(255, 255, 255, 0)' }
+              }
+            }}
+          >
+            <Typography
+              component="span"
+              sx={{
+                fontSize: { xs: '1.2rem', sm: '1.3rem' },
+                color: 'white',
+                fontWeight: 'bold'
+              }}
+            >
+              ✓
+            </Typography>
+          </Box>
+
+          {/* Message */}
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            ml: { xs: '55px', sm: 0 },
+            color: 'white'
+          }}>
+            <Typography
+              sx={{
+                fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                fontWeight: 600,
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+              }}
+            >
+              Group settled successfully!
+            </Typography>
+          </Box>
+
+          {/* Confetti Effect */}
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              opacity: 0.2,
+              backgroundImage: `
+                radial-gradient(circle at 20% -50%, white 6px, transparent 8px),
+                radial-gradient(circle at 75% 150%, white 6px, transparent 8px),
+                radial-gradient(circle at 100% 50%, white 4px, transparent 6px),
+                radial-gradient(circle at 50% -20%, white 4px, transparent 6px),
+                radial-gradient(circle at 0% 80%, white 3px, transparent 4px)
+              `,
+              backgroundSize: '80px 80px',
+              animation: 'confetti 3s linear infinite',
+              '@keyframes confetti': {
+                '0%': { backgroundPosition: '0 0' },
+                '100%': { backgroundPosition: '80px 80px' }
+              }
+            }}
+          />
+        </Box>
       )}
 
       <Box
