@@ -67,30 +67,35 @@ function BreadCrumbs() {
         sx={{
           flex: 1,
           display: "flex",
-          overflow: "auto",
-          flexBasis: "20%",
+          overflow: "hidden", // Changed from auto to hidden
+          flexBasis: { xs: '30%', sm: '20%' }, // Adjusted flex basis
           flexShrink: 0,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "flex-start",
           gap: 1,
-          ...(isMobile && { flexBasis: "14%" }),
           cursor: "pointer",
         }}
       >
         {(currentTab === "Groups" || currentTab === "Friends") && (
-          <KeyboardBackspaceIcon sx={{ color: "#3C3F88" }} />
+          <KeyboardBackspaceIcon 
+            sx={{ 
+              color: "#3C3F88",
+              flexShrink: 0 // Prevent icon from shrinking
+            }} 
+          />
         )}
         <Typography
           sx={{
-            fontSize: "20px",
+            fontSize: { xs: '14px', sm: '20px' }, // Reduced font size on mobile
             color: "#3C3F88",
             letterSpacing: "0.05em",
-            ...(currentTab === "Groups" ? {} : { marginLeft: 0.6 }),
-            ...(isMobile ? { fontSize: 14 } : {}),
+            marginLeft: currentTab === "Groups" ? 0 : 0.6,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
           }}
           variant="h6"
-          color="initial"
         >
           {currentTab === "Groups"
             ? title
@@ -103,15 +108,15 @@ function BreadCrumbs() {
         className="rightSideButton"
         sx={{
           flex: 1,
-          display: "flex",
-          flexBasis: "35%",
+          display: 'flex',
+          flexBasis: { xs: '60%', sm: '35%' },
           flexShrink: 0,
-          overflow: "hidden",
-          width: "100%",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          gap: 1.5,
+          overflow: 'visible',
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: { xs: 'flex-end', sm: 'flex-end' },
+          gap: { xs: 1, sm: 1.5 },
         }}
       >
         <Button
@@ -123,15 +128,19 @@ function BreadCrumbs() {
             color: "#FFF",
             "&:hover": { backgroundColor: "#FD7289" },
             borderRadius: "8px",
-            p: "2px 8px",
-            display: "flex",
-            alignItems: "center",
-
-            ...(isMobile && { minWidth: "38px" }),
+            padding: { xs: '6px 8px', sm: '6px 16px' },
+            minWidth: { xs: 'auto', sm: '120px' },
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 0, sm: 1 },
+            whiteSpace: 'nowrap',
+            '& .MuiButton-startIcon': {
+              margin: { xs: 0, sm: '-4px 8px -4px 0' }
+            }
           }}
+          startIcon={<AddIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.4rem' } }} />}
         >
-          <AddIcon />
-          New Group
+          <Box sx={{ display: { xs: 'none', sm: 'block' } }}>New Group</Box>
         </Button>
         <Notifications logs={logs} loader={loader} />
         <AccountMenu />

@@ -268,17 +268,22 @@ const ManageFriends = () => {
           flexShrink: 0, // Prevent header from shrinking
         }}
       >
+        {/* Updated header layout */}
         <Box sx={{ 
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { xs: 'flex-start', sm: 'center' }, 
-          gap: { xs: 2, sm: 0 },
-          justifyContent: 'space-between' 
+          gap: { xs: 2, sm: 3 },
+          alignItems: { xs: 'center', sm: 'flex-start' },
+          justifyContent: 'space-between',
+          textAlign: { xs: 'center', sm: 'left' },
         }}>
+          {/* Title and Count Section */}
           <Box sx={{ 
             display: 'flex', 
-            alignItems: 'center', 
-            gap: { xs: 1, sm: 2 }
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: 'center',
+            gap: { xs: 1, sm: 2 },
+            width: { xs: '100%', sm: 'auto' }
           }}>
             <Typography
               variant="h5"
@@ -298,28 +303,28 @@ const ManageFriends = () => {
               sx={{
                 color: '#8898aa',
                 backgroundColor: 'rgba(94, 114, 228, 0.1)',
-                px: { xs: 1.5, sm: 2 },
-                py: { xs: 0.25, sm: 0.5 },
+                px: { xs: 2, sm: 2 },
+                py: { xs: 0.5, sm: 0.5 },
                 borderRadius: 2,
                 fontSize: { xs: "0.75rem", sm: "0.875rem" },
                 fontWeight: 600,
+                minWidth: '80px',
               }}
             >
               {myFriends.length} total
             </Typography>
           </Box>
-          <Tooltip
-            title="When enabled, other users won't find you in search results"
-            arrow
-            placement="bottom"
-          >
+
+          {/* Controls Section */}
+          <Box sx={{ 
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: 'center',
+            gap: 2,
+            width: { xs: '100%', sm: 'auto' }
+          }}>
             <FormControlLabel
-              control={
-                <CustomSwitch
-                  checked={isHidden}
-                  onChange={handleVisibilityChange}
-                />
-              }
+              control={<CustomSwitch checked={isHidden} onChange={handleVisibilityChange} />}
               label={
                 <Box sx={{ 
                   display: 'flex', 
@@ -327,82 +332,55 @@ const ManageFriends = () => {
                   gap: 1,
                   color: '#5e72e4',
                   fontSize: '0.875rem',
-                  fontWeight: 600
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap'
                 }}>
                   Hide Me
                 </Box>
               }
               sx={{
+                m: 0,
                 border: '1px dashed rgba(94, 114, 228, 0.3)',
                 borderRadius: 2,
                 padding: '4px 12px',
                 transition: 'all 0.2s ease',
+                width: { xs: '100%', sm: 'auto' },
+                justifyContent: 'center',
                 '&:hover': {
                   backgroundColor: 'rgba(94, 114, 228, 0.05)',
                   borderColor: 'rgba(94, 114, 228, 0.5)',
                 }
               }}
             />
-          </Tooltip>
-          <Tooltip 
-            title="People added here can't see you as a friend. This list is just for your convenience when creating groups."
-            arrow
-            placement="bottom"
-            sx={{ 
-              fontSize: '1rem',
-              '& .MuiTooltip-tooltip': {
-                backgroundColor: '#32325d',
-                padding: '12px 16px',
-                fontSize: '0.875rem'
-              }
-            }}
-          >
-            <Box 
-              sx={{ 
+
+            <Tooltip title="People added here can't see you as a friend. This list is just for your convenience when creating groups.">
+              <Box sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: 1.5,
                 backgroundColor: 'rgba(94, 114, 228, 0.1)',
-                px: { xs: 2, sm: 2.5 },
-                py: { xs: 1, sm: 1.2 },
+                px: 2.5,
+                py: 1,
                 borderRadius: 2,
                 cursor: 'help',
-                transition: 'all 0.2s ease',
+                width: { xs: '100%', sm: 'auto' },
+                justifyContent: 'center',
                 border: '1px dashed rgba(94, 114, 228, 0.3)',
                 '&:hover': {
                   backgroundColor: 'rgba(94, 114, 228, 0.15)',
                   border: '1px dashed rgba(94, 114, 228, 0.5)',
                 }
-              }}
-            >
-              <InfoOutlined 
-                sx={{ 
-                  color: '#5e72e4', 
-                  fontSize: { xs: 16, sm: 18 },
-                  animation: 'pulse 2s infinite',
-                  '@keyframes pulse': {
-                    '0%': { opacity: 0.6 },
-                    '50%': { opacity: 1 },
-                    '100%': { opacity: 0.6 }
-                  }
-                }} 
-              />
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  color: '#5e72e4', 
-                  fontWeight: 600,
-                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                  letterSpacing: '0.01em'
-                }}
-              >
-                Info
-              </Typography>
-            </Box>
-          </Tooltip>
+              }}>
+                <InfoOutlined sx={{ color: '#5e72e4', fontSize: 18 }} />
+                <Typography sx={{ color: '#5e72e4', fontWeight: 600, fontSize: '0.875rem' }}>
+                  Info
+                </Typography>
+              </Box>
+            </Tooltip>
+          </Box>
         </Box>
 
-        <Box sx={{ mt: { xs: 2, sm: 3, md: 4 } }}>
+        <Box sx={{ mt: { xs: 3, sm: 4 } }}>
           <ClickAwayListener onClickAway={handleClickAway}>
             <Box sx={{ position: "relative", width: "100%" }}>
               <TextField
@@ -465,15 +443,19 @@ const ManageFriends = () => {
                           "&:hover": {
                             backgroundColor: "rgba(94, 114, 228, 0.05)",
                           },
+                          display: 'flex',
+                          flexWrap: 'nowrap',
+                          gap: 1,
+                          pr: { xs: 1, sm: 2 }, // Reduced padding on mobile
                         }}
                       >
-                        <ListItemAvatar>
+                        <ListItemAvatar sx={{ minWidth: { xs: 45, sm: 56 } }}>
                           <Avatar
                             src={user.profilePicture || ""}
                             alt={user.name}
                             sx={{
-                              width: 40,
-                              height: 40,
+                              width: { xs: 35, sm: 40 },
+                              height: { xs: 35, sm: 40 },
                               border: "2px solid #E8E8E8",
                               bgcolor: "#2C3E50",
                               color: "white",
@@ -487,12 +469,22 @@ const ManageFriends = () => {
                         <ListItemText
                           primary={user.name}
                           secondary={user.email}
-                          primaryTypographyProps={{
-                            fontWeight: 600,
-                            fontSize: "0.9rem",
-                          }}
-                          secondaryTypographyProps={{
-                            fontSize: "0.8rem",
+                          sx={{
+                            flex: '1 1 auto',
+                            minWidth: 0, // Enable text truncation
+                            '& .MuiListItemText-primary': {
+                              fontWeight: 600,
+                              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            },
+                            '& .MuiListItemText-secondary': {
+                              fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }
                           }}
                         />
                         <Button
@@ -508,21 +500,29 @@ const ManageFriends = () => {
                           onClick={() => handleAddFriend(user.email)}
                           disabled={addingFriendMap[user.email] || isAlreadyFriend(user.email)}
                           sx={{
-                            ml: 2,
-                            minWidth: "100px",
+                            minWidth: { xs: '60px', sm: '100px' },
+                            px: { xs: 1, sm: 2 },
+                            ml: { xs: 0.5, sm: 2 },
                             borderColor: isAlreadyFriend(user.email) ? "#82C7A4" : "#5E72E4",
                             color: isAlreadyFriend(user.email) ? "#82C7A4" : "#5E72E4",
+                            '& .MuiButton-startIcon': {
+                              margin: { xs: '0', sm: '-4px 8px -4px 0' }
+                            },
+                            '& .MuiButton-startIcon > *:nth-of-type(1)': {
+                              fontSize: { xs: '1.2rem', sm: '1.3rem' }
+                            },
                             "&:hover": {
                               borderColor: isAlreadyFriend(user.email) ? "#82C7A4" : "#4B54B9",
                               backgroundColor: isAlreadyFriend(user.email) 
                                 ? "rgba(130, 199, 164, 0.05)" 
                                 : "rgba(94, 114, 228, 0.05)",
                             },
-                            cursor: isAlreadyFriend(user.email) ? "default" : "pointer",
                           }}
                         >
-                          {addingFriendMap[user.email] ? "Adding..." : 
-                           isAlreadyFriend(user.email) ? "Added" : "Add"}
+                          {addingFriendMap[user.email] ? "..." : 
+                           isAlreadyFriend(user.email) ? 
+                           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>Added</Box> : 
+                           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>Add</Box>}
                         </Button>
                       </ListItem>
                     ))

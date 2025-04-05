@@ -37,16 +37,16 @@ function Navigation() {
     
     return (
       <List sx={{ 
+        width: '100%',
         display: "flex", 
         flexDirection: "column", 
-        marginTop: 5,
-        gap: 0.8,
-        width: '100%',
+        alignItems: "center",
+        marginTop: { xs: 2, sm: 3, md: 4 },
+        gap: { xs: 0.5, sm: 0.8 },
         '& .MuiListItem-root': {
-          margin: '2px 0',
+          width: '100%',
           borderRadius: '12px',
-          transition: 'all 0.3s ease',
-          padding: '12px 16px',
+          margin: '2px 0',
         }
       }}>
         {[
@@ -76,7 +76,17 @@ function Navigation() {
                 width: '4px',
                 backgroundColor: '#5e72e4',
                 borderRadius: '0 4px 4px 0',
-              } : {}
+              } : {},
+              justifyContent: { xs: 'flex-start', sm: 'center', md: 'flex-start' }, // Center content in tablet view
+              '& .MuiListItemIcon-root': {
+                minWidth: { xs: 36, sm: 40 },
+                display: 'flex',
+                justifyContent: { xs: 'flex-start', sm: 'center', md: 'flex-start' }
+              },
+              '& .MuiListItemText-root': {
+                flex: { xs: '1 1 auto', sm: '0 1 auto' },
+                textAlign: { xs: 'left', sm: 'center', md: 'left' }
+              }
             }}
             button
             onClick={() => navigate(item.path)}
@@ -114,11 +124,13 @@ function Navigation() {
         height: isNineundredPixel ? "122vh" : "100%",
         overflow: "hidden",
         backgroundColor: "white",
-        flexBasis: isMobile ? 0 : "10%", // Fixed width for Navigation to 25%
-        flexShrink: 0, // Prevents it from shrinking
-        padding: 4,
+        flexBasis: isMobile ? 0 : { xs: '20%', sm: '15%', md: '12%' }, // Adjusted basis
+        minWidth: { xs: '100%', sm: '200px', md: '220px' }, // Added minimum width
+        maxWidth: { sm: '250px', md: '280px' }, // Added maximum width
+        flexShrink: 0,
+        padding: { xs: 2, sm: 2.5, md: 3 }, // Adjusted padding
         zIndex: 100,
-        position: 'relative', // Add this to support absolute positioning of version
+        position: 'relative',
         ...(isMobile
           ? {
               gap: "40px",
@@ -126,12 +138,11 @@ function Navigation() {
               alignItems: "center",
               justifyContent: "flex-end",
               width: "100%",
-              flexBasis: "10%",
-              boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.1)", // Shadow at the bottom
+              boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.1)",
             }
           : {
               flexDirection: "column",
-              alignItems: "flex-start",
+              alignItems: "center", // Center everything
               justifyContent: "flex-start",
               boxShadow: "10px 10px 30px rgba(0, 0, 0, 0.1)",
               borderTopLeftRadius: "30px",
@@ -140,17 +151,25 @@ function Navigation() {
       }}
     >
       <Box sx={{
+        width: '100%',
         display: 'flex',
         flexDirection: { xs: 'row', sm: 'column' },
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%'
+        alignItems: { xs: 'center', sm: 'center' },
+        justifyContent: { xs: 'space-between', sm: 'center' },
+        mb: { xs: 0, sm: 2 }
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {/* Logo Section */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1,
+          width: '100%'
+        }}>
           <AltRouteIcon 
             sx={{ 
               color: "#1976d2", 
-              fontSize: { xs: 28, sm: 32, md: 35 },
+              fontSize: { xs: 24, sm: 28, md: 32 },
               flexShrink: 0
             }} 
           />
@@ -158,41 +177,42 @@ function Navigation() {
             variant="h5"
             sx={{
               fontWeight: 600,
-              fontSize: { xs: "20px", sm: "22px", md: "25px" },
+              fontSize: { xs: "18px", sm: "20px", md: "22px" },
               color: "#4D4D4D",
               lineHeight: 1,
-              margin: 0,
-              padding: 0
             }}
           >
             SplitUp
           </Typography>
         </Box>
 
+        {/* Version badge for mobile/tablet */}
         <Box
           sx={{
-            display: { xs: 'flex', sm: 'none' }, // Only show on mobile
+            display: { xs: 'flex', md: 'none' },
             alignItems: 'center',
-            px: 1.5,
+            px: { xs: 1, sm: 1.5 },
             py: 0.5,
-            borderRadius: '12px',
+            borderRadius: '8px',
             backgroundColor: 'rgba(25, 118, 210, 0.05)',
             border: '1px solid rgba(25, 118, 210, 0.1)',
+            mt: { xs: 0, sm: 2 }
           }}
         >
           <Typography
             variant="caption"
             sx={{
               color: '#1976d2',
-              fontSize: '0.7rem',
+              fontSize: '0.65rem',
               fontWeight: 600,
-              letterSpacing: '0.02em',
+              letterSpacing: '0.02em'
             }}
           >
             v1.0.0
           </Typography>
         </Box>
       </Box>
+
       {isMobile ? (
         <>
           <AppBar
@@ -229,14 +249,15 @@ function Navigation() {
       ) : (
         list()
       )}
-      {/* Version badge at bottom - only show on desktop */}
+
+      {/* Desktop version badge */}
       <Box
         sx={{
           position: 'absolute',
           bottom: 20,
           left: '50%',
           transform: 'translateX(-50%)',
-          display: { xs: 'none', sm: 'flex' }, // Hide on mobile
+          display: { xs: 'none', md: 'flex' },
           alignItems: 'center',
           gap: 1,
           padding: '8px 12px',

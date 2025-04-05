@@ -44,8 +44,6 @@ import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import ShareLink from "../ShareLink/ShareLink";
 import GroupComponent from "../JoinGroup/JoinGroup";
 import { useAllUserSettled } from "../contexts/AllUserSettled";
-import NotesIcon from "@mui/icons-material/Notes";
-import Notes from "../Notes/Notes";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -217,15 +215,6 @@ const GroupTab = () => {
         label: `Settle (${settledMemberStats?.settledMembers}/${settledMemberStats?.totalMembers})`,
         icon: <HowToRegIcon />,
         component: <SettleTab members={members} groupID={currentGroupID} />,
-      });
-    }
-
-    // Add Notes tab before Settings
-    if (currentGroup) {
-      tabs.push({
-        label: "Notes",
-        icon: <NotesIcon />,
-        component: <Notes groupId={currentGroupID} />,
       });
     }
 
