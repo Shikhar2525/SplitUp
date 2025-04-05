@@ -33,76 +33,74 @@ function Navigation() {
   };
 
   const list = () => {
+    const isCurrentPath = (path) => window.location.pathname === path;
+    
     return (
-      <List
-        sx={{ display: "flex", flexDirection: "column", marginTop: 5, gap: 1 }}
-      >
-        <ListItem
-          sx={{ padding: 0 }}
-          button
-          onClick={() => {
-            navigate("/");
-          }}
-        >
-          <ListItemIcon sx={{ minWidth: 30 }}>
-            <HomeIcon />
-          </ListItemIcon>
-          <ListItemText primary="Home" />
-        </ListItem>
-
-        <ListItem
-          sx={{ padding: 0 }}
-          button
-          onClick={() => {
-            navigate("/groups");
-          }}
-        >
-          <ListItemIcon sx={{ minWidth: 30 }}>
-            <Diversity3Icon />
-          </ListItemIcon>
-          <ListItemText primary="Groups" />
-        </ListItem>
-        <ListItem
-          sx={{ 
-            padding: 0,
-            position: 'relative',
-            paddingRight: '45px' // Add padding to make room for badge
-          }}
-          button
-          onClick={() => {
-            navigate("/friends");
-          }}
-        >
-          <ListItemIcon sx={{ minWidth: 30 }}>
-            <GroupAddIcon />
-          </ListItemIcon>
-          <ListItemText primary="Friends" />
-          <Box
+      <List sx={{ 
+        display: "flex", 
+        flexDirection: "column", 
+        marginTop: 5,
+        gap: 0.8,
+        width: '100%',
+        '& .MuiListItem-root': {
+          margin: '2px 0',
+          borderRadius: '12px',
+          transition: 'all 0.3s ease',
+          padding: '12px 16px',
+        }
+      }}>
+        {[
+          { path: '/', icon: <HomeIcon />, text: 'Home' },
+          { path: '/groups', icon: <Diversity3Icon />, text: 'Groups' },
+          { path: '/friends', icon: <GroupAddIcon />, text: 'Friends' }
+        ].map((item) => (
+          <ListItem
+            key={item.path}
             sx={{
-              position: 'absolute',
-              right: 5,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              backgroundColor: '#5e72e4',
-              color: 'white',
-              fontSize: '10px',
-              padding: '2px 6px',
-              borderRadius: '10px',
-              whiteSpace: 'nowrap',
-              boxShadow: '0 2px 5px rgba(94, 114, 228, 0.3)',
-              fontWeight: 'bold',
-              animation: 'pulse 2s infinite',
-              '@keyframes pulse': {
-                '0%': { opacity: 0.6 },
-                '50%': { opacity: 1 },
-                '100%': { opacity: 0.6 }
+              position: 'relative',
+              overflow: 'visible',
+              backgroundColor: isCurrentPath(item.path) ? 'rgba(94, 114, 228, 0.1)' : 'transparent',
+              '&:hover': {
+                backgroundColor: 'rgba(94, 114, 228, 0.15)',
+                transform: 'translateX(6px)',
+                '& .MuiListItemIcon-root, & .MuiListItemText-primary': {
+                  color: '#5e72e4'
+                }
               },
-              ml: 1 // Add margin to separate from text
+              '&::before': isCurrentPath(item.path) ? {
+                content: '""',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: '4px',
+                backgroundColor: '#5e72e4',
+                borderRadius: '0 4px 4px 0',
+              } : {}
             }}
+            button
+            onClick={() => navigate(item.path)}
           >
-            NEW
-          </Box>
-        </ListItem>
+            <ListItemIcon sx={{ 
+              minWidth: 36,
+              color: isCurrentPath(item.path) ? '#5e72e4' : '#64748b',
+              transition: 'color 0.3s ease'
+            }}>
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText 
+              primary={item.text}
+              sx={{
+                '& .MuiListItemText-primary': {
+                  fontSize: '0.95rem',
+                  fontWeight: isCurrentPath(item.path) ? 600 : 500,
+                  color: isCurrentPath(item.path) ? '#5e72e4' : '#64748b',
+                  transition: 'color 0.3s ease'
+                }
+              }}
+            />
+          </ListItem>
+        ))}
       </List>
     );
   };
@@ -118,9 +116,9 @@ function Navigation() {
         backgroundColor: "white",
         flexBasis: isMobile ? 0 : "10%", // Fixed width for Navigation to 25%
         flexShrink: 0, // Prevents it from shrinking
-
         padding: 4,
         zIndex: 100,
+        position: 'relative', // Add this to support absolute positioning of version
         ...(isMobile
           ? {
               gap: "40px",
@@ -141,21 +139,59 @@ function Navigation() {
             }),
       }}
     >
-      <Box>
-        <Typography
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'row', sm: 'column' },
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%'
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <AltRouteIcon 
+            sx={{ 
+              color: "#1976d2", 
+              fontSize: { xs: 28, sm: 32, md: 35 },
+              flexShrink: 0
+            }} 
+          />
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 600,
+              fontSize: { xs: "20px", sm: "22px", md: "25px" },
+              color: "#4D4D4D",
+              lineHeight: 1,
+              margin: 0,
+              padding: 0
+            }}
+          >
+            SplitUp
+          </Typography>
+        </Box>
+
+        <Box
           sx={{
-            fontWeight: 600, // Semi-bold
-            fontSize: "25px",
-            color: "#4D4D4D",
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
+            display: { xs: 'flex', sm: 'none' }, // Only show on mobile
+            alignItems: 'center',
+            px: 1.5,
+            py: 0.5,
+            borderRadius: '12px',
+            backgroundColor: 'rgba(25, 118, 210, 0.05)',
+            border: '1px solid rgba(25, 118, 210, 0.1)',
           }}
-          variant="h5"
         >
-          <AltRouteIcon sx={{ color: "#1976d2", fontSize: 35 }} />
-          SplitUp
-        </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              color: '#1976d2',
+              fontSize: '0.7rem',
+              fontWeight: 600,
+              letterSpacing: '0.02em',
+            }}
+          >
+            v1.0.0
+          </Typography>
+        </Box>
       </Box>
       {isMobile ? (
         <>
@@ -193,6 +229,39 @@ function Navigation() {
       ) : (
         list()
       )}
+      {/* Version badge at bottom - only show on desktop */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 20,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: { xs: 'none', sm: 'flex' }, // Hide on mobile
+          alignItems: 'center',
+          gap: 1,
+          padding: '8px 12px',
+          borderRadius: '20px',
+          backgroundColor: 'rgba(25, 118, 210, 0.05)',
+          border: '1px solid rgba(25, 118, 210, 0.1)',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            backgroundColor: 'rgba(25, 118, 210, 0.1)',
+            border: '1px solid rgba(25, 118, 210, 0.2)',
+          }
+        }}
+      >
+        <Typography
+          variant="caption"
+          sx={{
+            color: '#1976d2',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            letterSpacing: '0.02em',
+          }}
+        >
+          v1.0.0
+        </Typography>
+      </Box>
     </Box>
   );
 }
