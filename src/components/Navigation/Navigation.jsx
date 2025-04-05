@@ -63,7 +63,11 @@ function Navigation() {
           <ListItemText primary="Groups" />
         </ListItem>
         <ListItem
-          sx={{ padding: 0 }}
+          sx={{ 
+            padding: 0,
+            position: 'relative',
+            paddingRight: '45px' // Add padding to make room for badge
+          }}
           button
           onClick={() => {
             navigate("/friends");
@@ -73,6 +77,31 @@ function Navigation() {
             <GroupAddIcon />
           </ListItemIcon>
           <ListItemText primary="Friends" />
+          <Box
+            sx={{
+              position: 'absolute',
+              right: 5,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              backgroundColor: '#5e72e4',
+              color: 'white',
+              fontSize: '10px',
+              padding: '2px 6px',
+              borderRadius: '10px',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 2px 5px rgba(94, 114, 228, 0.3)',
+              fontWeight: 'bold',
+              animation: 'pulse 2s infinite',
+              '@keyframes pulse': {
+                '0%': { opacity: 0.6 },
+                '50%': { opacity: 1 },
+                '100%': { opacity: 0.6 }
+              },
+              ml: 1 // Add margin to separate from text
+            }}
+          >
+            NEW
+          </Box>
         </ListItem>
       </List>
     );
