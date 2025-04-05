@@ -70,7 +70,7 @@ export function sortByISODate(arr) {
 
 export async function calculateBalances(group, finalCurrency) {
   const balances = {};
-  const transactions = {}; // To track the transactions between members
+  const transactions = {};
 
   // Initialize balances for each member
   group?.members?.forEach((member) => {
@@ -79,55 +79,59 @@ export async function calculateBalances(group, finalCurrency) {
 
   // Process each expense with currency conversion
   for (const expense of group?.expenses || []) {
-    const amount = expense.amount || 0; // Ensure amount is not undefined
-    const paidBy = expense.paidBy; // Object with email and name
-    const splitBetween = expense.splitBetween || []; // Array of objects with email and name
-    let currency = expense.currency || finalCurrency; // Use expense currency or final currency
-
-    // If currency is missing or empty, default to finalCurrency
-    if (!currency || currency.trim() === "") {
-      currency = finalCurrency;
-    }
+    const amount = expense.amount || 0;
+    const paidBy = expense.paidBy;
+    const splitBetween = expense.splitBetween || [];
+    let currency = expense.currency || finalCurrency;
 
     // Convert the amount to the final currency if needed
     const convertedAmount =
       currency !== finalCurrency
-        ? (await convertCurrency(amount, currency, finalCurrency))?.amount || 0 // Fallback to 0 if conversion fails
+        ? (await convertCurrency(amount, currency, finalCurrency))?.amount || 0
         : amount;
 
-    // Calculate the share for each member involved in the expense
-    const share = convertedAmount / (splitBetween.length + 1); // +1 to include the payer
+    // Calculate split count based on excludePayer flag
+    const splitCount = expense.excludePayer 
+      ? splitBetween.length 
+      : splitBetween.length + 1; // Only add payer if not excluded
 
-    // Update balances and add records of each individual transaction
+    // Calculate the share for each member
+    const share = convertedAmount / splitCount;
+
+    // Update balances and transactions
     for (const { email, name } of splitBetween) {
       balances[email] -= share; // Each member owes their share
       balances[paidBy.email] += share; // The payer is owed that amount
 
-      // Record the transaction for breakdown purposes
+      // Record the transaction for breakdown
       if (!transactions[email]) {
         transactions[email] = {};
       }
       if (!transactions[email][paidBy.email]) {
         transactions[email][paidBy.email] = {
           amount: 0,
-          breakdown: [], // Track who owed what in each transaction
+          breakdown: [],
         };
       }
 
-      // Add the breakdown details of each expense
       transactions[email][paidBy.email].amount += share;
       transactions[email][paidBy.email].breakdown.push({
         description: expense.description,
-        amount: parseFloat(share.toFixed(2)), // Round to 2 decimals
-        paidBy: { email: paidBy.email, name: paidBy.name }, // Include name and email
-        owedBy: { email: email, name: name }, // Include name and email
+        amount: parseFloat(share.toFixed(2)),
+        paidBy: { email: paidBy.email, name: paidBy.name },
+        owedBy: { email: email, name: name },
         createdDate: expense.createdDate,
-        currency: finalCurrency, // Include the final currency
+        currency: finalCurrency,
+        excludePayer: expense.excludePayer, // Include this in breakdown for reference
       });
+    }
+
+    // If payer is not excluded, add their share to the balances
+    if (!expense.excludePayer) {
+      balances[paidBy.email] -= share;
     }
   }
 
-  // Create a result array showing only the final settlements
   const result = [];
   const processedPairs = new Set(); // Track processed pairs to avoid duplication
 

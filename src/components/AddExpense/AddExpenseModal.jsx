@@ -15,6 +15,8 @@ import {
   Avatar,
   CircularProgress,
   Alert,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckBox from "@mui/material/Checkbox";
@@ -81,6 +83,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const [currency, setCurrency] = useState("");
   const { refetchLogs, setRefetchLogs } = useRefetchLogs();
   const { currentGroupID } = useCurrentGroup();
+  const [excludePayer, setExcludePayer] = useState(false);
 
   const currentGroupObj = allGroups.find(
     (group) => group?.id === currentGroupID
@@ -150,7 +153,6 @@ const AddExpenseModal = ({ open, handleClose }) => {
     if (splitOptions?.length <= 0) {
       return;
     }
-
     const expense = {
       id: uuidv4(),
       description,
@@ -160,6 +162,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
       createdDate: selectedDate.toISOString(), // Format the date as needed
       createdBy: { email: currentUser?.email, name: currentUser?.name },
       currency,
+      excludePayer, // Add this field to store the exclusion status
     };
 
     try {
@@ -316,6 +319,22 @@ const AddExpenseModal = ({ open, handleClose }) => {
               ))}
             </Select>
           </FormControl>
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={excludePayer}
+                onChange={(e) => setExcludePayer(e.target.checked)}
+                disabled={!paidBy}
+              />
+            }
+            label={
+              <Typography variant="body2" color="textSecondary">
+                Don't include payer in split
+              </Typography>
+            }
+            sx={{ mb: 2 }}
+          />
 
           <FormControl fullWidth sx={styles.formControl}>
             <InputLabel>Split equally between</InputLabel>

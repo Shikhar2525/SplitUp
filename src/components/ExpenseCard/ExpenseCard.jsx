@@ -231,10 +231,18 @@ const TransactionCard = ({
                       Transaction done by
                     </TableCell>
                     <TableCell sx={{ padding: "8px" }}>
-                      <Chip
-                        key={transaction?.paidBy?.name}
-                        label={transaction?.paidBy?.name}
-                      />
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Chip
+                          key={transaction?.paidBy?.name}
+                          label={transaction?.paidBy?.name}
+                        />
+                        <Chip
+                          label={transaction.excludePayer ? "Not added in split" : "Added in split"}
+                          size="small"
+                          color={transaction.excludePayer ? "error" : "success"}
+                          variant="outlined"
+                        />
+                      </Box>
                     </TableCell>
                   </TableRow>
                   <TableRow
