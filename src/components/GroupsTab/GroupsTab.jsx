@@ -51,6 +51,11 @@ import GroupIcon from "@mui/icons-material/Group";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import { useNavigate } from "react-router-dom";
+import CategoryIcon from "@mui/icons-material/Category";
+import HomeIcon from "@mui/icons-material/Home";
+import FlightIcon from "@mui/icons-material/Flight";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -346,7 +351,7 @@ const GroupTab = () => {
 
     return (
       <Box sx={{
-        p: { xs: 1.5, sm: 1 },
+        p: { xs: 1.5, sm: 0.5 },
         backgroundColor: "rgba(94, 114, 228, 0.03)",
         borderRadius: "12px",
         display: "flex",
@@ -517,6 +522,46 @@ const GroupTab = () => {
     );
   });
 
+  const getCategoryInfo = (category) => {
+    switch (category?.toLowerCase()) {
+      case "home":
+        return {
+          icon: <HomeIcon sx={{ color: "#2dce89" }} />,
+          color: "#2dce89",
+          gradient: "linear-gradient(135deg, #2dce89 0%, #2fcca0 100%)",
+        };
+      case "trip":
+        return {
+          icon: <FlightIcon sx={{ color: "#fb6340" }} />,
+          color: "#fb6340",
+          gradient: "linear-gradient(135deg, #fb6340 0%, #fbb140 100%)",
+        };
+      case "couple":
+        return {
+          icon: <FavoriteIcon sx={{ color: "#f5365c" }} />,
+          color: "#f5365c",
+          gradient: "linear-gradient(135deg, #f5365c 0%, #f56036 100%)",
+        };
+      default:
+        return {
+          icon: <CategoryIcon sx={{ color: "#5e72e4" }} />,
+          color: "#5e72e4",
+          gradient: "linear-gradient(135deg, #5e72e4 0%, #825ee4 100%)",
+        };
+    }
+  };
+
+  const groupedItems = useMemo(() => {
+    return allGroups?.reduce((acc, group) => {
+      const category = group.category || "Other";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(group);
+      return acc;
+    }, {});
+  }, [allGroups]);
+
   return (
     <Box
       sx={{
@@ -532,47 +577,56 @@ const GroupTab = () => {
           sx={{
             mx: { xs: 1.5, sm: 2 },
             my: { xs: 1, sm: 1.5 },
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             minHeight: { xs: 45, sm: 50 },
-            borderRadius: '12px',
-            background: 'linear-gradient(120deg, #4CAF50 0%, #45B649 100%)',
-            overflow: 'hidden',
-            animation: 'slideDown 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-            '@keyframes slideDown': {
-              from: { transform: 'translateY(-100%)', opacity: 0 },
-              to: { transform: 'translateY(0)', opacity: 1 }
-            }
+            borderRadius: "12px",
+            background: "linear-gradient(120deg, #4CAF50 0%, #45B649 100%)",
+            overflow: "hidden",
+            animation: "slideDown 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+            "@keyframes slideDown": {
+              from: { transform: "translateY(-100%)", opacity: 0 },
+              to: { transform: "translateY(0)", opacity: 1 },
+            },
           }}
         >
           {/* Success Icon */}
           <Box
             sx={{
-              position: 'absolute',
-              left: { xs: '15px', sm: '20px' },
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: { xs: '32px', sm: '36px' },
-              height: { xs: '32px', sm: '36px' },
-              borderRadius: '50%',
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              animation: 'pulse 2s infinite',
-              '@keyframes pulse': {
-                '0%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(255, 255, 255, 0.4)' },
-                '70%': { transform: 'scale(1.1)', boxShadow: '0 0 0 10px rgba(255, 255, 255, 0)' },
-                '100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(255, 255, 255, 0)' }
-              }
+              position: "absolute",
+              left: { xs: "15px", sm: "20px" },
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: { xs: "32px", sm: "36px" },
+              height: { xs: "32px", sm: "36px" },
+              borderRadius: "50%",
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              animation: "pulse 2s infinite",
+              "@keyframes pulse": {
+                "0%": {
+                  transform: "scale(1)",
+                  boxShadow: "0 0 0 0 rgba(255, 255, 255, 0.4)",
+                },
+                "70%": {
+                  transform: "scale(1.1)",
+                  boxShadow: "0 0 0 10px rgba(255, 255, 255, 0)",
+                },
+                "100%": {
+                  transform: "scale(1)",
+                  boxShadow: "0 0 0 0 rgba(255, 255, 255, 0)",
+                },
+              },
             }}
           >
             <Typography
               component="span"
               sx={{
-                fontSize: { xs: '1.2rem', sm: '1.3rem' },
-                color: 'white',
-                fontWeight: 'bold'
+                fontSize: { xs: "1.2rem", sm: "1.3rem" },
+                color: "white",
+                fontWeight: "bold",
               }}
             >
               ✓
@@ -580,18 +634,20 @@ const GroupTab = () => {
           </Box>
 
           {/* Message */}
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: { xs: 'flex-start', sm: 'center' },
-            ml: { xs: '55px', sm: 0 },
-            color: 'white'
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: { xs: "flex-start", sm: "center" },
+              ml: { xs: "55px", sm: 0 },
+              color: "white",
+            }}
+          >
             <Typography
               sx={{
-                fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                fontSize: { xs: "0.8rem", sm: "0.9rem" },
                 fontWeight: 600,
-                textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                textShadow: "0 1px 2px rgba(0,0,0,0.1)",
               }}
             >
               Group settled successfully!
@@ -601,7 +657,7 @@ const GroupTab = () => {
           {/* Confetti Effect */}
           <Box
             sx={{
-              position: 'absolute',
+              position: "absolute",
               inset: 0,
               opacity: 0.2,
               backgroundImage: `
@@ -611,12 +667,12 @@ const GroupTab = () => {
                 radial-gradient(circle at 50% -20%, white 4px, transparent 6px),
                 radial-gradient(circle at 0% 80%, white 3px, transparent 4px)
               `,
-              backgroundSize: '80px 80px',
-              animation: 'confetti 3s linear infinite',
-              '@keyframes confetti': {
-                '0%': { backgroundPosition: '0 0' },
-                '100%': { backgroundPosition: '80px 80px' }
-              }
+              backgroundSize: "80px 80px",
+              animation: "confetti 3s linear infinite",
+              "@keyframes confetti": {
+                "0%": { backgroundPosition: "0 0" },
+                "100%": { backgroundPosition: "80px 80px" },
+              },
             }}
           />
         </Box>
@@ -634,27 +690,248 @@ const GroupTab = () => {
           <FormControl
             fullWidth
             variant="outlined"
-            sx={{ width: isMobile ? "50%" : "20%" }}
+            sx={{
+              width: isMobile ? "60%" : "25%",
+              maxWidth: { xs: "250px", sm: "300px" },
+              minWidth: { xs: "180px", sm: "200px" },
+              "& .MuiOutlinedInput-root": {
+                transition: "all 0.3s ease",
+                borderRadius: "12px",
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(94, 114, 228, 0.2)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  boxShadow: "0 4px 20px rgba(94, 114, 228, 0.15)",
+                },
+                "&.Mui-focused": {
+                  boxShadow: "0 4px 20px rgba(94, 114, 228, 0.2)",
+                  borderColor: "#5e72e4",
+                  backgroundColor: "white",
+                },
+              },
+            }}
           >
             <CustomSelect
               value={currentGroupID || ""}
               onChange={handleGroupChange}
-              IconComponent={KeyboardArrowDownIcon}
-              displayEmpty
-              renderValue={() => (
-                <Chip
-                  size="small"
-                  label={selectedGroupDetails?.title ?? "Select Group"}
-                  variant="outlined"
-                  color="primary"
+              IconComponent={(props) => (
+                <KeyboardArrowDownIcon
+                  {...props}
+                  sx={{
+                    color: "#5e72e4",
+                    transition: "transform 0.3s ease",
+                    transform: props.className.includes("Mui-focused")
+                      ? "rotate(-180deg)"
+                      : "rotate(0)",
+                  }}
                 />
               )}
+              displayEmpty
+              renderValue={(selected) => (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    width: "100%",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Avatar
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      bgcolor: "#5e72e4",
+                      fontSize: "0.875rem",
+                      fontWeight: 600,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {selectedGroupDetails?.title?.[0] || "G"}
+                  </Avatar>
+                  <Typography
+                    sx={{
+                      fontSize: "0.875rem",
+                      fontWeight: 600,
+                      color: "#525f7f",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      flex: 1,
+                    }}
+                  >
+                    {selectedGroupDetails?.title ?? "Select Group"}
+                  </Typography>
+                </Box>
+              )}
+              sx={{
+                height: "45px",
+                "& .MuiSelect-select": {
+                  paddingY: "8px",
+                  width: "100%",
+                },
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    mt: 1,
+                    borderRadius: "16px",
+                    maxHeight: "400px",
+                    minWidth: "280px",
+                    backgroundImage:
+                      "linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.9))",
+                    backdropFilter: "blur(10px)",
+                    boxShadow: "0 8px 32px rgba(94, 114, 228, 0.15)",
+                    padding: "8px",
+                    "& .MuiMenuItem-root": {
+                      borderRadius: "12px",
+                      margin: "4px 0",
+                    },
+                  },
+                },
+              }}
             >
-              {allGroups?.map((group, index) => (
-                <MenuItem key={index} value={group.id}>
-                  <Typography variant="body1">{group.title}</Typography>
-                </MenuItem>
-              ))}
+              {Object.entries(groupedItems || {}).map(([category, groups]) => [
+                <Box
+                  key={`category-${category}`}
+                  sx={{
+                    px: 2,
+                    py: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    background: getCategoryInfo(category).gradient,
+                    color: "white",
+                    borderRadius: "10px",
+                    margin: "8px 4px",
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  {getCategoryInfo(category).icon}
+                  <Typography
+                    sx={{
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    {category} ({groups.length})
+                  </Typography>
+                </Box>,
+                ...groups.map((group, index) => (
+                  <MenuItem
+                    key={group.id}
+                    value={group.id}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      padding: "12px",
+                      borderRadius: "12px",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        backgroundColor: "rgba(94, 114, 228, 0.08)",
+                        transform: "translateX(4px)",
+                      },
+                      "&.Mui-selected": {
+                        backgroundColor: "rgba(94, 114, 228, 0.12)",
+                        "&:hover": {
+                          backgroundColor: "rgba(94, 114, 228, 0.15)",
+                        },
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        width: "100%",
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          width: 45,
+                          height: 45,
+                          bgcolor: getCategoryInfo(category).gradient,
+                          fontSize: "1.2rem",
+                          fontWeight: 600,
+                          boxShadow: "0 3px 6px rgba(0,0,0,0.16)",
+                          border: "2px solid #fff",
+                        }}
+                      >
+                        {group.title[0]}
+                      </Avatar>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Typography
+                            sx={{
+                              fontWeight: 600,
+                              color: "#32325d",
+                              fontSize: "0.95rem",
+                            }}
+                          >
+                            {group.title}
+                          </Typography>
+                          {group.admin?.email === currentUser?.email && (
+                            <Chip
+                              label="Admin"
+                              size="small"
+                              sx={{
+                                height: 20,
+                                fontSize: "0.65rem",
+                                backgroundColor: "rgba(45, 206, 137, 0.1)",
+                                color: "#2dce89",
+                                fontWeight: 600,
+                              }}
+                            />
+                          )}
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                            mt: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: "#8898aa",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
+                            }}
+                          >
+                            <GroupIcon sx={{ fontSize: "0.9rem" }} />
+                            {group.members?.length || 0} members
+                          </Typography>
+                          {group.expenses?.length > 0 && (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: "#8898aa",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                              }}
+                            >
+                              <PaidIcon sx={{ fontSize: "0.9rem" }} />
+                              {group.expenses.length} expenses
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                )),
+              ])}
             </CustomSelect>
           </FormControl>
         ) : (
