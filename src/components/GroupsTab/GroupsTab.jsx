@@ -346,7 +346,7 @@ const GroupTab = () => {
 
     return (
       <Box sx={{
-        p: { xs: 1.5, sm: 2 },
+        p: { xs: 1.5, sm: 1 },
         backgroundColor: "rgba(94, 114, 228, 0.03)",
         borderRadius: "12px",
         display: "flex",
