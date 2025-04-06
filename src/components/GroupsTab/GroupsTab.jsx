@@ -308,9 +308,41 @@ const GroupTab = () => {
   );
 
   const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {
-    const totalExpenses = selectedGroupDetails?.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
-    const memberCount = selectedGroupDetails?.members?.length || 1;
-    const perHeadCost = (totalExpenses / memberCount).toFixed(2);
+    const [convertedTotal, setConvertedTotal] = useState(0);
+    const [convertedPerHead, setConvertedPerHead] = useState(0);
+    const { currentCurrency } = useCurrentCurrency();
+
+    useEffect(() => {
+      const calculateConvertedAmounts = async () => {
+        const totalExpenses = selectedGroupDetails?.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
+        const memberCount = selectedGroupDetails?.members?.length || 1;
+        const perHeadCost = totalExpenses / memberCount;
+
+        try {
+          // Convert total amount
+          const { amount: totalConverted } = await convertCurrency(
+            totalExpenses,
+            selectedGroupDetails?.defaultCurrency || 'INR',
+            currentCurrency
+          );
+          setConvertedTotal(parseFloat(totalConverted));
+
+          // Convert per head cost
+          const { amount: perHeadConverted } = await convertCurrency(
+            perHeadCost,
+            selectedGroupDetails?.defaultCurrency || 'INR',
+            currentCurrency
+          );
+          setConvertedPerHead(parseFloat(perHeadConverted));
+        } catch (error) {
+          console.error("Currency conversion error:", error);
+          setConvertedTotal(totalExpenses);
+          setConvertedPerHead(perHeadCost);
+        }
+      };
+
+      calculateConvertedAmounts();
+    }, [selectedGroupDetails, currentCurrency]);
 
     return (
       <Box sx={{
@@ -397,7 +429,7 @@ const GroupTab = () => {
                 fontWeight: 600,
                 fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
               }}>
-                {totalExpenses} {selectedGroupDetails?.defaultCurrency}
+                {convertedTotal.toFixed(2)} {currentCurrency}
               </Typography>
             </Box>
           </Box>
@@ -428,7 +460,7 @@ const GroupTab = () => {
                 fontWeight: 600,
                 fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
               }}>
-                {perHeadCost} {selectedGroupDetails?.defaultCurrency}
+                {convertedPerHead.toFixed(2)} {currentCurrency}
               </Typography>
             </Box>
           </Box>
