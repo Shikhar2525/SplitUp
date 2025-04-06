@@ -19,7 +19,7 @@ const Expenses = () => {
   return (
     <Box
       sx={{
-        height: allUserSettled ? (isMobile ? "50vh" : "45vh") : "53vh",
+        height: allUserSettled ? (isMobile ? "40vh" : "40vh") : (isMobile ? '48vh' :"50vh"),
         overflow: "auto",
         paddingRight: isMobile ? 1 : 2,
       }}
