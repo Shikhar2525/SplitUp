@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   List,
@@ -13,20 +13,46 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
-
 import Diversity3Icon from "@mui/icons-material/Diversity3";
 import MenuIcon from "@mui/icons-material/Menu";
+import AltRouteIcon from "@mui/icons-material/AltRoute";
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import "./Navigration.scss";
 import { useNavigate } from "react-router-dom";
-import AltRouteIcon from "@mui/icons-material/AltRoute";
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
+
+const illustrations = [
+  {
+    icon: <PaymentsIcon sx={{ fontSize: 32, color: '#5e72e4' }} />,
+    caption: "Split bills",
+  },
+  {
+    icon: <PeopleAltIcon sx={{ fontSize: 32, color: '#5e72e4' }} />,
+    caption: "Track with friends",
+  },
+  {
+    icon: <AccountBalanceIcon sx={{ fontSize: 32, color: '#5e72e4' }} />,
+    caption: "Settle up",
+  }
+];
 
 function Navigation() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [currentIllustration, setCurrentIllustration] = useState(0);
   const navigate = useNavigate();
   const isMobile = useScreenSize();
   const isNineundredPixel = useMediaQuery("(max-width:900px)");
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIllustration((prev) => (prev + 1) % illustrations.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
@@ -158,28 +184,89 @@ function Navigation() {
         justifyContent: { xs: 'space-between', sm: 'center' },
         mb: { xs: 0, sm: 2 }
       }}>
-        {/* Logo Section */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1,
-          width: '100%'
-        }}>
-          <AltRouteIcon 
-            sx={{ 
-              color: "#1976d2", 
-              fontSize: { xs: 24, sm: 28, md: 32 },
-              flexShrink: 0
-            }} 
-          />
+        {/* Updated Logo Section */}
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1.5,
+            width: '100%',
+            position: 'relative',
+            p: 1,
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: -8,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '80%',
+              height: '2px',
+              background: 'linear-gradient(90deg, transparent, #5e72e4, transparent)',
+              borderRadius: '2px'
+            }
+          }}
+        >
+          <Box
+            sx={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg, rgba(94, 114, 228, 0.1), rgba(130, 94, 228, 0.1))',
+              borderRadius: '14px',
+              p: 1,
+              transition: 'all 0.3s ease',
+              overflow: 'hidden',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                '& .logo-icon': {
+                  transform: 'rotate(360deg)',
+                },
+                '&::after': {
+                  transform: 'translateX(100%)'
+                }
+              },
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                transition: 'transform 0.5s ease',
+              }
+            }}
+          >
+            <AltRouteIcon 
+              className="logo-icon"
+              sx={{ 
+                color: "#5e72e4",
+                fontSize: { xs: 24, sm: 28, md: 32 },
+                flexShrink: 0,
+                transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                filter: 'drop-shadow(0 2px 4px rgba(94, 114, 228, 0.2))'
+              }} 
+            />
+          </Box>
           <Typography
             variant="h5"
             sx={{
-              fontWeight: 600,
-              fontSize: { xs: "18px", sm: "20px", md: "22px" },
-              color: "#4D4D4D",
+              fontWeight: 800,
+              fontSize: { xs: "18px", sm: "20px", md: "24px" },
+              background: 'linear-gradient(135deg, #5e72e4 0%, #825ee4 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '0.5px',
               lineHeight: 1,
+              textShadow: '0 2px 10px rgba(94, 114, 228, 0.2)',
+              position: 'relative',
+              transform: 'translateZ(0)',
+              '&:hover': {
+                transform: 'scale(1.05) translateZ(0)',
+                transition: 'transform 0.3s ease'
+              }
             }}
           >
             SplitUp
@@ -250,6 +337,7 @@ function Navigation() {
         list()
       )}
 
+
       {/* Desktop version badge */}
       <Box
         sx={{
@@ -261,6 +349,8 @@ function Navigation() {
           alignItems: 'center',
           gap: 1,
           padding: '8px 12px',
+          borderRadius: '20px',
+          backgroundColor: 'rgba(25, 118, 210, 0.05)',
           borderRadius: '20px',
           backgroundColor: 'rgba(25, 118, 210, 0.05)',
           border: '1px solid rgba(25, 118, 210, 0.1)',
