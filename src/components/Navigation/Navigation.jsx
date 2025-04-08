@@ -337,6 +337,77 @@ function Navigation() {
         list()
       )}
 
+      {/* Illustration section */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 80, // Position above version badge
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '80%',
+          display: { xs: 'none', md: 'block' }, // Only show on desktop
+          opacity: 0.9,
+          transition: 'all 0.3s ease'
+        }}
+      >
+        <Box sx={{
+          position: 'relative',
+          p: 2,
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, rgba(94, 114, 228, 0.1), rgba(130, 94, 228, 0.1))',
+          textAlign: 'center',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(94, 114, 228, 0.2)',
+          overflow: 'hidden',
+          '&:hover': {
+            background: 'linear-gradient(135deg, rgba(94, 114, 228, 0.15), rgba(130, 94, 228, 0.15))',
+            '& .illustration-icon': {
+              transform: 'translateY(-5px)',
+            }
+          }
+        }}>
+          {/* Icon */}
+          <Box className="illustration-icon" sx={{
+            transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            mb: 1
+          }}>
+            {illustrations[currentIllustration].icon}
+          </Box>
+          
+          {/* Caption */}
+          <Typography
+            variant="caption"
+            sx={{
+              color: '#5e72e4',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              letterSpacing: '0.02em'
+            }}
+          >
+            {illustrations[currentIllustration].caption}
+          </Typography>
+
+          {/* Decorative dots */}
+          <Box sx={{
+            position: 'absolute',
+            inset: 0,
+            opacity: 0.2,
+            backgroundImage: `
+              radial-gradient(circle at 20% -50%, #5e72e4 2px, transparent 3px),
+              radial-gradient(circle at 75% 150%, #5e72e4 2px, transparent 3px),
+              radial-gradient(circle at 100% 50%, #5e72e4 1px, transparent 2px),
+              radial-gradient(circle at 50% -20%, #5e72e4 1px, transparent 2px),
+              radial-gradient(circle at 0% 80%, #5e72e4 1px, transparent 2px)
+            `,
+            backgroundSize: '40px 40px',
+            animation: 'floating 15s linear infinite',
+            '@keyframes floating': {
+              '0%': { backgroundPosition: '0 0' },
+              '100%': { backgroundPosition: '40px 40px' }
+            }
+          }}/>
+        </Box>
+      </Box>
 
       {/* Desktop version badge */}
       <Box
