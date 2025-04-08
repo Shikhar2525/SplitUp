@@ -74,7 +74,7 @@ function OverViewCard({ title, amount, backgroundStyle }) {
         </Typography>
 
         <Typography variant="h5" sx={{ textAlign: "left" }}>
-          {amount} {getCurrencySymbol(currentCurrency)}
+          {Number(amount).toFixed(2)} {getCurrencySymbol(currentCurrency)}
         </Typography>
       </CardContent>
     </Card>
