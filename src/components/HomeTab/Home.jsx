@@ -81,18 +81,18 @@ const Home = () => {
       elevation={0}
       onClick={onClick}
       sx={{
-        p: 3,
-        height: '100%',
+        p: 2, // Reduced padding
+        height: { sm: '100px' }, // Reduced height
         borderRadius: '24px',
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255,255,255,0.8)',
-        transition: 'all 0.3s ease',
-        cursor: onClick ? 'pointer' : 'default',
+        background: 'white',
         position: 'relative',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'all 0.3s ease',
+        border: '1px solid rgba(255, 255, 255, 0.8)',
+        boxShadow: '9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5)',
         '&:hover': onClick ? {
           transform: 'translateY(-5px)',
-          boxShadow: '0 8px 32px rgba(94, 114, 228, 0.15)',
+          boxShadow: '12px 12px 20px rgb(163,177,198,0.8), -12px -12px 20px rgba(255,255,255, 0.8)',
         } : {},
       }}
     >
@@ -157,21 +157,22 @@ const Home = () => {
         elevation={0}
         onClick={() => navigate('/groups')}
         sx={{
-          p: 2.5,
-          height: '100%',
+          p: 2,
+          height: { xs: '180px', sm: '200px' }, // Fixed height
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          borderRadius: '20px',
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.8)',
+          borderRadius: '24px',
+          background: 'white',
+          position: 'relative',
+          overflow: 'visible',
+          border: '1px solid rgba(255, 255, 255, 0.8)',
+          boxShadow: '9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5)',
           transition: 'all 0.3s ease',
           cursor: 'pointer',
-          position: 'relative',
           '&:hover': {
-            transform: 'translateY(-3px)',
-            boxShadow: '0 8px 32px rgba(94, 114, 228, 0.15)',
+            transform: 'translateY(-5px)',
+            boxShadow: '12px 12px 20px rgb(163,177,198,0.8), -12px -12px 20px rgba(255,255,255, 0.8)',
           },
         }}
       >
@@ -187,17 +188,10 @@ const Home = () => {
             px: 1.5,
             py: 0.5,
             borderRadius: '12px',
-            backgroundColor: isGroupSettled ? 'rgba(45, 206, 137, 0.1)' : 'rgba(251, 99, 64, 0.1)',
-            color: isGroupSettled ? '#2dce89' : '#fb6340',
-            border: `1px solid ${isGroupSettled ? 'rgba(45, 206, 137, 0.2)' : 'rgba(251, 99, 64, 0.2)'}`,
-            backdropFilter: 'blur(8px)',
-            transition: 'all 0.3s ease',
-            zIndex: 1,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
-            }
+            backgroundColor: isGroupSettled ? '#E8F5E9' : '#FFEBEE',
+            color: isGroupSettled ? '#2E7D32' : '#C62828',
+            border: `1px solid ${isGroupSettled ? '#A5D6A7' : '#FFCDD2'}`,
+            boxShadow: '4px 4px 8px rgb(163,177,198,0.4), -4px -4px 8px rgba(255,255,255, 0.4)'
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -212,63 +206,72 @@ const Home = () => {
           </Box>
         </Box>
 
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'start', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-              <Avatar
+        {/* Main Content */}
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          height: '100%',
+          gap: 1
+        }}>
+          {/* Header Section */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'start', 
+            gap: 2,
+            mb: 1
+          }}>
+            <Avatar
+              sx={{
+                width: { xs: 40, sm: 45 },
+                height: { xs: 40, sm: 45 },
+                bgcolor: '#5e72e4',
+                fontSize: '1.2rem',
+                fontWeight: 600,
+                flexShrink: 0
+              }}
+            >
+              {group.title[0]}
+            </Avatar>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography 
+                variant="subtitle1" 
+                fontWeight={600}
                 sx={{
-                  width: 45,
-                  height: 45,
-                  bgcolor: '#5e72e4',
-                  fontSize: '1.2rem',
-                  fontWeight: 600
+                  color: '#32325d',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
                 }}
               >
-                {group.title[0]}
-              </Avatar>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="subtitle1" fontWeight={600} sx={{ color: '#32325d' }}>
-                  {group.title}
-                </Typography>
-                {group.description && (
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: '#525f7f',
-                      opacity: 0.9,
-                      mt: 0.5,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      lineHeight: '1.3',
-                      fontSize: '0.8rem'
-                    }}
-                  >
-                    {group.description}
-                  </Typography>
-                )}
+                {group.title}
+              </Typography>
+              {group.description && (
                 <Typography 
-                  variant="caption" 
+                  variant="body2" 
                   sx={{ 
-                    color: '#8898aa',
-                    display: 'block',
+                    color: '#525f7f',
+                    opacity: 0.9,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    lineHeight: '1.2',
+                    fontSize: '0.8rem',
                     mt: 0.5
                   }}
                 >
-                  {group.members?.length} members
+                  {group.description}
                 </Typography>
-              </Box>
+              )}
             </Box>
           </Box>
 
-          {/* Simplified Stats Row */}
+          {/* Stats Section */}
           <Box sx={{ 
             display: 'flex',
             alignItems: 'center',
             gap: 2,
-            mt: 2
+            mt: 'auto' // Push to bottom
           }}>
             <Box sx={{ 
               display: 'flex',
@@ -287,35 +290,29 @@ const Home = () => {
                 {group.expenses?.length || 0} expenses
               </Typography>
             </Box>
+
+            <Chip 
+              label={group.category || 'Other'} 
+              size="small"
+              sx={{
+                bgcolor: 'rgba(94, 114, 228, 0.1)',
+                color: '#5e72e4',
+                fontWeight: 600,
+                height: '24px'
+              }}
+            />
           </Box>
 
-          <Chip 
-            label={group.category || 'Other'} 
-            size="small"
-            sx={{
-              bgcolor: 'rgba(94, 114, 228, 0.1)',
-              color: '#5e72e4',
-              fontWeight: 600,
-              mt: 2
-            }}
-          />
-        </Box>
-
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          mt: 2
-        }}>
+          {/* Members Section */}
           <AvatarGroup 
             max={4} 
             sx={{ 
               '& .MuiAvatar-root': { 
-                width: 30, 
-                height: 30, 
+                width: 28,
+                height: 28,
                 fontSize: '0.8rem',
                 border: '2px solid #fff'
-              } 
+              }
             }}
           >
             {group.members?.map((member, idx) => (
@@ -333,31 +330,45 @@ const Home = () => {
     );
   };
 
+  const BalanceBox = () => (
+    <Box
+      sx={{
+        p: 3,
+        borderRadius: '24px',
+        background: 'white',
+        border: '1px solid rgba(255, 255, 255, 0.8)',
+        boxShadow: '9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5)',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          transform: 'translateY(-5px)',
+          boxShadow: '12px 12px 20px rgb(163,177,198,0.8), -12px -12px 20px rgba(255,255,255, 0.8)',
+        }
+      }}
+    >
+      {/* Balance content */}
+    </Box>
+  );
+
   return (
     <Box sx={{ 
-      height: 'auto', // Changed from fixed height to auto
-      maxHeight: '81vh',
-      overflow: 'auto',
-      px: { xs: 2, sm: 3 },
-      py: { xs: 2, sm: 3 },
-      mt: { xs: 5, sm: 0 }, // Added margin top for mobile
-      '&::-webkit-scrollbar': {
-        width: '6px',
-        display: 'none'  // Hide scrollbar but keep functionality
-      },
-      msOverflowStyle: 'none',  // Hide scrollbar for IE/Edge
-      scrollbarWidth: 'none',   // Hide scrollbar for Firefox
+      height: 'auto',
+      maxHeight: { xs: '100%', sm: '81vh' },
+      overflow: { xs: 'auto', sm: 'hidden' },
+      px: { xs: 2, sm: 2 },
+      py: { xs: 2, sm: 2 }, // Reduced padding
+      mt: { xs: 5, sm: 0 },
+      backgroundColor: '#E0E5EC',
     }}>
-      <Grid container spacing={3}>
-        {/* Welcome and Balance Section */}
+      <Grid container spacing={2}> {/* Reduced spacing from 3 to 2 */}
+        {/* Welcome Section with reduced margins */}
         <Grid item xs={12}>
           <Box sx={{ 
+            mb: { xs: 2, sm: 2 }, // Reduced margin
             display: 'flex',
             flexDirection: { xs: 'column', sm: 'row' },
             alignItems: { xs: 'flex-start', sm: 'center' },
             justifyContent: 'space-between',
-            gap: 3,
-            mb: 3
+            gap: { xs: 1, sm: 2 } // Reduced gap
           }}>
             {/* Welcome Text */}
             <Box>
@@ -417,12 +428,12 @@ const Home = () => {
 
         {/* Recent Groups Section with View All button */}
         <Grid item xs={12}>
-          <Box sx={{ mt: 3, mb: 2 }}>
+          <Box sx={{ mt: { xs: 1, sm: 2 }, mb: { xs: 2, sm: 2 } }}>
             <Box sx={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
-              mb: 3
+              mb: { xs: 1, sm: 2 } // Reduced margin
             }}>
               <Typography variant="h6" fontWeight={600}>
                 Recent Groups
@@ -445,7 +456,7 @@ const Home = () => {
                 View All
               </Button>
             </Box>
-            <Grid container spacing={3}>
+            <Grid container spacing={2}> {/* Reduced spacing */}
               {allGroups?.slice(0, 3).map((group, index) => (
                 <Grid item xs={12} sm={6} md={4} key={index}>
                   <RecentGroupCard group={group} />

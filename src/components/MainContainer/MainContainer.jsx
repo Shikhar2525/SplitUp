@@ -41,10 +41,10 @@ function MainContainer() {
         flexDirection: isMobile ? "column" : "row",
         alignItems: isMobile ? "center" : "flex-start",
         justifyContent: "center",
-        overflow: isNineHundredPixels ? "auto" : "hidden",
+        overflow: isMobile ? "auto" : "hidden", // Enable scroll on mobile
         borderRadius: "30px",
         border: "2px solid white",
-        backgroundColor: "#f8f4f4",
+        backgroundColor: isAuthenticated ? "#E0E5EC" : "#f8f4f4",
         boxShadow: "0 4px 20px rgba(255, 255, 255, 0.7)",
         position: "relative",
       }}

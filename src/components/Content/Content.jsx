@@ -68,7 +68,7 @@ function Content() {
         flexDirection: "column",
         alignItems: "flex-start",
         justifyContent: "flex-start",
-        backgroundColor: "#f8f4f4",
+        backgroundColor: isAuthenticated ? "#E0E5EC" : "#f8f4f4",
         borderRadius: "30px",
         position: "relative", // Set position to relative for absolute children
         ...(isMobile ? { width: "100%" } : {}),
