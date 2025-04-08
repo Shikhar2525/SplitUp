@@ -28,6 +28,7 @@ import { InfoOutlined } from "@mui/icons-material";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import userService from "../services/user.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import { useFriends } from "../contexts/FriendsContext";
 
 const StyledSearchResults = styled(Box)(({ theme }) => ({
   width: "100%",
@@ -105,6 +106,7 @@ const ManageFriends = () => {
   const [removingFriend, setRemovingFriend] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isHidden, setIsHidden] = useState(false);
+  const { refreshFriends } = useFriends();
 
   const fetchFriends = async () => {
     try {
@@ -203,7 +205,7 @@ const ManageFriends = () => {
       const result = await userService.addFriend(currentUser.email, friendEmail);
 
       if (result.success) {
-        console.log(result.message);
+        await refreshFriends(currentUser.email);
         await fetchFriends();
         setSearchQuery(""); // Clear search bar
       } else {
@@ -226,7 +228,7 @@ const ManageFriends = () => {
       console.log("Remove friend result:", result);
       
       if (result.success) {
-        console.log("Friend removed, refreshing list...");
+        await refreshFriends(currentUser.email);
         await fetchFriends();
       } else {
         console.error("Failed to remove friend:", result.message);

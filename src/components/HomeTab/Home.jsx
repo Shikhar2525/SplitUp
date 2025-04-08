@@ -1,477 +1,372 @@
-import { Box, Grid, Typography, Card } from "@mui/material";
-import React, { useEffect, useMemo, useState } from "react";
-import OverViewCard from "../OverViewCard/OverViewCard";
-import { useScreenSize } from "../contexts/ScreenSizeContext";
-import GroupCard from "../GroupCard/GroupCard";
-import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
-import { useAllGroups } from "../contexts/AllGroups";
-import { calculateTotalsAcrossGroups, capitalizeFirstLetter } from "../utils";
+import React from "react";
+import { Box, Grid, Paper, Typography, Button, Avatar, AvatarGroup, Chip } from "@mui/material";
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
+import { calculateTotalsAcrossGroups } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
-import { useNavigate } from "react-router-dom";
-import activityService from "../services/activity.service";
+import { useAllGroups } from "../contexts/AllGroups";
+import { useEffect, useState } from "react";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
-import { useRefetchLogs } from "../contexts/RefetchLogs";
-import Button from '@mui/material/Button';
-import PaymentsIcon from '@mui/icons-material/Payments';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import { getCurrencySymbol } from "../utils";
+import { useNavigate } from "react-router-dom";
+import { useFriends } from "../contexts/FriendsContext";
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import PersonIcon from '@mui/icons-material/Person';
+import PaidIcon from '@mui/icons-material/Paid';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import GroupsIcon from '@mui/icons-material/Groups';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import PendingIcon from '@mui/icons-material/Pending';
 
-function HomeTab() {
-  const isMobile = useScreenSize();
-  const { allGroups } = useAllGroups();
+const StyledTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    color: '#5e72e4',
+    maxWidth: 220,
+    fontSize: '0.875rem',
+    border: '1px solid rgba(94, 114, 228, 0.2)',
+    borderRadius: '12px',
+    padding: '16px',
+    boxShadow: '0 8px 32px rgba(94, 114, 228, 0.15)',
+    backdropFilter: 'blur(10px)',
+    '& .amount-row': {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '8px 0',
+      '&:not(:last-child)': {
+        borderBottom: '1px dashed rgba(94, 114, 228, 0.2)'
+      }
+    }
+  },
+  [`& .${tooltipClasses.arrow}`]: {
+    color: 'rgba(255, 255, 255, 0.95)',
+    '&::before': {
+      border: '1px solid rgba(94, 114, 228, 0.2)'
+    }
+  },
+}));
+
+const Home = () => {
   const { currentUser } = useCurrentUser();
-  const [logs, setLogs] = useState([]);
-  const navigate = useNavigate();
-  const [loader, setLoader] = useState(false);
+  const { allGroups } = useAllGroups();
   const { currentCurrency } = useCurrentCurrency();
-  const [totals, setTotals] = useState({
-    youGet: 0,
-    youGive: 0,
-    balance: 0,
-  });
-  const { refetchLogs } = useRefetchLogs();
+  const { userFriends } = useFriends();
+  const [totals, setTotals] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (allGroups?.length > 0 && currentUser) {
-      const fetchTotals = async () => {
+    const fetchTotals = async () => {
+      if (currentUser?.email && allGroups) {
         const result = await calculateTotalsAcrossGroups(
           allGroups,
-          currentUser.email,
+          currentUser?.email,
           currentCurrency
         );
         setTotals(result);
-      };
-
-      fetchTotals();
-    } else {
-      // If no groups or currentUser, reset the totals
-      setTotals({
-        youGet: 0,
-        youGive: 0,
-        balance: 0,
-      });
-    }
+      }
+    };
+    fetchTotals();
   }, [allGroups, currentUser, currentCurrency]);
 
-  const { youGet, youGive, balance } = totals;
+  const StatCard = ({ title, value, icon, color, onClick, hoverDetails }) => (
+    <Paper
+      elevation={0}
+      onClick={onClick}
+      sx={{
+        p: 3,
+        height: '100%',
+        borderRadius: '24px',
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255,255,255,0.8)',
+        transition: 'all 0.3s ease',
+        cursor: onClick ? 'pointer' : 'default',
+        position: 'relative',
+        '&:hover': onClick ? {
+          transform: 'translateY(-5px)',
+          boxShadow: '0 8px 32px rgba(94, 114, 228, 0.15)',
+        } : {},
+      }}
+    >
+      <StyledTooltip
+        title={
+          hoverDetails ? (
+            <Box>
+              <div className="amount-row">
+                <Typography sx={{ fontWeight: 600, color: '#2dce89' }}>
+                  You'll Get
+                </Typography>
+                <Typography sx={{ fontWeight: 600, color: '#2dce89' }}>
+                  {getCurrencySymbol(currentCurrency)} {hoverDetails.youGet.toFixed(2)}
+                </Typography>
+              </div>
+              <div className="amount-row">
+                <Typography sx={{ fontWeight: 600, color: '#fb6340' }}>
+                  You'll Give
+                </Typography>
+                <Typography sx={{ fontWeight: 600, color: '#fb6340' }}>
+                  {getCurrencySymbol(currentCurrency)} {hoverDetails.youGive.toFixed(2)}
+                </Typography>
+              </div>
+            </Box>
+          ) : ''
+        }
+        arrow
+        placement="top"
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box
+            sx={{
+              p: 1.5,
+              borderRadius: '16px',
+              bgcolor: `${color}15`,
+              color: color,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {icon}
+          </Box>
+          <Box>
+            <Typography variant="body2" color="text.secondary" fontWeight={500}>
+              {title}
+            </Typography>
+            <Typography variant="h5" fontWeight={700} color={color}>
+              {typeof value === 'number' ? value : value}
+            </Typography>
+          </Box>
+        </Box>
+      </StyledTooltip>
+    </Paper>
+  );
 
-  const fetchLogs = async () => {
-    setLoader(true);
-    try {
-      const fetchedLogs = await activityService.fetchActivitiesByEmail(
-        currentUser?.email
-      );
-      setLogs(fetchedLogs);
-    } catch (error) {
-      console.error("Error fetching groups:", error);
-    } finally {
-      setLoader(false);
-    }
-  };
-  useEffect(() => {
-    if (currentUser) {
-      fetchLogs();
-    }
-  }, [currentUser, refetchLogs]);
+  const RecentGroupCard = React.memo(({ group }) => {
+    const isGroupSettled = group.members?.every(member => member.userSettled);
 
-  return (
-    <Box sx={{ flex: 1, display: "flex", width: "100%" }}>
-      <Box
+    return (
+      <Paper
+        elevation={0}
+        onClick={() => navigate('/groups')}
         sx={{
-          flex: 1,
-          display: "flex",
-          width: "100%",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          justifyContent: "flex-start",
-          marginTop: 2,
-          gap: 3, // Add consistent gap between sections
-          ...(isMobile ? { alignItems: "flex-start" } : {}),
+          p: 2.5,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,0.8)',
+          transition: 'all 0.3s ease',
+          cursor: 'pointer',
+          position: 'relative',
+          '&:hover': {
+            transform: 'translateY(-3px)',
+            boxShadow: '0 8px 32px rgba(94, 114, 228, 0.15)',
+          },
         }}
       >
-        {/* Summary Section */}
-        <Typography variant="subtitle1" margin={0.5} sx={{ color: "#353E6C" }}>
-          Summary
-        </Typography>
-        <Grid container spacing={3} justifyContent="center">
-          <Grid item xs={12} sm={6} md={4}>
-            <OverViewCard
-              title={"You get"}
-              amount={youGet}
-              backgroundStyle={{
-                background: "linear-gradient(135deg, #f36, #f08)",
-              }}
-            />
-          </Grid>
+        {/* Add Settlement Status Badge */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -10,
+            right: 20,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            px: 1.5,
+            py: 0.5,
+            borderRadius: '12px',
+            backgroundColor: isGroupSettled ? 'rgba(45, 206, 137, 0.1)' : 'rgba(251, 99, 64, 0.1)',
+            color: isGroupSettled ? '#2dce89' : '#fb6340',
+            border: `1px solid ${isGroupSettled ? 'rgba(45, 206, 137, 0.2)' : 'rgba(251, 99, 64, 0.2)'}`,
+            backdropFilter: 'blur(8px)',
+            transition: 'all 0.3s ease',
+            zIndex: 1,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
+            }
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {isGroupSettled ? (
+              <VerifiedIcon sx={{ fontSize: '0.875rem' }} />
+            ) : (
+              <PendingIcon sx={{ fontSize: '0.875rem' }} />
+            )}
+            <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
+              {isGroupSettled ? 'Settled' : 'Unsettled'}
+            </Typography>
+          </Box>
+        </Box>
 
-          <Grid item xs={12} sm={6} md={4}>
-            <OverViewCard
-              title={"You give"}
-              amount={youGive}
-              backgroundStyle={{
-                background: "linear-gradient(135deg, #FF9A3E, #FF6F20)",
-              }}
-            />
-          </Grid>
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'start', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Avatar
+                sx={{
+                  width: 45,
+                  height: 45,
+                  bgcolor: '#5e72e4',
+                  fontSize: '1.2rem',
+                  fontWeight: 600
+                }}
+              >
+                {group.title[0]}
+              </Avatar>
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  {group.title}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {group.members?.length} members
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+          <Chip 
+            label={group.category || 'Other'} 
+            size="small"
+            sx={{
+              bgcolor: 'rgba(94, 114, 228, 0.1)',
+              color: '#5e72e4',
+              fontWeight: 600
+            }}
+          />
+        </Box>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          mt: 2 
+        }}>
+          <AvatarGroup max={4} sx={{ '& .MuiAvatar-root': { width: 30, height: 30, fontSize: '0.8rem' } }}>
+            {group.members?.map((member, idx) => (
+              <Avatar key={idx} src={member.profilePicture} alt={member.name}>
+                {member.name?.[0]}
+              </Avatar>
+            ))}
+          </AvatarGroup>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PaidIcon sx={{ color: '#8898aa', fontSize: '1.1rem' }} />
+            <Typography variant="caption" color="text.secondary" fontWeight={500}>
+              {group.expenses?.length || 0} expenses
+            </Typography>
+          </Box>
+        </Box>
+      </Paper>
+    );
+  });
 
-          <Grid item xs={12} sm={6} md={4}>
-            <OverViewCard
-              title={"Balance"}
-              amount={balance}
-              backgroundStyle={{
-                background: "linear-gradient(135deg, #332A7C, #5A4B9A)",
+  return (
+    <Box sx={{ 
+      height: '81vh',
+      overflow: 'auto',
+      px: { xs: 2, sm: 3 },
+      py: { xs: 2, sm: 3 },
+      mt: { xs: 5, sm: 0 }, // Added margin top for mobile
+      '&::-webkit-scrollbar': {
+        width: '6px'
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: 'rgba(94, 114, 228, 0.2)',
+        borderRadius: '10px'
+      }
+    }}>
+      <Grid container spacing={3}>
+        {/* Welcome and Balance Section */}
+        <Grid item xs={12}>
+          <Box sx={{ 
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            justifyContent: 'space-between',
+            gap: 3,
+            mb: 3
+          }}>
+            {/* Welcome Text */}
+            <Box>
+              <Typography variant="h4" fontWeight={800} sx={{ 
+                background: 'linear-gradient(135deg, #5e72e4 0%, #825ee4 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                Welcome back, {currentUser?.name?.split(' ')[0]}!
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                Here's what's happening with your splitting journey.
+              </Typography>
+            </Box>
+
+            {/* Balance Card */}
+            <StatCard
+              title="Overall Balance"
+              value={`${getCurrencySymbol(currentCurrency)} ${Math.abs(totals?.balance || 0).toFixed(2)}`}
+              icon={<AccountBalanceIcon />}
+              color={totals?.balance?.startsWith('-') ? '#fb6340' : '#2dce89'}
+              hoverDetails={{
+                youGet: Math.abs(totals?.youGet || 0),
+                youGive: Math.abs(totals?.youGive || 0)
               }}
             />
-          </Grid>
+          </Box>
+        </Grid>
+
+        {/* Stats Section */}
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Total Groups"
+            value={allGroups?.length || 0}
+            icon={<GroupAddIcon />}
+            color="#5e72e4"
+            onClick={() => navigate('/groups')}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Total Friends"
+            value={userFriends?.length || 0}
+            icon={<PersonIcon />}
+            color="#2dce89"
+            onClick={() => navigate('/friends')}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Total Expenses"
+            value={allGroups?.reduce((total, group) => total + (group.expenses?.length || 0), 0)}
+            icon={<ReceiptLongIcon />}
+            color="#11cdef"
+          />
         </Grid>
 
         {/* Recent Groups Section */}
-        {allGroups?.length > 0 && (
-          <>
-            <Box sx={{ width: '100%' }}>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 2
-              }}>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ color: "#353E6C" }}
-                >
-                  Recent Groups
-                </Typography>
-                <Typography
-                  onClick={() => navigate("/groups")}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: '#5e72e4',
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      transform: 'translateX(4px)',
-                      color: '#4B54B9'
-                    }
-                  }}
-                >
-                  View All <ArrowRightAltIcon />
-                </Typography>
-              </Box>
-              <Grid container spacing={3} justifyContent="flex-start">
-                {allGroups?.slice(0, 3).map((group) => (
-                  <Grid item xs={12} sm={6} md={4} key={group.id}>
-                    <GroupCard group={group} />
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-
-            {/* Promotional Banner */}
-            <Box
-              sx={{
-                width: "100%",
-                borderRadius: "24px",
-                overflow: "hidden",
-                position: "relative",
-                background: 'linear-gradient(135deg, #5e72e4 0%, #825ee4 100%)',
-                boxShadow: '0 8px 32px rgba(94, 114, 228, 0.2)',
-                mt: 2,
-                mb: 3
-              }}
-            >
-              <Card
-                sx={{
-                  background: 'linear-gradient(135deg, #5e72e4 0%, #825ee4 100%)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  height: '100%',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                <Box
-                  sx={{
-                    p: { xs: 2, sm: 3 },
-                    display: 'flex',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: { xs: 2, sm: 3 },
-                    height: '100%',
-                    position: 'relative',
-                    zIndex: 2,
-                  }}
-                >
-                  {/* Text Content */}
-                  <Box sx={{ flex: 1 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: 'white',
-                        fontWeight: 700,
-                        fontSize: { xs: '1.1rem', sm: '1.25rem' },
-                        mb: 1,
-                        textAlign: { xs: 'center', sm: 'left' }
-                      }}
-                    >
-                      Track Your Group Expenses
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'rgba(255, 255, 255, 0.9)',
-                        mb: { xs: 1, sm: 2 },
-                        maxWidth: '600px',
-                        fontSize: { xs: '0.875rem', sm: '0.9rem' },
-                        textAlign: { xs: 'center', sm: 'left' }
-                      }}
-                    >
-                      Split bills, track expenses, and settle up with your friends easily.
-                    </Typography>
-                  </Box>
-
-                  {/* Action Button */}
-                  <Button
-                    variant="contained"
-                    onClick={() => navigate("/groups")}
-                    sx={{
-                      backgroundColor: 'white',
-                      color: '#5e72e4',
-                      px: 3,
-                      py: 1,
-                      borderRadius: '12px',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.9)',
-                      },
-                      minWidth: { xs: '100%', sm: 'auto' }
-                    }}
-                  >
-                    View All Groups
-                  </Button>
-                </Box>
-
-                {/* Decorative Elements */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    inset: 0,
-                    opacity: 0.1,
-                    background: `
-                      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.3) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 80%, rgba(255,255,255,0.3) 0%, transparent 50%)
-                    `,
-                  }}
-                />
-              </Card>
-            </Box>
-
-            {/* Enhanced Banner */}
-            <Box
-              sx={{
-                width: "100%",
-                mx: { xs: 1, sm: 2 },
-                mb: 3,
-                borderRadius: "24px",
-                overflow: "hidden",
-                position: "relative",
-                background: 'linear-gradient(135deg, #1a1f35 0%, #212744 100%)',
-                boxShadow: '0 8px 32px rgba(26, 31, 53, 0.2)',
-              }}
-            >
-              {/* Animated Background Pattern */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  inset: 0,
-                  opacity: 0.1,
-                  background: `
-                    repeating-linear-gradient(45deg,
-                      transparent,
-                      transparent 10px,
-                      rgba(255,255,255,0.1) 10px,
-                      rgba(255,255,255,0.1) 20px
-                    )
-                  `,
-                  animation: 'movePattern 20s linear infinite',
-                  '@keyframes movePattern': {
-                    '0%': { transform: 'translateX(0)' },
-                    '100%': { transform: 'translateX(100px)' }
-                  }
-                }}
-              />
-
-              <Box
-                sx={{
-                  p: { xs: 3, sm: 4 },
-                  display: 'flex',
-                  flexDirection: { xs: 'column', md: 'row' },
-                  gap: { xs: 4, sm: 6 },
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                {/* Content Section */}
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      color: 'white',
-                      fontWeight: 700,
-                      fontSize: { xs: '1.75rem', sm: '2rem' },
-                      mb: 1,
-                      background: 'linear-gradient(135deg, #fff 0%, #e0e0e0 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  >
-                    Manage Group Expenses
-                  </Typography>
-
-                  <Typography
-                    sx={{
-                      color: 'rgba(255,255,255,0.7)',
-                      mb: 4,
-                      maxWidth: '500px',
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      lineHeight: 1.6
-                    }}
-                  >
-                    Create groups, track expenses, and split bills easily with your friends and family.
-                  </Typography>
-
-                  {/* Stats Grid */}
-                  <Box sx={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
-                    gap: 2,
-                    mb: 4
-                  }}>
-                    {[
-                      {
-                        icon: <GroupsIcon />,
-                        label: 'Active Groups',
-                        value: allGroups.length,
-                        color: '#5e72e4'
-                      },
-                      {
-                        icon: <AssignmentIcon />,
-                        label: 'Total Expenses',
-                        value: allGroups.reduce((acc, group) => acc + (group.expenses?.length || 0), 0),
-                        color: '#2dce89'
-                      },
-                      {
-                        icon: <AccountBalanceWalletIcon />,
-                        label: 'Settlements',
-                        value: allGroups.reduce((acc, group) => 
-                          acc + (group.members?.filter(m => m.userSettled)?.length || 0), 0),
-                        color: '#fb6340'
-                      }
-                    ].map((stat, index) => (
-                      <Box
-                        key={index}
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 2,
-                          p: 2,
-                          borderRadius: '16px',
-                          backgroundColor: 'rgba(255,255,255,0.05)',
-                          backdropFilter: 'blur(10px)',
-                          transition: 'all 0.3s ease',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255,255,255,0.1)',
-                            transform: 'translateY(-2px)'
-                          }
-                        }}
-                      >
-                        <Box sx={{
-                          p: 1.5,
-                          borderRadius: '12px',
-                          backgroundColor: `${stat.color}20`,
-                          color: stat.color,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          {stat.icon}
-                        </Box>
-                        <Box>
-                          <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', mb: 0.5 }}>
-                            {stat.label}
-                          </Typography>
-                          <Typography sx={{ color: 'white', fontWeight: 600, fontSize: '1.25rem' }}>
-                            {stat.value}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-
-                  <Button
-                    variant="contained"
-                    onClick={() => navigate("/groups")}
-                    endIcon={<ArrowForwardIcon />}
-                    sx={{
-                      bgcolor: '#5e72e4',
-                      color: 'white',
-                      px: 3,
-                      py: 1.5,
-                      borderRadius: '12px',
-                      textTransform: 'none',
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                      '&:hover': {
-                        bgcolor: '#4757ca',
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 4px 20px rgba(94, 114, 228, 0.4)'
-                      },
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    Manage Groups
-                  </Button>
-                </Box>
-
-                {/* Illustration Section */}
-                <Box
-                  sx={{
-                    display: { xs: 'none', md: 'flex' },
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '40%',
-                    position: 'relative'
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src="https://assets-v2.lottiefiles.com/a/ebf42e44-116a-11ee-aa38-87cc876a2b24/tYZI9ybSOr.gif"
-                    alt="Expense Management"
-                    sx={{
-                      width: '100%',
-                      maxWidth: '400px',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.2))',
-                    }}
-                  />
-                </Box>
-              </Box>
-            </Box>
-          </>
-        )}
-      </Box>
+        <Grid item xs={12}>
+          <Box sx={{ mt: 3, mb: 2 }}>
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
+              Recent Groups
+            </Typography>
+            <Grid container spacing={3}>
+              {allGroups?.slice(0, 3).map((group, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <RecentGroupCard group={group} />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        </Grid>
+      </Grid>
     </Box>
   );
-}
+};
 
-export default HomeTab;
+export default Home;
