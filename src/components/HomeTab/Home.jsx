@@ -132,17 +132,11 @@ function HomeTab() {
         </Typography>
       )}
       <Grid container spacing={3} justifyContent="flex-start">
-        {allGroups?.slice(0, 3).map((group) => {
-          return (
-            <Grid item xs={12} sm={6} md={4} key={group.id}>
-              <GroupCard
-                title={capitalizeFirstLetter(group?.title)}
-                subtitle={capitalizeFirstLetter(group?.description)}
-                groupID={group?.id}
-              />
-            </Grid>
-          );
-        })}
+        {allGroups?.slice(0, 3).map((group) => (
+          <Grid item xs={12} sm={6} md={4} key={group.id}>
+            <GroupCard group={group} />
+          </Grid>
+        ))}
       </Grid>
 
       <Box
