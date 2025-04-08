@@ -19,6 +19,9 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import PendingIcon from '@mui/icons-material/Pending';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 
 const StyledTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -146,7 +149,7 @@ const Home = () => {
     </Paper>
   );
 
-  const RecentGroupCard = React.memo(({ group }) => {
+  const RecentGroupCard = ({ group }) => {
     const isGroupSettled = group.members?.every(member => member.userSettled);
 
     return (
@@ -172,7 +175,7 @@ const Home = () => {
           },
         }}
       >
-        {/* Add Settlement Status Badge */}
+        {/* Settlement Status Badge */}
         <Box
           sx={{
             position: 'absolute',
@@ -211,7 +214,7 @@ const Home = () => {
 
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'start', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
               <Avatar
                 sx={{
                   width: 45,
@@ -223,64 +226,127 @@ const Home = () => {
               >
                 {group.title[0]}
               </Avatar>
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ color: '#32325d' }}>
                   {group.title}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                {group.description && (
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: '#525f7f',
+                      opacity: 0.9,
+                      mt: 0.5,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      lineHeight: '1.3',
+                      fontSize: '0.8rem'
+                    }}
+                  >
+                    {group.description}
+                  </Typography>
+                )}
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    color: '#8898aa',
+                    display: 'block',
+                    mt: 0.5
+                  }}
+                >
                   {group.members?.length} members
                 </Typography>
               </Box>
             </Box>
           </Box>
+
+          {/* Simplified Stats Row */}
+          <Box sx={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            mt: 2
+          }}>
+            <Box sx={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              backgroundColor: 'rgba(94, 114, 228, 0.1)',
+              px: 1.5,
+              py: 0.5,
+              borderRadius: '8px'
+            }}>
+              <PaidIcon sx={{ color: '#5e72e4', fontSize: '0.9rem' }} />
+              <Typography variant="caption" sx={{ 
+                color: '#5e72e4',
+                fontWeight: 600
+              }}>
+                {group.expenses?.length || 0} expenses
+              </Typography>
+            </Box>
+          </Box>
+
           <Chip 
             label={group.category || 'Other'} 
             size="small"
             sx={{
               bgcolor: 'rgba(94, 114, 228, 0.1)',
               color: '#5e72e4',
-              fontWeight: 600
+              fontWeight: 600,
+              mt: 2
             }}
           />
         </Box>
+
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          mt: 2 
+          mt: 2
         }}>
-          <AvatarGroup max={4} sx={{ '& .MuiAvatar-root': { width: 30, height: 30, fontSize: '0.8rem' } }}>
+          <AvatarGroup 
+            max={4} 
+            sx={{ 
+              '& .MuiAvatar-root': { 
+                width: 30, 
+                height: 30, 
+                fontSize: '0.8rem',
+                border: '2px solid #fff'
+              } 
+            }}
+          >
             {group.members?.map((member, idx) => (
-              <Avatar key={idx} src={member.profilePicture} alt={member.name}>
+              <Avatar 
+                key={idx} 
+                src={member.profilePicture} 
+                alt={member.name}
+              >
                 {member.name?.[0]}
               </Avatar>
             ))}
           </AvatarGroup>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <PaidIcon sx={{ color: '#8898aa', fontSize: '1.1rem' }} />
-            <Typography variant="caption" color="text.secondary" fontWeight={500}>
-              {group.expenses?.length || 0} expenses
-            </Typography>
-          </Box>
         </Box>
       </Paper>
     );
-  });
+  };
 
   return (
     <Box sx={{ 
-      height: '81vh',
+      height: 'auto', // Changed from fixed height to auto
+      maxHeight: '81vh',
       overflow: 'auto',
       px: { xs: 2, sm: 3 },
       py: { xs: 2, sm: 3 },
       mt: { xs: 5, sm: 0 }, // Added margin top for mobile
       '&::-webkit-scrollbar': {
-        width: '6px'
+        width: '6px',
+        display: 'none'  // Hide scrollbar but keep functionality
       },
-      '&::-webkit-scrollbar-thumb': {
-        backgroundColor: 'rgba(94, 114, 228, 0.2)',
-        borderRadius: '10px'
-      }
+      msOverflowStyle: 'none',  // Hide scrollbar for IE/Edge
+      scrollbarWidth: 'none',   // Hide scrollbar for Firefox
     }}>
       <Grid container spacing={3}>
         {/* Welcome and Balance Section */}
@@ -345,16 +411,40 @@ const Home = () => {
             title="Total Expenses"
             value={allGroups?.reduce((total, group) => total + (group.expenses?.length || 0), 0)}
             icon={<ReceiptLongIcon />}
-            color="#11cdef"
+            color="#fb6340"
           />
         </Grid>
 
-        {/* Recent Groups Section */}
+        {/* Recent Groups Section with View All button */}
         <Grid item xs={12}>
           <Box sx={{ mt: 3, mb: 2 }}>
-            <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-              Recent Groups
-            </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              mb: 3
+            }}>
+              <Typography variant="h6" fontWeight={600}>
+                Recent Groups
+              </Typography>
+              <Button
+                variant="text"
+                size="small"
+                endIcon={<MoreHorizIcon />}
+                onClick={() => navigate('/groups')}
+                sx={{
+                  color: '#5e72e4',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  '&:hover': {
+                    backgroundColor: 'rgba(94, 114, 228, 0.1)',
+                  }
+                }}
+              >
+                View All
+              </Button>
+            </Box>
             <Grid container spacing={3}>
               {allGroups?.slice(0, 3).map((group, index) => (
                 <Grid item xs={12} sm={6} md={4} key={index}>
