@@ -16,6 +16,7 @@ import {
   Button,
   IconButton,
   Alert,
+  Tooltip,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import AddExpenseButton from "../AddExpense/AddExpenseModal";
@@ -27,7 +28,6 @@ import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
 import { convertCurrency, formatDate } from "../utils";
 import { useAllGroups } from "../contexts/AllGroups";
-import { Tooltip } from "@mui/material";
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
 import Groups2Icon from "@mui/icons-material/Groups2";
 import { useLinearProgress } from "../contexts/LinearProgress";
@@ -318,35 +318,34 @@ const GroupTab = () => {
     const { currentCurrency } = useCurrentCurrency();
 
     useEffect(() => {
-      const calculateConvertedAmounts = async () => {
-        const totalExpenses = selectedGroupDetails?.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
-        const memberCount = selectedGroupDetails?.members?.length || 1;
-        const perHeadCost = totalExpenses / memberCount;
+      const calculateTotalAmount = async () => {
+        let totalInCurrentCurrency = 0;
 
-        try {
-          // Convert total amount
-          const { amount: totalConverted } = await convertCurrency(
-            totalExpenses,
-            selectedGroupDetails?.defaultCurrency || 'INR',
-            currentCurrency
-          );
-          setConvertedTotal(parseFloat(totalConverted));
-
-          // Convert per head cost
-          const { amount: perHeadConverted } = await convertCurrency(
-            perHeadCost,
-            selectedGroupDetails?.defaultCurrency || 'INR',
-            currentCurrency
-          );
-          setConvertedPerHead(parseFloat(perHeadConverted));
-        } catch (error) {
-          console.error("Currency conversion error:", error);
-          setConvertedTotal(totalExpenses);
-          setConvertedPerHead(perHeadCost);
+        // Convert each expense to current currency and sum
+        if (selectedGroupDetails?.expenses) {
+          for (const expense of selectedGroupDetails.expenses) {
+            try {
+              const { amount: convertedAmount } = await convertCurrency(
+                expense.amount,
+                expense.currency || selectedGroupDetails.defaultCurrency,
+                currentCurrency
+              );
+              totalInCurrentCurrency += parseFloat(convertedAmount);
+            } catch (error) {
+              console.error("Currency conversion error:", error);
+            }
+          }
         }
+
+        // Calculate per head cost
+        const memberCount = selectedGroupDetails?.members?.length || 1;
+        const perHeadAmount = totalInCurrentCurrency / memberCount;
+
+        setConvertedTotal(totalInCurrentCurrency);
+        setConvertedPerHead(perHeadAmount);
       };
 
-      calculateConvertedAmounts();
+      calculateTotalAmount();
     }, [selectedGroupDetails, currentCurrency]);
 
     return (
@@ -415,7 +414,8 @@ const GroupTab = () => {
             display: 'flex', 
             flexDirection: 'column',
             gap: 0.5,
-            minWidth: 0
+            minWidth: 0,
+            flex: 1
           }}>
             <Typography variant="caption" sx={{ 
               color: '#8898aa', 
@@ -424,19 +424,30 @@ const GroupTab = () => {
             }}>
               Total Amount
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <AccountBalanceWalletIcon sx={{ 
-                color: '#5e72e4', 
-                fontSize: { xs: '1rem', sm: '1.1rem' } 
-              }} />
-              <Typography sx={{ 
-                color: '#5e72e4', 
-                fontWeight: 600,
-                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
+            <Tooltip title={`${convertedTotal.toFixed(2)} ${currentCurrency}`} arrow>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1,
+                maxWidth: '100%'
               }}>
-                {convertedTotal.toFixed(2)} {currentCurrency}
-              </Typography>
-            </Box>
+                <AccountBalanceWalletIcon sx={{ 
+                  color: '#5e72e4', 
+                  fontSize: { xs: '1rem', sm: '1.1rem' },
+                  flexShrink: 0
+                }} />
+                <Typography sx={{ 
+                  color: '#5e72e4', 
+                  fontWeight: 600,
+                  fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {convertedTotal.toFixed(2)} {currentCurrency}
+                </Typography>
+              </Box>
+            </Tooltip>
           </Box>
 
           {/* Per Head Cost */}
@@ -446,7 +457,8 @@ const GroupTab = () => {
             gap: 0.5,
             borderLeft: { xs: 'none', sm: '1px solid rgba(136, 152, 170, 0.2)' },
             paddingLeft: { xs: 0, sm: 3 },
-            minWidth: 0
+            minWidth: 0,
+            flex: 1
           }}>
             <Typography variant="caption" sx={{ 
               color: '#8898aa', 
@@ -455,19 +467,30 @@ const GroupTab = () => {
             }}>
               Appx Per Person
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <AccountBalanceWalletIcon sx={{ 
-                color: '#2dce89', 
-                fontSize: { xs: '1rem', sm: '1.1rem' } 
-              }} />
-              <Typography sx={{ 
-                color: '#2dce89', 
-                fontWeight: 600,
-                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
+            <Tooltip title={`${convertedPerHead.toFixed(2)} ${currentCurrency}`} arrow>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1,
+                maxWidth: '100%'
               }}>
-                {convertedPerHead.toFixed(2)} {currentCurrency}
-              </Typography>
-            </Box>
+                <AccountBalanceWalletIcon sx={{ 
+                  color: '#2dce89', 
+                  fontSize: { xs: '1rem', sm: '1.1rem' },
+                  flexShrink: 0
+                }} />
+                <Typography sx={{ 
+                  color: '#2dce89', 
+                  fontWeight: 600,
+                  fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {convertedPerHead.toFixed(2)} {currentCurrency}
+                </Typography>
+              </Box>
+            </Tooltip>
           </Box>
         </Box>
 
