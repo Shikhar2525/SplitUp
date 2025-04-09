@@ -118,7 +118,7 @@ const SettleTab = ({ members, groupID }) => {
           backgroundColor: "#fff",
           height: allUserSettled
             ? isMobile
-              ? "25vh"
+              ? "40vh"
               : "40vh"
             : isMobile
             ? "40vh"

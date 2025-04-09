@@ -120,7 +120,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   return (
     <Box
       sx={{
-        height: allUserSettled ? (isMobile ? "34vh" : "45vh") : (isMobile ? '40vh' :"55vh"),
+        height: allUserSettled ? (isMobile ? "42vh" : "45vh") : (isMobile ? '44vh' :"55vh"),
         overflow: "auto",
         padding: { xs: 1.5, sm: 2 },
         "& .MuiPaper-root": {
