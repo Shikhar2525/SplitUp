@@ -68,6 +68,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
   const userObjWithName = { email: inputEmail, name: name };
 
   const suggestionsRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (open && currentUser?.email) {
@@ -76,8 +77,8 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
   }, [open, currentUser]);
 
   useEffect(() => {
-    if (suggestions.length > 0 && inputEmail && suggestionsRef.current) {
-      suggestionsRef.current.focus();
+    if (suggestions.length > 0 && inputEmail && inputRef.current) {
+      inputRef.current.focus();
     }
   }, [suggestions, inputEmail]);
 
@@ -427,6 +428,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
               </div>
               <Box sx={{ position: "relative" }}> {/* Added margin bottom here */}
                 <TextField
+                  ref={inputRef}
                   disabled={showNameField}
                   label="Add Members"
                   variant="outlined"
@@ -465,9 +467,12 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
                         borderRadius: "8px",
                       },
                       "&:focus": {
-                        outline: "2px solid rgba(94, 114, 228, 0.5)",
-                        outlineOffset: "2px",
+                        outline: "none", // Remove outline since input will maintain focus
                       },
+                    }}
+                    onMouseDown={(e) => {
+                      // Prevent input from losing focus when clicking suggestions
+                      e.preventDefault();
                     }}
                   >
                     {suggestions.map((friend) => (
@@ -547,17 +552,23 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
       PaperProps={{
         elevation: 0,
         sx: {
-          borderRadius: "24px",
+          borderRadius: { xs: "24px", sm: "24px" }, // Flat top on mobile
           background:
             "linear-gradient(155deg, rgba(255,255,255,0.95) 0%, rgba(248,249,254,0.95) 100%)",
           backdropFilter: "blur(12px)",
           border: "1px solid rgba(255,255,255,0.8)",
           overflow: "hidden",
-          height: { xs: 'auto', sm: '80vh' }, // Decreased from 100vh to 80vh
-          maxHeight: { xs: '95vh', sm: '700px' }, // Decreased from 850px to 700px
-          m: { xs: 2, sm: 'auto' },
-          position: 'relative'
+          maxHeight: { xs: '90vh', sm: '500px' },
+          m: { xs: 4, sm: 'auto' }, // Remove margin on mobile
+          position: 'relative',
+          // Position at top for mobile
+          top: { xs: 0, sm: 'auto' }
         },
+      }}
+      sx={{
+        '& .MuiDialog-container': {
+          alignItems: { xs: 'flex-start', sm: 'center' } // Align to top on mobile
+        }
       }}
     >
       <DialogTitle
