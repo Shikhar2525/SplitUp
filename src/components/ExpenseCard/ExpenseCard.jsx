@@ -108,26 +108,51 @@ const TransactionCard = ({
   };
 
   return (
-    <>
+    <Box
+      sx={{
+        mb: 2,
+        borderRadius: "20px",
+        background: "#E0E5EC",
+        boxShadow:
+          "9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5)",
+        position: "relative",
+        overflow: "hidden",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        "&:hover": {
+          transform: "translateY(-3px)",
+          boxShadow:
+            "12px 12px 20px rgb(163,177,198,0.8), -12px -12px 20px rgba(255,255,255, 0.8)",
+        },
+      }}
+    >
       <Accordion
-        sx={{
-          marginBottom: 1.5, // Reduced from 2.5
-          borderRadius: "12px",
-          background: "linear-gradient(180deg, #FFFFFF 0%, #FAFBFF 100%)",
-          boxShadow: "0 4px 18px 0px rgba(0, 0, 0, 0.08)",
-          border: "1px solid rgba(226, 232, 240, 0.8)",
-          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-          overflow: "hidden",
-          "&:hover": {
-            transform: "translateY(-2px)",
-            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
-          },
-          "&.Mui-expanded": {
-            margin: "0 0 1.5rem 0",
-          },
-        }}
         expanded={expanded}
         onChange={handleAccordionChange}
+        elevation={0}
+        sx={{
+          background: "transparent",
+          "&:before": {
+            display: "none", // Remove the default accordion line
+          },
+          "& .MuiAccordionSummary-root": {
+            padding: "16px 20px",
+            borderRadius: "20px",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              background: "rgba(255, 255, 255, 0.1)",
+            },
+          },
+          "& .MuiAccordionDetails-root": {
+            padding: "16px 20px",
+            background: "linear-gradient(145deg, #e6e9ef, #f0f3f9)",
+            borderTop: "1px solid rgba(255, 255, 255, 0.2)",
+            boxShadow:
+              "inset 3px 3px 7px rgba(163,177,198,0.6), inset -3px -3px 7px rgba(255,255,255, 0.5)",
+          },
+          "& .Mui-expanded": {
+            margin: "0 !important", // Remove default margin when expanded
+          },
+        }}
       >
         <AccordionSummary
           expandIcon={
@@ -448,6 +473,14 @@ const TransactionCard = ({
       <Dialog
         open={openConfirmDialog}
         onClose={handleCloseConfirmDialog}
+        PaperProps={{
+          sx: {
+            borderRadius: "20px",
+            background: "#E0E5EC",
+            boxShadow:
+              "9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5)",
+          },
+        }}
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-description"
       >
@@ -467,7 +500,7 @@ const TransactionCard = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Box>
   );
 };
 
