@@ -20,8 +20,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import PendingIcon from '@mui/icons-material/Pending';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import LocalAtmIcon from '@mui/icons-material/LocalAtm';
-import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+
 
 const StyledTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -155,7 +154,10 @@ const Home = () => {
     return (
       <Paper
         elevation={0}
-        onClick={() => navigate('/groups')}
+        onClick={() => {
+          localStorage.setItem("currentGroupID", JSON.stringify(group?.id));
+          navigate("/groups");
+        }}
         sx={{
           p: 2,
           height: { xs: '180px', sm: '200px' }, // Fixed height
