@@ -69,7 +69,7 @@ function Navigation() {
   const navigate = useNavigate();
   const isMobile = useScreenSize();
   const isNineundredPixel = useMediaQuery("(max-width:900px)");
-  const [currentVersion, setCurrentVersion] = useState(versions[0]);
+  const [currentVersion, setCurrentVersion] = useState(versions[1]);
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
