@@ -367,7 +367,7 @@ const GroupTab = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 2,
-          mb: isMobile ? 1 : 0
+          mb: 1
         }}>
           <Box sx={{ 
             display: 'flex', 
@@ -405,93 +405,76 @@ const GroupTab = () => {
                 </Typography>
               </Tooltip>
             </Box>
-            {isMobile && <ShareLink />} {/* Move ShareLink here for mobile */}
+            <ShareLink />
           </Box>
         </Box>
 
-        {isMobile ? (
-          // Mobile Accordion View
-          <Accordion 
-            expanded={expanded} 
-            onChange={() => setExpanded(!expanded)}
-            sx={{
-              backgroundColor: 'transparent',
-              boxShadow: 'none',
-              '&:before': { display: 'none' },
-              '& .MuiAccordionSummary-root': {
-                minHeight: 0,
-                padding: 0,
-                marginTop: 1
+        <Accordion 
+          expanded={expanded} 
+          onChange={() => setExpanded(!expanded)}
+          sx={{
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            '&:before': { display: 'none' },
+            '& .MuiAccordionSummary-root': {
+              minHeight: 0,
+              padding: 1,
+              marginTop: 0
+            },
+            '& .MuiAccordionSummary-content': {
+              margin: 0
+            }
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ color: '#5e72e4' }} />}
+            sx={{ 
+              backgroundColor: 'rgba(94, 114, 228, 0.05)',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              '&:hover': {
+                backgroundColor: 'rgba(94, 114, 228, 0.08)'
               },
               '& .MuiAccordionSummary-content': {
-                margin: 0
+                margin: '0',
+                display: 'flex',
+                alignItems: 'center'
               }
             }}
           >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon sx={{ color: '#5e72e4' }} />}
-              sx={{ 
-                backgroundColor: 'rgba(94, 114, 228, 0.05)',
-                borderRadius: '8px',
-                '&:hover': {
-                  backgroundColor: 'rgba(94, 114, 228, 0.08)'
-                }
-              }}
-            >
-              <Typography sx={{ color: '#5e72e4', fontSize: '0.8rem', fontWeight: 600 }}>
-                View Details
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails sx={{ padding: '16px 0 0' }}>
-              <Box sx={{ 
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2
-              }}>
-                {/* Stats Section */}
-                <Box sx={{ 
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 2
-                }}>
-                  {/* Total Amount */}
-                  <StatItem
-                    icon={<AccountBalanceWalletIcon sx={{ color: '#5e72e4' }} />}
-                    label="Total Amount"
-                    value={`${convertedTotal.toFixed(2)} ${currentCurrency}`}
-                    color="#5e72e4"
-                  />
-                  
-                  {/* Per Head Cost */}
-                  <StatItem
-                    icon={<AccountBalanceWalletIcon sx={{ color: '#2dce89' }} />}
-                    label="Appx Per Person"
-                    value={`${convertedPerHead.toFixed(2)} ${currentCurrency}`}
-                    color="#2dce89"
-                  />
-                  
-                  {/* Created Date */}
-                  <StatItem
-                    icon={<CalendarTodayIcon sx={{ color: '#8898aa' }} />}
-                    label="Created"
-                    value={formatDate(selectedGroupDetails?.createdDate) ?? "N/A"}
-                    color="#525f7f"
-                  />
-                </Box>
-              </Box>
-            </AccordionDetails>
-          </Accordion>
-        ) : (
-          // Desktop Layout
-          <Box sx={{ 
-            display: 'flex',
-            alignItems: 'center',
-            gap: 3,
-            mt: 2
-          }}>
-            {/* ... existing desktop layout code ... */}
-          </Box>
-        )}
+            <Typography sx={{ color: '#5e72e4', fontSize: '0.8rem', fontWeight: 600 }}>
+              View Details
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ padding: '16px 0 0' }}>
+            <Box sx={{ 
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2
+            }}>
+              <StatItem
+                icon={<AccountBalanceWalletIcon sx={{ color: '#5e72e4' }} />}
+                label="Total Amount"
+                value={`${convertedTotal.toFixed(2)} ${currentCurrency}`}
+                color="#5e72e4"
+              />
+              
+              <StatItem
+                icon={<AccountBalanceWalletIcon sx={{ color: '#2dce89' }} />}
+                label="Appx Per Person"
+                value={`${convertedPerHead.toFixed(2)} ${currentCurrency}`}
+                color="#2dce89"
+              />
+              
+              <StatItem
+                icon={<CalendarTodayIcon sx={{ color: '#8898aa' }} />}
+                label="Created"
+                value={formatDate(selectedGroupDetails?.createdDate) ?? "N/A"}
+                color="#525f7f"
+              />
+            </Box>
+          </AccordionDetails>
+        </Accordion>
       </Box>
     );
   });

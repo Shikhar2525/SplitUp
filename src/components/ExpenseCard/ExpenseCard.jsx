@@ -135,7 +135,7 @@ const TransactionCard = ({
             display: "none", // Remove the default accordion line
           },
           "& .MuiAccordionSummary-root": {
-            padding: "16px 20px",
+         
             borderRadius: "20px",
             transition: "all 0.3s ease",
             "&:hover": {
@@ -143,7 +143,7 @@ const TransactionCard = ({
             },
           },
           "& .MuiAccordionDetails-root": {
-            padding: "16px 20px",
+           
             background: "linear-gradient(145deg, #e6e9ef, #f0f3f9)",
             borderTop: "1px solid rgba(255, 255, 255, 0.2)",
             boxShadow:
@@ -170,7 +170,7 @@ const TransactionCard = ({
               ? "1px solid rgba(226, 232, 240, 0.8)"
               : "none",
             minHeight: "56px", // Reduced from 72
-            padding: "8px 16px", // Reduced padding
+            padding: "6px 16px", // Reduced padding
           }}
         >
           <Box
