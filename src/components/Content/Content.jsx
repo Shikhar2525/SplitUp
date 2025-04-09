@@ -17,6 +17,13 @@ function Content() {
   const joinGroupId = new URLSearchParams(location.search).get("joinGroupId");
   const groupName = new URLSearchParams(location.search).get("groupName");
 
+  const getBackgroundColor = () => {
+    if (!isAuthenticated) return "#f8f4f4";
+    return location.pathname === '/groups' || location.pathname === '/friends'
+      ? "#f8f4f4"
+      : "#E0E5EC";
+  };
+
   // Effect to handle redirecting for login
   useEffect(() => {
     if (!isAuthenticated && !isLoading && joinGroupId) {
@@ -68,7 +75,7 @@ function Content() {
         flexDirection: "column",
         alignItems: "flex-start",
         justifyContent: "flex-start",
-        backgroundColor: isAuthenticated ? "#E0E5EC" : "#f8f4f4",
+        backgroundColor: getBackgroundColor(),
         borderRadius: "30px",
         position: "relative", // Set position to relative for absolute children
         ...(isMobile ? { width: "100%" } : {}),
