@@ -166,13 +166,7 @@ const Notes = ({ groupId }) => {
   return (
     <Box
       sx={{
-        height: allUserSettled
-          ? isMobile
-            ? "40vh"
-            : "45vh"
-          : isMobile
-          ? "48vh"
-          : "55vh",
+        height: allUserSettled ? (isMobile ? "34vh" : "45vh") : (isMobile ? '40vh' :"55vh"),
         display: "flex",
         flexDirection: "column",
         gap: 2,

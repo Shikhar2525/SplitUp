@@ -604,7 +604,10 @@ const GroupTab = () => {
         boxShadow: 3,
         borderRadius: 2,
         mt: isMobile ? 5 : 1,
-        height: "81vh",
+        height: "calc(100vh - 135px)", // Dynamically calculate height (subtract header/footer height)
+        overflow: "hidden", // Prevent content overflow
+        display: "flex", // Ensure proper layout for child components
+        flexDirection: "column", // Stack child components vertically
       }}
     >
       {allUserSettled && (

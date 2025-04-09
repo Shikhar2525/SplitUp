@@ -9,6 +9,7 @@ import { useCurrentUser } from "../contexts/CurrentUser.js";
 import { v4 as uuidv4 } from "uuid";
 import activityService from "../services/activity.service.js";
 import { useAllUserSettled } from "../contexts/AllUserSettled.js";
+import { useScreenSize } from "../contexts/ScreenSizeContext.js";
 
 const SettleTab = ({ members, groupID }) => {
   const { setSnackBar } = useTopSnackBar();
@@ -17,6 +18,7 @@ const SettleTab = ({ members, groupID }) => {
   const { allGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
   const { allUserSettled } = useAllUserSettled();
+  const isMobile = useScreenSize()
 
   const currentGroup = allGroups?.find((item) => item.id === groupID);
 
@@ -104,7 +106,7 @@ const SettleTab = ({ members, groupID }) => {
         sx={{
           padding: 1,
           backgroundColor: "#fff",
-          maxHeight: allUserSettled ? "31vh" : "35vh",
+          height: allUserSettled ? (isMobile ? "25vh" : "40vh") : (isMobile ? '40vh' :"55vh"),
           marginBottom: 2,
           overflowX: "hidden",
           whiteSpace: "nowrap",
