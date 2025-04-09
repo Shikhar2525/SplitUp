@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
-  Modal,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Box,
   Button,
   TextField,
@@ -11,21 +14,29 @@ import {
   Typography,
   Chip,
   IconButton,
-  ListItemText,
   Avatar,
   CircularProgress,
-  Alert,
-  FormControlLabel,
+  Stepper,
+  Step,
+  StepLabel,
   Checkbox,
+  FormControlLabel,
+  InputAdornment,
+  FormHelperText,
+  OutlinedInput,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import CheckBox from "@mui/material/Checkbox";
+import InfoIcon from "@mui/icons-material/Info";
+import PaidIcon from "@mui/icons-material/Paid";
+import GroupIcon from "@mui/icons-material/Group";
+import FlightIcon from "@mui/icons-material/Flight";
+import HomeIcon from "@mui/icons-material/Home";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { useAllGroups } from "../contexts/AllGroups";
-import GroupService from "../services/group.service"; // Import the GroupService
+import GroupService from "../services/group.service";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { v4 as uuidv4 } from "uuid";
@@ -34,38 +45,11 @@ import { currencies } from "../../constants";
 import { useRefetchLogs } from "../contexts/RefetchLogs";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 
-const styles = {
-  modalBox: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: "90%",
-    maxWidth: 400,
-    bgcolor: "#FFF",
-    borderRadius: "16px",
-    boxShadow: 24,
-    p: 4,
-  },
-  button: {
-    backgroundColor: "#8675FF",
-    color: "#FFF",
-    "&:hover": {
-      backgroundColor: "#FD7289",
-    },
-  },
-  title: {
-    marginBottom: 5,
-    color: "#353E6C",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  formControl: {
-    marginBottom: "1rem",
-    width: "100%",
-  },
-};
+const steps = [
+  { label: "Basic Info", icon: <InfoIcon /> },
+  { label: "Amount", icon: <PaidIcon /> },
+  { label: "Split Details", icon: <GroupIcon /> },
+];
 
 const AddExpenseModal = ({ open, handleClose }) => {
   const [group, setGroup] = useState("");
@@ -84,6 +68,16 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const { refetchLogs, setRefetchLogs } = useRefetchLogs();
   const { currentGroupID } = useCurrentGroup();
   const [excludePayer, setExcludePayer] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+  const [category, setCategory] = useState("");
+  const [errors, setErrors] = useState({
+    description: "",
+    category: "",
+    amount: "",
+    currency: "",
+    paidBy: "",
+    splitOptions: "",
+  });
 
   const currentGroupObj = allGroups.find(
     (group) => group?.id === currentGroupID
@@ -104,7 +98,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
           selectedGroup.members.map((member) => ({
             name: member?.name,
             avatar: member?.profilePicture,
-            email: member?.email, // Add the email here
+            email: member?.email,
             firstInitial: member?.name?.[0],
           }))
         );
@@ -114,41 +108,80 @@ const AddExpenseModal = ({ open, handleClose }) => {
     }
   }, [group, allGroups]);
 
+  const validateStep = (step) => {
+    let isValid = true;
+    const newErrors = { ...errors };
+
+    switch (step) {
+      case 0:
+        if (!description.trim()) {
+          newErrors.description = "Description is required";
+          isValid = false;
+        }
+        if (!category) {
+          newErrors.category = "Category is required";
+          isValid = false;
+        }
+        break;
+
+      case 1:
+        if (!amount || amount <= 0) {
+          newErrors.amount = "Amount must be greater than 0";
+          isValid = false;
+        }
+        if (!currency) {
+          newErrors.currency = "Currency is required";
+          isValid = false;
+        }
+        break;
+
+      case 2:
+        if (!paidBy) {
+          newErrors.paidBy = "Please select who paid";
+          isValid = false;
+        }
+        if (splitOptions.length === 0) {
+          newErrors.splitOptions =
+            "Please select at least one person to split with";
+          isValid = false;
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleSplitChange = (event) => {
-    const emails = event.target.value; // Get the selected emails
-    const uniqueEmails = new Set(splitOptions.map((option) => option.email)); // Create a Set from existing emails in splitOptions
-
-    // New split options after processing the selected emails
-    const newOptions = emails
-      .map((email) => {
-        const userNameByEmail = users?.find(
-          (item) => item.email === email
-        )?.name;
-        if (userNameByEmail) {
-          return { email: email, name: userNameByEmail }; // Return the new option
-        }
-        return null; // Return null if user not found
-      })
-      .filter(Boolean); // Filter out null values
-
-    // Update splitOptions based on whether the email already exists
-    setSplitOptions((prevOptions) => {
-      const existingEmails = new Set(prevOptions.map((option) => option.email)); // Get existing emails
-
-      // Create a new array based on the selected emails
-      return newOptions.reduce((updatedOptions, option) => {
-        // If the email exists, remove it; otherwise, add it
-        if (existingEmails.has(option.email)) {
-          return updatedOptions.filter((item) => item.email !== option.email); // Remove existing email
-        } else {
-          return [...updatedOptions, option]; // Add new option
-        }
-      }, prevOptions);
+    const selectedEmails = event.target.value;
+    const newSplitOptions = selectedEmails.map((email) => {
+      const user = users.find((u) => u.email === email);
+      return {
+        email: email,
+        name: user?.name,
+      };
     });
+    setSplitOptions(newSplitOptions);
+    setErrors({ ...errors, splitOptions: "" });
+  };
+
+  const handlePaidByChange = (e) => {
+    const selectedPayer = e.target.value;
+    setPaidBy(selectedPayer);
+    setErrors({ ...errors, paidBy: "" });
+
+    setSplitOptions((prev) => prev.filter((option) => option.email !== selectedPayer));
+  };
+
+  const handleRemoveSplit = (email) => {
+    setSplitOptions((prev) => prev.filter((option) => option.email !== email));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateStep(activeStep)) {
+      return;
+    }
 
     if (splitOptions?.length <= 0) {
       return;
@@ -156,13 +189,14 @@ const AddExpenseModal = ({ open, handleClose }) => {
     const expense = {
       id: uuidv4(),
       description,
-      amount: Number(amount), // Convert to a number
+      amount: Number(amount),
       paidBy: { email: paidBy, name: userNameByEmail },
-      splitBetween: splitOptions, // Now stores emails
-      createdDate: selectedDate.toISOString(), // Format the date as needed
+      splitBetween: splitOptions,
+      createdDate: selectedDate.toISOString(),
       createdBy: { email: currentUser?.email, name: currentUser?.name },
       currency,
-      excludePayer, // Add this field to store the exclusion status
+      excludePayer,
+      category,
     };
 
     try {
@@ -172,7 +206,6 @@ const AddExpenseModal = ({ open, handleClose }) => {
       )?.id;
       await GroupService.addExpenseToGroup(selectedGroupID, expense);
 
-      // Create activity log object
       const log = {
         logId: uuidv4(),
         logType: "addExpense",
@@ -182,17 +215,16 @@ const AddExpenseModal = ({ open, handleClose }) => {
           date: new Date(),
           groupTitle: group,
           groupId: selectedGroupID,
-          amount: Number(amount), // Ensure the amount is a number
-          splitBetween: splitOptions.map((option) => option.email), // Include the split options
+          amount: Number(amount),
+          splitBetween: splitOptions.map((option) => option.email),
           currency,
         },
       };
 
-      // Log the activity
       await ActivityService.addActivityLog(log);
 
       setRefetchLogs(!refetchLogs);
-      handleClose(); // Close the modal after successful submission
+      handleClose();
       setSnackBar({
         isOpen: true,
         message: "Expense added",
@@ -210,266 +242,546 @@ const AddExpenseModal = ({ open, handleClose }) => {
     }
   };
 
-  return (
-    <Modal open={open} onClose={handleClose}>
-      <Box sx={styles.modalBox}>
-        <div style={styles.title}>
-          <Typography variant="h6" component="h2" gutterBottom>
-            Add Expense
-          </Typography>
-          <IconButton onClick={handleClose} aria-label="close">
-            <CloseIcon />
-          </IconButton>
-        </div>
-        <form onSubmit={handleSubmit}>
-          <FormControl fullWidth sx={styles.formControl} required>
-            <InputLabel>Select Group</InputLabel>
-            <Select
-              value={group}
-              onChange={(e) => setGroup(e.target.value)}
-              required
-            >
-              {allGroups.map((group, index) => (
-                <MenuItem key={index} value={group.title}>
-                  <Typography variant="body1">{group.title}</Typography>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+  const handleNext = () => {
+    if (validateStep(activeStep)) {
+      setActiveStep((prev) => prev + 1);
+    }
+  };
 
-          <TextField
-            required
-            fullWidth
-            sx={styles.formControl}
-            label="Description"
-            variant="outlined"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            disabled={!group} // Disable until group is selected
-            inputProps={{ maxLength: 35 }} // Enforces max length
-            helperText={`${35 - description.length} characters remaining`}
-          />
+  const handleBack = () => {
+    setActiveStep((prev) => prev - 1);
+  };
 
+  const getCurrencySymbol = (currency) => {
+    const currencyObj = currencies.find((c) => c.value === currency);
+    return currencyObj ? currencyObj.symbol : currency;
+  };
+
+  const getStepContent = (step) => {
+    switch (step) {
+      case 0:
+        return (
           <Box
             sx={{
+              mt: 3,
               display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              gap: 1,
+              flexDirection: "column",
+              gap: 3,
             }}
           >
             <TextField
-              sx={{ ...styles.formControl, ...{ width: "70%" } }}
-              label="Amount"
-              variant="outlined"
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              disabled={!group} // Disable until group is selected
-            />
-            <Select
-              sx={{ width: "30%" }}
-              labelId="currency-select-label"
-              id="currency-select"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              disabled={!group}
-              required
-            >
-              {currencies.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  <img
-                    src={option.flag}
-                    alt={`${option.value} flag`}
-                    width="20"
-                    height="15"
-                    style={{ marginRight: "8px", verticalAlign: "middle" }}
-                  />
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </Box>
-
-          <FormControl fullWidth sx={styles.formControl} required>
-            <InputLabel>Paid By</InputLabel>
-            <Select
-              value={paidBy}
+              fullWidth
+              label="Description"
+              value={description}
               onChange={(e) => {
-                setPaidBy(e.target.value);
-                // Remove the selected user from splitOptions if present
-                if (
-                  splitOptions.some((option) => option.email === e.target.value)
-                ) {
-                  setSplitOptions(
-                    splitOptions.filter(
-                      (user) => user?.email !== e.target.value
-                    )
-                  );
-                }
+                setDescription(e.target.value);
+                setErrors({ ...errors, description: "" });
               }}
               required
-              disabled={!group} // Disable until group is selected
-            >
-              {users.map((user) => (
-                <MenuItem key={user.email} value={user.email}>
-                  <Typography variant="body1">{user.name}</Typography>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              error={!!errors.description}
+              helperText={errors.description || `${35 - description.length} characters remaining`}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "16px",
+                  backgroundColor: "rgba(255,255,255,0.8)",
+                  backdropFilter: "blur(10px)",
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.9)",
+                    boxShadow: "0 4px 20px rgba(94, 114, 228, 0.1)",
+                  },
+                  "&.Mui-focused": {
+                    backgroundColor: "white",
+                    boxShadow: "0 4px 20px rgba(94, 114, 228, 0.15)",
+                  },
+                },
+              }}
+              inputProps={{ maxLength: 35 }}
+            />
 
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={excludePayer}
-                onChange={(e) => setExcludePayer(e.target.checked)}
-                disabled={!paidBy}
-              />
-            }
-            label={
-              <Typography variant="body2" color="textSecondary">
-                Don't include payer in split
-              </Typography>
-            }
-            sx={{ mb: 2 }}
-          />
-
-          <FormControl fullWidth sx={styles.formControl}>
-            <InputLabel>Split equally between</InputLabel>
-            <Select
-              multiple
-              value={splitOptions}
-              onChange={handleSplitChange}
-              required
-              renderValue={(selected) => (
-                <div>
-                  {selected.length > 2
-                    ? selected.slice(0, 2).map((email) => {
-                        const user = users.find((u) => u.email === email);
-                        return (
-                          <Chip
-                            key={email}
-                            label={user?.name}
-                            avatar={
-                              user?.avatar ? (
-                                <Avatar src={user.avatar} alt={user.name} />
-                              ) : (
-                                <Avatar>{user?.firstInitial}</Avatar>
-                              )
-                            }
-                            sx={{ margin: "0.2rem" }}
-                          />
-                        );
-                      })
-                    : selected.map(({ name, email }) => {
-                        const user = users.find((u) => u.email === email);
-                        return (
-                          <Chip
-                            key={email}
-                            label={user?.name}
-                            avatar={
-                              user?.avatar ? (
-                                <Avatar src={user.avatar} alt={user.name} />
-                              ) : (
-                                <Avatar>{user?.firstInitial}</Avatar>
-                              )
-                            }
-                            sx={{ margin: "0.2rem" }}
-                          />
-                        );
-                      })}
-                  {selected.length > 2 && (
-                    <Chip label={`+${selected.length - 2} more`} />
-                  )}
-                </div>
-              )}
-              disabled={!paidBy || users?.length <= 1} // Disable until paidBy is selected
-            >
-              {users
-                .filter((user) => user.email !== paidBy) // Filter out the user selected in "Paid By"
-                .map((user) => (
-                  <MenuItem key={user.email} value={user.email}>
-                    <CheckBox
-                      checked={splitOptions.some(
-                        (option) => option.email === user?.email
-                      )}
-                    />
-                    <ListItemText
-                      primary={
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                          <Avatar
-                            src={user.avatar}
-                            alt={user.name}
-                            sx={{ marginRight: 1 }}
-                          >
-                            {!user.avatar && user.firstInitial}
-                          </Avatar>
-                          {user.name}
-                        </div>
-                      }
-                    />
-                  </MenuItem>
-                ))}
-            </Select>
-            {group && users?.length <= 1 && (
-              <Alert
-                severity="error"
+            <FormControl fullWidth error={!!errors.category}>
+              <InputLabel required>Category</InputLabel>
+              <Select
+                value={category}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  setErrors({ ...errors, category: "" });
+                }}
+                required
                 sx={{
-                  fontSize: 10,
-                  "& .MuiAlert-icon": {
-                    // Targeting the icon specifically
-                    fontSize: 16, // Adjust the size as needed
+                  borderRadius: "16px",
+                  backgroundColor: "rgba(255,255,255,0.8)",
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.9)",
+                    boxShadow: "0 4px 20px rgba(94, 114, 228, 0.1)",
                   },
                 }}
               >
-                Add more members to split the expense
-              </Alert>
-            )}
-          </FormControl>
-
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              sx={{ width: "100%", marginBottom: "15px" }}
-              label="Expense Date"
-              value={selectedDate}
-              onChange={(newValue) => setSelectedDate(newValue)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  fullWidth
-                  sx={styles.formControl}
-                  required
-                />
+                <MenuItem value="Trip" sx={{ borderRadius: "12px", my: 0.5 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <FlightIcon sx={{ color: "#fb6340" }} />
+                    <Typography>Trip</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="Home" sx={{ borderRadius: "12px", my: 0.5 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <HomeIcon sx={{ color: "#2dce89" }} />
+                    <Typography>Home</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="Couple" sx={{ borderRadius: "12px", my: 0.5 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <GroupIcon sx={{ color: "#5e72e4" }} />
+                    <Typography>Couple</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="Other" sx={{ borderRadius: "12px", my: 0.5 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <InfoIcon sx={{ color: "#8898aa" }} />
+                    <Typography>Other</Typography>
+                  </Box>
+                </MenuItem>
+              </Select>
+              {errors.category && (
+                <FormHelperText error>{errors.category}</FormHelperText>
               )}
-            />
-          </LocalizationProvider>
+            </FormControl>
 
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ ...styles.button, marginTop: "15px" }}
-            disabled={
-              !description ||
-              !group ||
-              !amount ||
-              !paidBy ||
-              splitOptions?.length <= 0
-            }
-          >
-            Add Expense
-            {loading && (
-              <CircularProgress
-                color="success"
-                size={20}
-                sx={{ marginLeft: 2 }}
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                label="Expense Date"
+                value={selectedDate}
+                onChange={(newValue) => setSelectedDate(newValue)}
+                sx={{
+                  width: "100%",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "16px",
+                    backgroundColor: "rgba(255,255,255,0.8)",
+                  },
+                }}
               />
-            )}
-          </Button>
-        </form>
-      </Box>
-    </Modal>
+            </LocalizationProvider>
+          </Box>
+        );
+
+      case 1:
+        return (
+          <Box sx={{ mt: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+            <TextField
+              label="Amount"
+              type="number"
+              value={amount}
+              onChange={(e) => {
+                setAmount(e.target.value);
+                setErrors({ ...errors, amount: "" });
+              }}
+              required
+              error={!!errors.amount}
+              helperText={errors.amount}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Typography
+                      sx={{
+                        color: "#5e72e4",
+                        fontWeight: 600,
+                        fontSize: "1.1rem",
+                      }}
+                    >
+                      {getCurrencySymbol(currency)}
+                    </Typography>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "16px",
+                  backgroundColor: "rgba(255,255,255,0.8)",
+                },
+              }}
+            />
+
+            <FormControl error={!!errors.currency}>
+              <InputLabel required>Currency</InputLabel>
+              <Select
+                value={currency}
+                onChange={(e) => {
+                  setCurrency(e.target.value);
+                  setErrors({ ...errors, currency: "" });
+                }}
+                required
+                sx={{
+                  borderRadius: "16px",
+                  backgroundColor: "rgba(255,255,255,0.8)",
+                }}
+              >
+                {currencies.map((option) => (
+                  <MenuItem
+                    key={option.value}
+                    value={option.value}
+                    sx={{
+                      borderRadius: "12px",
+                      my: 0.5,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
+                      <Avatar
+                        src={option.flag}
+                        alt={option.value}
+                        variant="rounded"
+                        sx={{ width: 24, height: 24 }}
+                      />
+                      <Typography>{option.label}</Typography>
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.currency && (
+                <FormHelperText error>{errors.currency}</FormHelperText>
+              )}
+            </FormControl>
+          </Box>
+        );
+
+      case 2:
+        return (
+          <Box sx={{ mt: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+            <FormControl error={!!errors.paidBy}>
+              <InputLabel required>Paid By</InputLabel>
+              <Select
+                value={paidBy}
+                onChange={(e) => {
+                  handlePaidByChange(e);
+                  setErrors({ ...errors, paidBy: "" });
+                }}
+                required
+                sx={{
+                  borderRadius: "16px",
+                  backgroundColor: "rgba(255,255,255,0.8)",
+                }}
+              >
+                {users.map((user) => (
+                  <MenuItem
+                    key={user.email}
+                    value={user.email}
+                    sx={{
+                      borderRadius: "12px",
+                      my: 0.5,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        py: 1,
+                      }}
+                    >
+                      <Avatar
+                        src={user.avatar}
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          border: "2px solid #fff",
+                          boxShadow: "0 2px 10px rgba(94,114,228,0.2)",
+                        }}
+                      >
+                        {user.firstInitial}
+                      </Avatar>
+                      <Box>
+                        <Typography sx={{ fontWeight: 600 }}>
+                          {user.name}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          {user.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.paidBy && (
+                <FormHelperText error>{errors.paidBy}</FormHelperText>
+              )}
+            </FormControl>
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={excludePayer}
+                  onChange={(e) => setExcludePayer(e.target.checked)}
+                  sx={{
+                    color: "#5e72e4",
+                    "&.Mui-checked": {
+                      color: "#5e72e4",
+                    },
+                  }}
+                />
+              }
+              label="Don't include payer in split"
+              sx={{
+                border: "1px dashed rgba(94,114,228,0.3)",
+                borderRadius: "12px",
+                py: 1,
+                px: 2,
+              }}
+            />
+
+            <FormControl error={!!errors.splitOptions}>
+              <InputLabel required>Split Between</InputLabel>
+              <Select
+                multiple
+                value={splitOptions.map((option) => option.email)}
+                onChange={(e) => {
+                  handleSplitChange(e);
+                  setErrors({ ...errors, splitOptions: "" });
+                }}
+                required
+                input={<OutlinedInput label="Split Between" />}
+                sx={{
+                  minHeight: 56,
+                  borderRadius: "16px",
+                  "& .MuiSelect-select": {
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 0.5,
+                    p: 1.5,
+                  },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      mt: 1,
+                      borderRadius: "16px",
+                      maxHeight: 300,
+                      "&::-webkit-scrollbar": {
+                        width: "8px",
+                      },
+                      "&::-webkit-scrollbar-thumb": {
+                        backgroundColor: "rgba(94, 114, 228, 0.2)",
+                        borderRadius: "4px",
+                      },
+                    },
+                  },
+                }}
+                renderValue={(selected) => (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                    {selected.map((value) => {
+                      const user = users.find((u) => u.email === value);
+                      return (
+                        <Chip
+                          key={value}
+                          label={user?.name}
+                          avatar={
+                            <Avatar src={user?.avatar}>
+                              {user?.firstInitial}
+                            </Avatar>
+                          }
+                          sx={{
+                            borderRadius: "12px",
+                            backgroundColor: "rgba(94, 114, 228, 0.1)",
+                            border: "1px solid rgba(94, 114, 228, 0.2)",
+                            "& .MuiChip-label": {
+                              color: "#5e72e4",
+                              fontWeight: 600,
+                            },
+                          }}
+                        />
+                      );
+                    })}
+                  </Box>
+                )}
+              >
+                {users
+                  .filter((user) => user.email !== paidBy)
+                  .map((user) => (
+                    <MenuItem
+                      key={user.email}
+                      value={user.email}
+                      sx={{
+                        borderRadius: "12px",
+                        my: 0.5,
+                        mx: 1,
+                        p: 1.5,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          backgroundColor: "rgba(94, 114, 228, 0.08)",
+                        },
+                        "&.Mui-selected": {
+                          backgroundColor: "rgba(94, 114, 228, 0.12)",
+                          "&:hover": {
+                            backgroundColor: "rgba(94, 114, 228, 0.15)",
+                          },
+                        },
+                      }}
+                    >
+                      <Checkbox
+                        checked={splitOptions.some(
+                          (option) => option.email === user.email
+                        )}
+                        sx={{
+                          color: "#5e72e4",
+                          "&.Mui-checked": {
+                            color: "#5e72e4",
+                          },
+                        }}
+                      />
+                      <Avatar
+                        src={user.avatar}
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          border: "2px solid #fff",
+                          boxShadow: "0 2px 10px rgba(94,114,228,0.2)",
+                        }}
+                      >
+                        {user.firstInitial}
+                      </Avatar>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          sx={{
+                            fontWeight: 600,
+                            color: "#32325d",
+                            fontSize: "0.9rem",
+                          }}
+                        >
+                          {user.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#8898aa" }}>
+                          {user.email}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))}
+              </Select>
+              {errors.splitOptions && (
+                <FormHelperText error>{errors.splitOptions}</FormHelperText>
+              )}
+            </FormControl>
+          </Box>
+        );
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: "20px",
+          background: "linear-gradient(135deg, #fff 0%, #f8f9fe 100%)",
+        },
+      }}
+    >
+      <DialogTitle sx={{ pb: 0 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography variant="h6" sx={{ color: "#32325d", fontWeight: 600 }}>
+            Add Expense
+          </Typography>
+          <IconButton onClick={handleClose}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
+
+      <DialogContent>
+        <Stepper
+          activeStep={activeStep}
+          sx={{
+            pt: 3,
+            "& .MuiStepLabel-root .Mui-completed": {
+              color: "#2dce89",
+            },
+            "& .MuiStepLabel-root .Mui-active": {
+              color: "#5e72e4",
+            },
+          }}
+        >
+          {steps.map((step, index) => (
+            <Step key={step.label}>
+              <StepLabel
+                StepIconComponent={() => (
+                  <Avatar
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      bgcolor:
+                        activeStep === index
+                          ? "#5e72e4"
+                          : activeStep > index
+                          ? "#2dce89"
+                          : "#e9ecef",
+                      "& svg": {
+                        fontSize: "1rem",
+                        color: activeStep >= index ? "#fff" : "#8898aa",
+                      },
+                    }}
+                  >
+                    {step.icon}
+                  </Avatar>
+                )}
+              >
+                <Typography
+                  sx={{
+                    fontSize: "0.875rem",
+                    color: activeStep === index ? "#32325d" : "#8898aa",
+                    fontWeight: activeStep === index ? 600 : 500,
+                  }}
+                >
+                  {step.label}
+                </Typography>
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+
+        {getStepContent(activeStep)}
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, pb: 3 }}>
+        <Button
+          onClick={handleBack}
+          disabled={activeStep === 0}
+          sx={{
+            color: "#8898aa",
+            "&:hover": { backgroundColor: "rgba(136, 152, 170, 0.1)" },
+          }}
+        >
+          Back
+        </Button>
+        <Button
+          variant="contained"
+          onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
+          disabled={loading}
+          sx={{
+            bgcolor: "#5e72e4",
+            "&:hover": { bgcolor: "#4454c3" },
+            "&.Mui-disabled": { bgcolor: "rgba(94, 114, 228, 0.3)" },
+          }}
+        >
+          {activeStep === steps.length - 1 ? "Add Expense" : "Next"}
+          {loading && <CircularProgress size={20} sx={{ ml: 1 }} />}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
