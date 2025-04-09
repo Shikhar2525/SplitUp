@@ -177,6 +177,25 @@ const AddExpenseModal = ({ open, handleClose }) => {
     setSplitOptions((prev) => prev.filter((option) => option.email !== email));
   };
 
+  const resetForm = () => {
+    setDescription("");
+    setAmount("");
+    setPaidBy("");
+    setSplitOptions([]);
+    setSelectedDate(dayjs());
+    setCategory("");
+    setActiveStep(0);
+    setExcludePayer(false);
+    setErrors({
+      description: "",
+      category: "",
+      amount: "",
+      currency: "",
+      paidBy: "",
+      splitOptions: ""
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep(activeStep)) {
@@ -224,16 +243,12 @@ const AddExpenseModal = ({ open, handleClose }) => {
       await ActivityService.addActivityLog(log);
 
       setRefetchLogs(!refetchLogs);
+      resetForm();
       handleClose();
       setSnackBar({
         isOpen: true,
         message: "Expense added",
       });
-      setDescription("");
-      setAmount("");
-      setPaidBy("");
-      setSplitOptions([]);
-      setSelectedDate(dayjs());
       refreshAllGroups();
     } catch (error) {
       console.error("Failed to add expense:", error);

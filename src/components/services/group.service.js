@@ -133,25 +133,36 @@ class GroupService {
 
   addExpenseToGroup = async (groupIdField, expense) => {
     try {
-      // Change the field name here to match the property name in your document that holds the group ID
-      const q = query(
-        collection(db, "Groups"),
-        where("id", "==", groupIdField) // Assuming 'id' is the field storing the group ID
-      );
-
+      const q = query(collection(db, "Groups"), where("id", "==", groupIdField));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        console.error("No document found with ID:", groupIdField);
         throw new Error(`No document found with ID: ${groupIdField}`);
       }
 
       const groupDocRef = querySnapshot.docs[0].ref;
+      const groupData = querySnapshot.docs[0].data();
 
-      // Add the expense to the expenses array
+      // Get all member emails involved in the expense
+      const involvedMembers = new Set([
+        expense.paidBy.email,
+        ...expense.splitBetween.map(member => member.email)
+      ]);
+
+      // Update userSettled status for members involved in the expense
+      const updatedMembers = groupData.members.map(member => ({
+        ...member,
+        // If member is involved in expense and was previously settled, mark as unsettled
+        userSettled: member.userSettled ? !involvedMembers.has(member.email) : false
+      }));
+
+      // Update both the expenses array and members array
       await updateDoc(groupDocRef, {
         expenses: arrayUnion(expense),
+        members: updatedMembers
       });
+
+      return { success: true };
     } catch (error) {
       console.error("Error adding expense to group: ", error);
       throw error;

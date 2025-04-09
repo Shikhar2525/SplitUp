@@ -28,6 +28,9 @@ import Groups2Icon from "@mui/icons-material/Groups2";
 import FlightIcon from "@mui/icons-material/Flight";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import HomeIcon from "@mui/icons-material/Home";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import CategoryIcon from "@mui/icons-material/Category";
 import { v4 as uuidv4 } from "uuid";
 import GroupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
@@ -76,6 +79,19 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
     setInputEmail("");
     setName("");
     setError("");
+  };
+
+  const resetForm = () => {
+    setGroupName("");
+    setGroupDescription("");
+    setCategory("");
+    setMembers([]);
+    setInputEmail("");
+    setError("");
+    setDefaultCurrency("INR");
+    setActiveStep(0);
+    setShowNameField(false);
+    setName("");
   };
 
   const handleEmailAdd = async (e) => {
@@ -223,13 +239,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
 
       await ActivityService.addActivityLog(log);
 
-      setGroupName("");
-      setGroupDescription("");
-      setCategory("");
-      setMembers([]);
-      setInputEmail("");
-      setError("");
-
+      resetForm();
       handleClose();
       setSnackBar({
         isOpen: true,
@@ -329,16 +339,19 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
                 </MenuItem>
                 <MenuItem value="Home" sx={{ borderRadius: "12px", my: 0.5 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <HomeIcon sx={{ color: "#2dce89" }} />
                     <Typography>Home</Typography>
                   </Box>
                 </MenuItem>
                 <MenuItem value="Couple" sx={{ borderRadius: "12px", my: 0.5 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <FavoriteIcon sx={{ color: "#f5365c" }} />
                     <Typography>Couple</Typography>
                   </Box>
                 </MenuItem>
                 <MenuItem value="Other" sx={{ borderRadius: "12px", my: 0.5 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <CategoryIcon sx={{ color: "#8898aa" }} />
                     <Typography>Other</Typography>
                   </Box>
                 </MenuItem>
@@ -526,8 +539,10 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
           backdropFilter: "blur(12px)",
           border: "1px solid rgba(255,255,255,0.8)",
           overflow: "hidden",
-          height: { xs: '90vh', sm: '85vh' },
-          maxHeight: '500px',
+          height: { xs: 'auto', sm: '80vh' }, // Decreased from 100vh to 80vh
+          maxHeight: { xs: '95vh', sm: '700px' }, // Decreased from 850px to 700px
+          m: { xs: 2, sm: 'auto' },
+          position: 'relative'
         },
       }}
     >
@@ -536,27 +551,36 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
           pb: 0,
           pt: 3,
           px: { xs: 2.5, sm: 3.5 },
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
         }}
       >
-        <Typography variant="h6" component="h2" gutterBottom>
+        <Typography variant="h6" component="h2">
           Create Group
         </Typography>
-        <IconButton onClick={handleClose} aria-label="close">
+        <IconButton 
+          onClick={handleClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+          }}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
       <DialogContent sx={{ 
         overflowY: 'auto',
+        px: { xs: 2.5, sm: 3.5 },
+        pb: { xs: 2, sm: 3 },
+        height: activeStep === 2 ? { xs: '40vh', sm: '45vh' } : 'auto', // Decreased from 45vh/50vh to 40vh/45vh
         '&::-webkit-scrollbar': {
           width: '8px'
         },
         '&::-webkit-scrollbar-thumb': {
           backgroundColor: 'rgba(94, 114, 228, 0.2)',
-          borderRadius: '8px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'rgba(94, 114, 228, 0.05)',
           borderRadius: '8px'
         }
       }}>
@@ -587,9 +611,10 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
           display: "flex",
           justifyContent: "space-between",
           px: { xs: 2.5, sm: 3.5 },
-          pb: 3,
+          py: { xs: 2, sm: 3 },
           borderTop: '1px solid rgba(94, 114, 228, 0.1)',
           bgcolor: 'rgba(255,255,255,0.9)',
+          mt: 'auto'
         }}
       >
         <Button
