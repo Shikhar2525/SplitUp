@@ -1,113 +1,125 @@
-import { Box, Card, CardContent, CardMedia, Typography } from "@mui/material";
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Box, Paper, Typography, Avatar, AvatarGroup, Chip } from '@mui/material';
+import PaidIcon from '@mui/icons-material/Paid';
+import PendingIcon from '@mui/icons-material/Pending';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import { useNavigate } from 'react-router-dom';
 
-function GroupCard({ title, subtitle, groupID }) {
+const GroupCard = ({ group }) => {
   const navigate = useNavigate();
+  const isSettled = group.members?.every(member => member.userSettled);
 
   return (
-    <Card
-      onClick={() => {
-        localStorage.setItem("currentGroupID", JSON.stringify(groupID));
-        navigate("/groups");
-      }}
+    <Paper
+      elevation={0}
+      onClick={() => navigate(`/groups/${group.id}`)}
       sx={{
-        display: "flex",
-        alignItems: "center",
-        borderRadius: "30px",
-        height: "100%",
-        paddingLeft: 1,
-        paddingRight: 2,
-        position: "relative",
-        boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.05)",
-        overflow: "hidden",
-        cursor: "pointer", // Add this to show mouse cursor as a button
-        transition:
-          "transform 0.3s ease, box-shadow 0.3s ease, z-index  0s 0.3s", // Initial transition
-        "&:hover": {
-          transform: "scale(1.05)", // Scale up the card on hover
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)", // Add shadow on hover
+        p: 2.5,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        borderRadius: '20px',
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255,255,255,0.8)',
+        transition: 'all 0.3s ease',
+        cursor: 'pointer',
+        position: 'relative',
+        overflow: 'visible',
+        '&:hover': {
+          transform: 'translateY(-3px)',
+          boxShadow: '0 8px 32px rgba(94, 114, 228, 0.15)',
         },
       }}
     >
-      {/* Image Background */}
-      <CardMedia
-        component="img"
-        src="/assets/img/plane.jpg" // Ensure this path is correct
-        alt={title}
+      {/* Settlement Status Badge */}
+      <Chip
+        icon={isSettled ? <VerifiedIcon /> : <PendingIcon />}
+        label={isSettled ? "Settled" : "Pending"}
         sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          objectFit: "cover",
-          zIndex: 1,
-          opacity: 0.9,
-          filter: "blur(0.5px)",
+          position: 'absolute',
+          top: -10,
+          right: 20,
+          backgroundColor: isSettled ? 'rgba(45, 206, 137, 0.1)' : 'rgba(251, 99, 64, 0.1)',
+          color: isSettled ? '#2dce89' : '#fb6340',
+          fontWeight: 600,
+          '& .MuiSvgIcon-root': {
+            fontSize: '1rem'
+          },
+          border: `1px solid ${isSettled ? 'rgba(45, 206, 137, 0.2)' : 'rgba(251, 99, 64, 0.2)'}`,
         }}
       />
 
-      {/* Overlay for Better Text Contrast */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          zIndex: 1,
-        }}
-      />
+      {/* Group Content */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Avatar
+            sx={{
+              width: 50,
+              height: 50,
+              bgcolor: '#5e72e4',
+              fontSize: '1.4rem',
+              fontWeight: 600
+            }}
+          >
+            {group.title[0]}
+          </Avatar>
+          <Box>
+            <Typography variant="h6" fontWeight={600}>
+              {group.title}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {group.members?.length} members
+            </Typography>
+          </Box>
+        </Box>
 
-      <Box
-        sx={{ display: "flex", flexDirection: "column", flex: 1, zIndex: 2 }}
-      >
-        <CardContent
-          sx={{
-            flex: "1 0 auto",
-            zIndex: 3,
-            borderRadius: "30px",
-            padding: 2,
-          }}
-        >
-          <Typography
-            component="div"
-            variant="h6"
-            sx={{ fontWeight: "bold", color: "white" }}
-          >
-            {title}
-          </Typography>
-          <Typography
-            variant="caption"
-            component="div"
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Chip 
+            label={group.category || 'Other'} 
+            size="small"
             sx={{
-              color: "white",
-              overflow: "hidden",
-              display: "-webkit-box",
-              WebkitBoxOrient: "vertical",
-              lineClamp: 2,
-              textOverflow: "ellipsis",
+              bgcolor: 'rgba(94, 114, 228, 0.1)',
+              color: '#5e72e4',
+              fontWeight: 600
             }}
-          >
-            {subtitle}
-          </Typography>
-          <Typography
-            variant="subtitle2"
-            component="div"
-            sx={{
-              fontSize: 12,
-              color: "white",
-              textDecoration: "underline",
-            }}
-          >
-            Details
-          </Typography>
-        </CardContent>
+          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
+            <PaidIcon sx={{ color: '#8898aa', fontSize: '1rem' }} />
+            <Typography variant="caption" color="text.secondary" fontWeight={500}>
+              {group.expenses?.length || 0}
+            </Typography>
+          </Box>
+        </Box>
       </Box>
-    </Card>
+
+      <AvatarGroup 
+        max={4} 
+        sx={{ 
+          mt: 2,
+          '& .MuiAvatar-root': { 
+            width: 32, 
+            height: 32, 
+            fontSize: '0.875rem',
+            border: '2px solid #fff'
+          } 
+        }}
+      >
+        {group.members?.map((member, idx) => (
+          <Avatar 
+            key={idx} 
+            src={member.profilePicture} 
+            alt={member.name}
+            sx={{
+              bgcolor: member.userSettled ? '#2dce89' : undefined
+            }}
+          >
+            {member.name?.[0]}
+          </Avatar>
+        ))}
+      </AvatarGroup>
+    </Paper>
   );
-}
+};
 
 export default GroupCard;

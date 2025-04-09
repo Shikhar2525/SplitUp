@@ -19,7 +19,7 @@ const Expenses = () => {
   return (
     <Box
       sx={{
-        height: allUserSettled ? (isMobile ? "50vh" : "45vh") : "53vh",
+        height: allUserSettled ? (isMobile ? "40vh" : "45vh") : (isMobile ? '48vh' :"55vh"),
         overflow: "auto",
         paddingRight: isMobile ? 1 : 2,
       }}
@@ -38,6 +38,7 @@ const Expenses = () => {
               splitBetween: expense?.splitBetween,
               createdBy: expense?.createdBy,
               currency: expense?.currency,
+              excludePayer: expense?.excludePayer
             }}
             index={index}
             groupId={currentGroupID}

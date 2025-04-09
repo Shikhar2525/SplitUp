@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Box,
@@ -30,6 +30,7 @@ import { useCurrentUser } from "../contexts/CurrentUser";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import activityService from "../services/activity.service";
 import { v4 as uuidv4 } from "uuid";
+import { useFriends } from "../contexts/FriendsContext";
 
 const styles = {
   modalBox: {
@@ -72,10 +73,18 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   const { refreshAllGroups } = useAllGroups();
   const { allGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
+  const { userFriends, refreshFriends } = useFriends();
+  const [suggestions, setSuggestions] = useState([]);
   const currentGroupObj = allGroups.find(
     (group) => group?.id === currentGroupID
   );
   const userObjWithName = { email: inputEmail, name: name };
+
+  useEffect(() => {
+    if (open && currentUser?.email) {
+      refreshFriends(currentUser.email);
+    }
+  }, [open, currentUser]);
 
   const resetAddMembers = (e) => {
     e.preventDefault();
@@ -131,6 +140,36 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
         setEmailLoading(false);
       }
     }
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setInputEmail(value);
+    setError("");
+
+    if (value) {
+      const filtered = userFriends.filter(
+        (friend) =>
+          // Don't show already added members or existing group members
+          !members.some((member) => member.email === friend.email) &&
+          !existingMembers.some((member) => member.email === friend.email) &&
+          ((friend.name &&
+            friend.name.toLowerCase().includes(value.toLowerCase())) ||
+            friend.email.toLowerCase().includes(value.toLowerCase()))
+      );
+      setSuggestions(filtered);
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const handleSelectFriend = (friend) => {
+    if (!members.some((member) => member.email === friend.email)) {
+      setMembers((prev) => [...prev, friend]);
+    }
+    setInputEmail("");
+    setSuggestions([]);
+    setError("");
   };
 
   const handleChipDelete = (member) => {
@@ -352,23 +391,72 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
           </Alert>
         )}
         <form onSubmit={handleSubmit}>
-          <TextField
-            disabled={
-              currentUser?.email !== currentGroupObj?.admin?.email ||
-              showNameField
-            }
-            fullWidth
-            label="Add Members"
-            variant="outlined"
-            value={
-              currentUser?.email !== currentGroupObj?.admin?.email
-                ? ""
-                : inputEmail
-            }
-            onChange={(e) => setInputEmail(e.target.value)}
-            onKeyDown={handleEmailAdd}
-            helperText="Press 'Enter' to add a member"
-          />
+          <Box sx={{ position: "relative" }}>
+            <TextField
+              disabled={
+                currentUser?.email !== currentGroupObj?.admin?.email ||
+                showNameField
+              }
+              fullWidth
+              label="Add Members"
+              variant="outlined"
+              value={
+                currentUser?.email !== currentGroupObj?.admin?.email
+                  ? ""
+                  : inputEmail
+              }
+              onChange={handleEmailChange}
+              onKeyDown={handleEmailAdd}
+              helperText="Type to search friends or press 'Enter' to add new member"
+            />
+            {suggestions.length > 0 && inputEmail && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  width: "100%",
+                  maxHeight: "200px",
+                  overflowY: "auto",
+                  backgroundColor: "white",
+                  borderRadius: "0 0 8px 8px",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                  zIndex: 1000,
+                }}
+              >
+                {suggestions.map((friend) => (
+                  <Box
+                    key={friend.email}
+                    sx={{
+                      padding: "8px 16px",
+                      cursor: "pointer",
+                      "&:hover": {
+                        backgroundColor: "rgba(94, 114, 228, 0.05)",
+                      },
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                    }}
+                    onClick={() => handleSelectFriend(friend)}
+                  >
+                    <Avatar
+                      src={friend.profilePicture}
+                      alt={friend.name}
+                      sx={{ width: 32, height: 32 }}
+                    >
+                      {friend.name?.[0]}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {friend.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {friend.email}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Box>
           {showNameField && (
             <TextField
               fullWidth
