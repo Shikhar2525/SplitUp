@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -67,11 +67,19 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
 
   const userObjWithName = { email: inputEmail, name: name };
 
+  const suggestionsRef = useRef(null);
+
   useEffect(() => {
     if (open && currentUser?.email) {
       refreshFriends(currentUser.email);
     }
   }, [open, currentUser]);
+
+  useEffect(() => {
+    if (suggestions.length > 0 && inputEmail && suggestionsRef.current) {
+      suggestionsRef.current.focus();
+    }
+  }, [suggestions, inputEmail]);
 
   const resetAddMembers = (e) => {
     e.preventDefault();
@@ -431,6 +439,8 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
                 />
                 {suggestions.length > 0 && inputEmail && (
                   <MuiBox
+                    ref={suggestionsRef}
+                    tabIndex={-1}
                     sx={{
                       position: "absolute",
                       width: "100%",
@@ -453,6 +463,10 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
                       "&::-webkit-scrollbar-track": {
                         backgroundColor: "rgba(94, 114, 228, 0.05)",
                         borderRadius: "8px",
+                      },
+                      "&:focus": {
+                        outline: "2px solid rgba(94, 114, 228, 0.5)",
+                        outlineOffset: "2px",
                       },
                     }}
                   >
