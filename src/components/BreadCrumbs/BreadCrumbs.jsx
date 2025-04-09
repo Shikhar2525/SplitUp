@@ -87,13 +87,18 @@ function BreadCrumbs() {
         )}
         <Typography
           sx={{
-            fontSize: { xs: '14px', sm: '20px' }, // Reduced font size on mobile
+            fontSize: { xs: '14px', sm: '20px' },
             color: "#3C3F88",
             letterSpacing: "0.05em",
             marginLeft: currentTab === "Groups" ? 0 : 0.6,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
+            whiteSpace: { xs: 'normal', sm: 'nowrap' }, // Allow wrapping on mobile
+            wordBreak: 'break-word', // Enable word breaking
+            lineHeight: { xs: 1.2, sm: 'normal' }, // Adjust line height for wrapped text
+            maxWidth: { xs: '200px', sm: '300px', md: 'none' }, // Control max width
+            display: '-webkit-box',
+            WebkitLineClamp: { xs: 2, sm: 1 }, // Show 2 lines on mobile, 1 on desktop
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
           }}
           variant="h6"
         >
@@ -109,7 +114,7 @@ function BreadCrumbs() {
         sx={{
           flex: 1,
           display: 'flex',
-          flexBasis: { xs: '60%', sm: '35%' },
+          flexBasis: { xs: '25%', sm: '35%' },
           flexShrink: 0,
           overflow: 'visible',
           width: '100%',
