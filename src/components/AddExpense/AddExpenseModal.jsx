@@ -29,8 +29,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import InfoIcon from "@mui/icons-material/Info";
 import PaidIcon from "@mui/icons-material/Paid";
 import GroupIcon from "@mui/icons-material/Group";
-import FlightIcon from "@mui/icons-material/Flight";
-import HomeIcon from "@mui/icons-material/Home";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -46,7 +44,7 @@ import { useRefetchLogs } from "../contexts/RefetchLogs";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 
 const steps = [
-  { label: "Basic Info", icon: <InfoIcon /> },
+  { label: "Description", icon: <InfoIcon /> },
   { label: "Amount", icon: <PaidIcon /> },
   { label: "Split Details", icon: <GroupIcon /> },
 ];
@@ -69,10 +67,8 @@ const AddExpenseModal = ({ open, handleClose }) => {
   const { currentGroupID } = useCurrentGroup();
   const [excludePayer, setExcludePayer] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
-  const [category, setCategory] = useState("");
   const [errors, setErrors] = useState({
     description: "",
-    category: "",
     amount: "",
     currency: "",
     paidBy: "",
@@ -116,10 +112,6 @@ const AddExpenseModal = ({ open, handleClose }) => {
       case 0:
         if (!description.trim()) {
           newErrors.description = "Description is required";
-          isValid = false;
-        }
-        if (!category) {
-          newErrors.category = "Category is required";
           isValid = false;
         }
         break;
@@ -183,12 +175,10 @@ const AddExpenseModal = ({ open, handleClose }) => {
     setPaidBy("");
     setSplitOptions([]);
     setSelectedDate(dayjs());
-    setCategory("");
     setActiveStep(0);
     setExcludePayer(false);
     setErrors({
       description: "",
-      category: "",
       amount: "",
       currency: "",
       paidBy: "",
@@ -215,7 +205,6 @@ const AddExpenseModal = ({ open, handleClose }) => {
       createdBy: { email: currentUser?.email, name: currentUser?.name },
       currency,
       excludePayer,
-      category,
     };
 
     try {
@@ -313,54 +302,6 @@ const AddExpenseModal = ({ open, handleClose }) => {
               }}
               inputProps={{ maxLength: 35 }}
             />
-
-            <FormControl fullWidth error={!!errors.category}>
-              <InputLabel required>Category</InputLabel>
-              <Select
-                value={category}
-                onChange={(e) => {
-                  setCategory(e.target.value);
-                  setErrors({ ...errors, category: "" });
-                }}
-                required
-                sx={{
-                  borderRadius: "16px",
-                  backgroundColor: "rgba(255,255,255,0.8)",
-                  "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.9)",
-                    boxShadow: "0 4px 20px rgba(94, 114, 228, 0.1)",
-                  },
-                }}
-              >
-                <MenuItem value="Trip" sx={{ borderRadius: "12px", my: 0.5 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <FlightIcon sx={{ color: "#fb6340" }} />
-                    <Typography>Trip</Typography>
-                  </Box>
-                </MenuItem>
-                <MenuItem value="Home" sx={{ borderRadius: "12px", my: 0.5 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <HomeIcon sx={{ color: "#2dce89" }} />
-                    <Typography>Home</Typography>
-                  </Box>
-                </MenuItem>
-                <MenuItem value="Couple" sx={{ borderRadius: "12px", my: 0.5 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <GroupIcon sx={{ color: "#5e72e4" }} />
-                    <Typography>Couple</Typography>
-                  </Box>
-                </MenuItem>
-                <MenuItem value="Other" sx={{ borderRadius: "12px", my: 0.5 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <InfoIcon sx={{ color: "#8898aa" }} />
-                    <Typography>Other</Typography>
-                  </Box>
-                </MenuItem>
-              </Select>
-              {errors.category && (
-                <FormHelperText error>{errors.category}</FormHelperText>
-              )}
-            </FormControl>
 
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
