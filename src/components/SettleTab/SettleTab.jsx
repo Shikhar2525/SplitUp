@@ -18,7 +18,7 @@ const SettleTab = ({ members, groupID }) => {
   const { allGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
   const { allUserSettled } = useAllUserSettled();
-  const isMobile = useScreenSize()
+  const isMobile = useScreenSize();
 
   const currentGroup = allGroups?.find((item) => item.id === groupID);
 
@@ -79,11 +79,21 @@ const SettleTab = ({ members, groupID }) => {
   return (
     <Box
       sx={{
-        padding: 2,
-        backgroundColor: "#fff",
-        borderRadius: "16px",
-        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-        marginBottom: 3,
+        height: "100%",
+        overflow: "auto", // Only this container should scroll
+        display: "flex",
+        flexDirection: "column",
+        "&::-webkit-scrollbar": {
+          width: "8px",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "rgba(94, 114, 228, 0.2)",
+          borderRadius: "4px",
+        },
+        "&::-webkit-scrollbar-track": {
+          backgroundColor: "rgba(94, 114, 228, 0.05)",
+          borderRadius: "4px",
+        },
       }}
     >
       <Typography
@@ -106,7 +116,13 @@ const SettleTab = ({ members, groupID }) => {
         sx={{
           padding: 1,
           backgroundColor: "#fff",
-          height: allUserSettled ? (isMobile ? "25vh" : "40vh") : (isMobile ? '40vh' :"55vh"),
+          height: allUserSettled
+            ? isMobile
+              ? "25vh"
+              : "40vh"
+            : isMobile
+            ? "40vh"
+            : "55vh",
           marginBottom: 2,
           overflowX: "hidden",
           whiteSpace: "nowrap",

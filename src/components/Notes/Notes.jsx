@@ -166,70 +166,72 @@ const Notes = ({ groupId }) => {
   return (
     <Box
       sx={{
-        height: allUserSettled ? (isMobile ? "34vh" : "45vh") : (isMobile ? '40vh' :"55vh"),
+        height: "100%",
         display: "flex",
         flexDirection: "column",
         gap: 2,
+        overflow: "hidden",
       }}
     >
-      {/* Add Note Button */}
-      {!isAdding && ( 
-        <Fade in={!isAdding}>
-          <Box
-            onClick={() => setIsAdding(true)}
+      {/* Add Note Button and Form */}
+      <Box sx={{ flexShrink: 0 }}>
+        {!isAdding && (
+          <Fade in={!isAdding}>
+            <Box
+              onClick={() => setIsAdding(true)}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                p: 2,
+                borderRadius: 3,
+                cursor: "pointer",
+                background: "linear-gradient(135deg, #5e72e4 0%, #825ee4 100%)",
+                color: "white",
+                boxShadow: "0 4px 20px rgba(94, 114, 228, 0.2)",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 30px rgba(94, 114, 228, 0.3)",
+                },
+              }}
+            >
+              <AddIcon />
+              <Typography fontWeight={600}>Add Note</Typography>
+            </Box>
+          </Fade>
+        )}
+
+        {isAdding && (
+          <Paper
             sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
               p: 2,
               borderRadius: 3,
-              cursor: "pointer",
-              background: "linear-gradient(135deg, #5e72e4 0%, #825ee4 100%)",
-              color: "white",
-              boxShadow: "0 4px 20px rgba(94, 114, 228, 0.2)",
-              transition: "all 0.2s ease",
-              "&:hover": {
-                transform: "translateY(-2px)",
-                boxShadow: "0 6px 30px rgba(94, 114, 228, 0.3)",
-              },
+              background: "white",
+              boxShadow: "0 4px 20px rgba(94, 114, 228, 0.1)",
             }}
           >
-            <AddIcon />
-            <Typography fontWeight={600}>Add Note</Typography>
-          </Box>
-        </Fade>
-      )}
-
-      {/* Add Note Form */}
-      {isAdding && (
-        <Paper
-          sx={{
-            p: 2,
-            borderRadius: 3,
-            background: "white",
-            boxShadow: "0 4px 20px rgba(94, 114, 228, 0.1)",
-          }}
-        >
-          <TextField
-            multiline
-            rows={3}
-            fullWidth
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-            placeholder="Type your note here..."
-            variant="outlined"
-            sx={{ mb: 2 }}
-          />
-          <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
-            <IconButton onClick={() => setIsAdding(false)} color="inherit">
-              <CloseIcon />
-            </IconButton>
-            <IconButton onClick={handleAddNote} color="primary">
-              <SaveIcon />
-            </IconButton>
-          </Box>
-        </Paper>
-      )}
+            <TextField
+              multiline
+              rows={3}
+              fullWidth
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+              placeholder="Type your note here..."
+              variant="outlined"
+              sx={{ mb: 2 }}
+            />
+            <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+              <IconButton onClick={() => setIsAdding(false)} color="inherit">
+                <CloseIcon />
+              </IconButton>
+              <IconButton onClick={handleAddNote} color="primary">
+                <SaveIcon />
+              </IconButton>
+            </Box>
+          </Paper>
+        )}
+      </Box>
 
       {/* Notes List */}
       <Box
@@ -239,15 +241,14 @@ const Notes = ({ groupId }) => {
           display: "flex",
           flexDirection: "column",
           gap: 2,
-          maxHeight: "calc(100vh - 520px)", // Adjusted max height
           px: 0.5,
           "&::-webkit-scrollbar": {
-            width: 6,
-            borderRadius: 10,
+            width: "6px",
+            borderRadius: "10px",
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "rgba(94, 114, 228, 0.2)",
-            borderRadius: 10,
+            borderRadius: "10px",
           },
         }}
       >
