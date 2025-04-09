@@ -327,7 +327,7 @@ const TransactionCard = ({
                 {[
                   {
                     id: "description",
-                    label: "Description",
+                    label: "Title",
                     icon: <DescriptionIcon sx={{ color: colors[index % colors.length] }} />,
                     content: (
                       <Typography sx={{ fontWeight: 500 }}>
@@ -337,7 +337,7 @@ const TransactionCard = ({
                   },
                   {
                     id: "paidBy",
-                    label: "Transaction done by",
+                    label: "Paid by",
                     icon: <ReceiptIcon sx={{ color: colors[index % colors.length] }} />,
                     content: (
                       <Box sx={{ 
@@ -370,7 +370,7 @@ const TransactionCard = ({
                   },
                   {
                     id: "date",
-                    label: "Transaction Date",
+                    label: "Payment Date",
                     icon: <AccessTimeIcon sx={{ color: colors[index % colors.length] }} />,
                     content: (
                       <Chip
