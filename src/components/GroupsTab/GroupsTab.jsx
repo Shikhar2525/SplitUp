@@ -403,8 +403,8 @@ const GroupTab = () => {
         <Box sx={{ 
           display: 'flex',
           alignItems: 'center',
-          gap: { xs: 2, sm: 3 },
-          justifyContent: { xs: 'space-between', sm: 'center' },
+          gap: { xs: 17, sm: 3 },
+          justifyContent: { xs: 'space-between', sm: 'space-between' },
           flex: { xs: '1', sm: '2' },
           borderLeft: { xs: 'none', sm: '1px solid rgba(136, 152, 170, 0.2)' },
           paddingLeft: { xs: 0, sm: 3 }
