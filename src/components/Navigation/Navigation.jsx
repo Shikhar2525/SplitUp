@@ -11,9 +11,6 @@ import {
   Drawer,
   IconButton,
   useMediaQuery,
-  Select,
-  MenuItem,
-  Chip,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import Diversity3Icon from "@mui/icons-material/Diversity3";
@@ -23,8 +20,6 @@ import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { styled } from '@mui/system';
 
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import "./Navigration.scss";
@@ -45,49 +40,9 @@ const illustrations = [
   }
 ];
 
-const versions = [
-  {
-    label: 'v2.0.0',
-    value: 'v2.0.0',
-    url: 'https://splitup-633cc--testing-j5y7qc46.web.app/',
-    type: 'beta'
-  },
-  {
-    label: 'v1.0.0',
-    value: 'v1.0.0',
-    url: 'https://splitup-633cc.web.app/',
-    type: 'stable'
-  }
-];
-
-const VersionSelect = styled(Select)(({ theme }) => ({
-  '& .MuiSelect-select': {
-    paddingTop: 4,
-    paddingBottom: 4,
-    paddingLeft: 12,
-    paddingRight: '32px !important',
-    fontSize: '0.75rem',
-    fontWeight: 600,
-    color: '#5e72e4',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-  },
-  '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  },
-  '&:hover .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  },
-  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  }
-}));
-
 function Navigation() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [currentIllustration, setCurrentIllustration] = useState(0);
-  const [currentVersion, setCurrentVersion] = useState(versions[0]);
   const navigate = useNavigate();
   const isMobile = useScreenSize();
   const isNineundredPixel = useMediaQuery("(max-width:900px)");
@@ -101,12 +56,6 @@ function Navigation() {
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
-  };
-
-  const handleVersionChange = (event) => {
-    const newVersion = versions.find(v => v.value === event.target.value);
-    setCurrentVersion(newVersion);
-    window.location.href = newVersion.url;
   };
 
   const list = () => {
@@ -191,85 +140,6 @@ function Navigation() {
       </List>
     );
   };
-
-  const VersionSelector = () => (
-    <Box
-      sx={{
-        display: { xs: 'flex', md: 'flex' },
-        alignItems: 'center',
-        px: { xs: 1, sm: 1.5 },
-        py: 0.5,
-        borderRadius: '8px',
-        backgroundColor: 'rgba(94, 114, 228, 0.05)',
-        border: '1px solid rgba(94, 114, 228, 0.1)',
-        mt: { xs: 0, sm: 2 },
-        transition: 'all 0.2s ease',
-        '&:hover': {
-          backgroundColor: 'rgba(94, 114, 228, 0.08)',
-          border: '1px solid rgba(94, 114, 228, 0.2)',
-        }
-      }}
-    >
-      <VersionSelect
-        value={currentVersion.value}
-        onChange={handleVersionChange}
-        IconComponent={KeyboardArrowDownIcon}
-        MenuProps={{
-          PaperProps: {
-            sx: {
-              mt: 1,
-              borderRadius: '12px',
-              backgroundColor: 'rgba(255,255,255,0.98)',
-              backdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-              '& .MuiMenuItem-root': {
-                fontSize: '0.75rem',
-                minHeight: '32px',
-                gap: 1,
-                mx: 0.5,
-                my: 0.25,
-                borderRadius: '8px',
-                '&:hover': {
-                  backgroundColor: 'rgba(94, 114, 228, 0.08)',
-                },
-              },
-            },
-          },
-        }}
-      >
-        {versions.map((version) => (
-          <MenuItem key={version.value} value={version.value}>
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 1,
-              width: '100%',
-              justifyContent: 'space-between'
-            }}>
-              <Typography sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
-                {version.label}
-              </Typography>
-              <Chip
-                label={version.type}
-                size="small"
-                sx={{
-                  height: 16,
-                  fontSize: '0.65rem',
-                  fontWeight: 600,
-                  backgroundColor: version.type === 'stable' 
-                    ? 'rgba(45, 206, 137, 0.1)' 
-                    : 'rgba(251, 99, 64, 0.1)',
-                  color: version.type === 'stable' 
-                    ? '#2dce89' 
-                    : '#fb6340',
-                }}
-              />
-            </Box>
-          </MenuItem>
-        ))}
-      </VersionSelect>
-    </Box>
-  );
 
   return (
     <Box
@@ -402,9 +272,6 @@ function Navigation() {
             SplitUp
           </Typography>
         </Box>
-
-        {/* Version selector for mobile/tablet */}
-        <VersionSelector />
       </Box>
 
       {isMobile ? (
