@@ -19,7 +19,17 @@ function GroupBalances({ group }) {
   }, [group, currentCurrency]);
 
   return (
-    <Box sx={{ height: "51vh", overflow: "auto" }}>
+    <Box sx={{ 
+      height: "100%",
+      overflow: "auto",
+      "&::-webkit-scrollbar": {
+        width: "8px",
+      },
+      "&::-webkit-scrollbar-thumb": {
+        backgroundColor: "rgba(94, 114, 228, 0.2)",
+        borderRadius: "4px",
+      }
+    }}>
       <BalanceCard balances={balances} groupId={group?.id} />
     </Box>
   );

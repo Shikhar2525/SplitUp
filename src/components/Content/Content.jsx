@@ -7,6 +7,7 @@ import HomeTab from "../HomeTab/Home";
 import GroupsTab from "../GroupsTab/GroupsTab";
 import { useAuth0 } from "@auth0/auth0-react";
 import Welcome from "../Welcome/Welcome";
+import ManageFriends from "../Friends/ManageFriends";
 
 function Content() {
   const isMobile = useScreenSize();
@@ -15,6 +16,13 @@ function Content() {
   const navigate = useNavigate();
   const joinGroupId = new URLSearchParams(location.search).get("joinGroupId");
   const groupName = new URLSearchParams(location.search).get("groupName");
+
+  const getBackgroundColor = () => {
+    if (!isAuthenticated) return "#f8f4f4";
+    return location.pathname === '/groups' || location.pathname === '/friends'
+      ? "#f8f4f4"
+      : "#E0E5EC";
+  };
 
   // Effect to handle redirecting for login
   useEffect(() => {
@@ -67,7 +75,7 @@ function Content() {
         flexDirection: "column",
         alignItems: "flex-start",
         justifyContent: "flex-start",
-        backgroundColor: "#f8f4f4",
+        backgroundColor: getBackgroundColor(),
         borderRadius: "30px",
         position: "relative", // Set position to relative for absolute children
         ...(isMobile ? { width: "100%" } : {}),
@@ -79,6 +87,10 @@ function Content() {
         <Route
           path="groups"
           element={isAuthenticated ? <GroupsTab /> : <Welcome />}
+        />
+        <Route
+          path="friends"
+          element={isAuthenticated ? <ManageFriends /> :  <Welcome />}
         />
       </Routes>
     </Box>

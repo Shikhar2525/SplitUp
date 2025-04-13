@@ -1,5 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import { useCurrentTab } from "../contexts/CurrentTabContext";
@@ -9,12 +9,18 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { useNavigate } from "react-router-dom";
 import AddGroupModal from "../AddGroup/AddGroupModal";
 import AddIcon from "@mui/icons-material/Add";
+import Notifications from "../Notifications/Notifications";
+import ActivityService from "../services/activity.service";
+import { useCurrentUser } from "../contexts/CurrentUser";
 
 function BreadCrumbs() {
   const isMobile = useScreenSize();
   const { currentGroupID } = useCurrentGroup();
   const { currentTab } = useCurrentTab();
   const [modelOpen, setModelOpen] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [loader, setLoader] = useState(false);
+  const { currentUser } = useCurrentUser();
 
   const { allGroups, refreshAllGroups } = useAllGroups();
   const navigate = useNavigate();
@@ -22,6 +28,25 @@ function BreadCrumbs() {
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
 
   const toggleModal = useCallback(() => setModelOpen((prev) => !prev), []);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      setLoader(true);
+      try {
+        const fetchedLogs = await ActivityService.fetchActivitiesByEmail(currentUser?.email);
+        setLogs(fetchedLogs || []);
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+        setLogs([]);
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    if (currentUser?.email) {
+      fetchLogs();
+    }
+  }, [currentUser?.email]);
 
   return (
     <Box
@@ -42,30 +67,40 @@ function BreadCrumbs() {
         sx={{
           flex: 1,
           display: "flex",
-          overflow: "auto",
-          flexBasis: "20%",
+          overflow: "hidden", // Changed from auto to hidden
+          flexBasis: { xs: '30%', sm: '20%' }, // Adjusted flex basis
           flexShrink: 0,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "flex-start",
           gap: 1,
-          ...(isMobile && { flexBasis: "14%" }),
           cursor: "pointer",
         }}
       >
-        {currentTab === "Groups" && (
-          <KeyboardBackspaceIcon sx={{ color: "#3C3F88" }} />
+        {(currentTab === "Groups" || currentTab === "Friends") && (
+          <KeyboardBackspaceIcon 
+            sx={{ 
+              color: "#3C3F88",
+              flexShrink: 0 // Prevent icon from shrinking
+            }} 
+          />
         )}
         <Typography
           sx={{
-            fontSize: "20px",
+            fontSize: { xs: '14px', sm: '20px' },
             color: "#3C3F88",
             letterSpacing: "0.05em",
-            ...(currentTab === "Groups" ? {} : { marginLeft: 0.6 }),
-            ...(isMobile ? { fontSize: 14 } : {}),
+            marginLeft: currentTab === "Groups" ? 0 : 0.6,
+            whiteSpace: { xs: 'normal', sm: 'nowrap' }, // Allow wrapping on mobile
+            wordBreak: 'break-word', // Enable word breaking
+            lineHeight: { xs: 1.2, sm: 'normal' }, // Adjust line height for wrapped text
+            maxWidth: { xs: '200px', sm: '300px', md: 'none' }, // Control max width
+            display: '-webkit-box',
+            WebkitLineClamp: { xs: 2, sm: 1 }, // Show 2 lines on mobile, 1 on desktop
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
           }}
           variant="h6"
-          color="initial"
         >
           {currentTab === "Groups"
             ? title
@@ -78,15 +113,15 @@ function BreadCrumbs() {
         className="rightSideButton"
         sx={{
           flex: 1,
-          display: "flex",
-          flexBasis: "35%",
+          display: 'flex',
+          flexBasis: { xs: '25%', sm: '35%' },
           flexShrink: 0,
-          overflow: "hidden",
-          width: "100%",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          gap: 1.5,
+          overflow: 'visible',
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: { xs: 'flex-end', sm: 'flex-end' },
+          gap: { xs: 1, sm: 1.5 },
         }}
       >
         <Button
@@ -98,16 +133,21 @@ function BreadCrumbs() {
             color: "#FFF",
             "&:hover": { backgroundColor: "#FD7289" },
             borderRadius: "8px",
-            p: "2px 8px",
-            display: "flex",
-            alignItems: "center",
-
-            ...(isMobile && { minWidth: "38px" }),
+            padding: { xs: '6px 8px', sm: '6px 16px' },
+            minWidth: { xs: 'auto', sm: '120px' },
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 0, sm: 1 },
+            whiteSpace: 'nowrap',
+            '& .MuiButton-startIcon': {
+              margin: { xs: 0, sm: '-4px 8px -4px 0' }
+            }
           }}
+          startIcon={<AddIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.4rem' } }} />}
         >
-          <AddIcon />
-          New Group
+          <Box sx={{ display: { xs: 'none', sm: 'block' } }}>New Group</Box>
         </Button>
+        <Notifications logs={logs} loader={loader} />
         <AccountMenu />
       </Box>
 

@@ -14,6 +14,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useLinearProgress } from "../contexts/LinearProgress";
 import { useCircularLoader } from "../contexts/CircularLoader";
+import { useLocation } from "react-router-dom";
 
 function MainContainer() {
   const isMobile = useScreenSize();
@@ -22,6 +23,7 @@ function MainContainer() {
   const { snackBar, setSnackBar } = useTopSnackBar();
   const { isLinearProgress } = useLinearProgress();
   const { circularLoader } = useCircularLoader();
+  const location = useLocation();
 
   useEffect(() => {
     if (snackBar?.isOpen) {
@@ -32,6 +34,13 @@ function MainContainer() {
     }
   }, [snackBar, setSnackBar]);
 
+  const getBackgroundColor = () => {
+    if (!isAuthenticated) return "#f8f4f4";
+    return location.pathname === '/groups' || location.pathname === '/friends'
+      ? "#f8f4f4"
+      : "#E0E5EC";
+  };
+
   return (
     <Box
       sx={{
@@ -41,10 +50,10 @@ function MainContainer() {
         flexDirection: isMobile ? "column" : "row",
         alignItems: isMobile ? "center" : "flex-start",
         justifyContent: "center",
-        overflow: isNineHundredPixels ? "auto" : "hidden",
+        overflow: isMobile ? "auto" : "hidden", // Enable scroll on mobile
         borderRadius: "30px",
         border: "2px solid white",
-        backgroundColor: "#f8f4f4",
+        backgroundColor: getBackgroundColor(),
         boxShadow: "0 4px 20px rgba(255, 255, 255, 0.7)",
         position: "relative",
       }}

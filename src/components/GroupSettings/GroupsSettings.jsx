@@ -5,17 +5,22 @@ import {
   Typography,
   Select,
   MenuItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  IconButton,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
 } from "@mui/material";
 import React, { useState } from "react";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import DeleteGroupModal from "../DeleteGroupModal/DeleteGroupModal";
 import CancelIcon from "@mui/icons-material/Cancel";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { currencies } from "../../constants";
 import GroupService from "../services/group.service";
 import { useAllGroups } from "../contexts/AllGroups";
@@ -29,6 +34,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   const [newGroupName, setNewGroupName] = useState(groupName);
   const [isEditing, setIsEditing] = useState(false);
   const [currency, setCurrency] = useState(defaultCurrency);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const { refreshAllGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
   const { setCircularLoader } = useCircularLoader();
@@ -74,11 +80,10 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
     console.log(`Currency changed to: ${e.target.value}`);
   };
 
-  // Method to save the selected currency
   const handleSaveCurrency = async () => {
     try {
       setCircularLoader(true);
-      await GroupService.updateDefaultCurrency(groupID, currency); // Call the service to update the currency
+      await GroupService.updateDefaultCurrency(groupID, currency);
       setSnackBar({ isOpen: true, message: "Currency updated successfully!" });
       refreshAllGroups();
     } catch (error) {
@@ -89,183 +94,239 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
     }
   };
 
-  // Check if group name is valid for enabling the save button
+  const handleDelete = async () => {
+    try {
+      setCircularLoader(true);
+      await GroupService.deleteGroup(groupID);
+      setSnackBar({ isOpen: true, message: "Group deleted successfully" });
+      refreshAllGroups();
+    } catch (error) {
+      setSnackBar({
+        isOpen: true,
+        message: "Failed to delete group",
+        severity: "error",
+      });
+    } finally {
+      setCircularLoader(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
   const isGroupNameChanged =
     newGroupName.trim() !== "" && newGroupName !== groupName;
 
-  // Check if currency is changed for enabling the save button
   const isCurrencyChanged = currency !== defaultCurrency;
 
   return (
     <Box
       sx={{
-        height: allUserSettled ? "46vh" : "53vh",
+        height: allUserSettled ? (isMobile ? "40vh" : "40vh") : (isMobile ? '46vh' :"55vh"),
         overflow: "auto",
-        padding: isMobile ? 1 : 2,
-        display: "flex",
-        flexDirection: "column",
-        gap: 3,
+        padding: { xs: 1.5, sm: 2 },
+        "& .MuiPaper-root": {
+          transition: "transform 0.2s ease, box-shadow 0.2s ease",
+          "&:hover": {
+            transform: "translateY(-2px)",
+            boxShadow: "0 4px 20px rgba(94, 114, 228, 0.15)",
+          },
+        },
       }}
     >
-      <Typography variant="h6" sx={{ fontWeight: "bold", color: "#353E6C" }}>
-        Group Settings
-      </Typography>
-
-      <Table>
-        <TableBody>
-          <TableRow>
-            <TableCell>
-              <Typography variant="body1" sx={{ color: "#353E6C" }}>
-                Group Name:
-              </Typography>
-            </TableCell>
-            <TableCell>
-              {isEditing ? (
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: isMobile ? "flex-start" : "center",
-                    gap: 2,
-                    flexDirection: isMobile ? "column" : "row",
-                  }}
-                >
-                  <TextField
-                    label="Rename Group"
-                    value={newGroupName}
-                    onChange={handleNameChange}
-                    variant="outlined"
-                    inputProps={{ maxLength: 25 }}
-                    helperText={`${
-                      25 - newGroupName.length
-                    } characters remaining`}
-                    sx={{ backgroundColor: "#f0f0f0", borderRadius: 2 }}
-                  />
-                  <Box>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleSubmitNameChange}
-                      disabled={!isGroupNameChanged} // Disable if name is not changed or empty
-                      sx={{
-                        backgroundColor: "#007AFF",
-                        color: "#FFF",
-                        borderRadius: "8px",
-                      }}
-                    >
-                      Save
-                    </Button>
-                    <IconButton
-                      onClick={handleCancelEdit}
-                      sx={{ color: "#FF0000" }}
-                    >
-                      <CancelIcon />
-                    </IconButton>
-                  </Box>
-                </Box>
-              ) : (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Typography variant="body1" sx={{ color: "#353E6C" }}>
-                    {newGroupName}
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={handleEditClick}
-                    sx={{
-                      color: "#007AFF",
-                      borderColor: "#007AFF",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    Edit
-                  </Button>
-                </Box>
-              )}
-            </TableCell>
-          </TableRow>
-
-          <TableRow>
-            <TableCell>
-              <Typography variant="body1" sx={{ color: "#353E6C" }}>
-                Default Currency:
-              </Typography>
-            </TableCell>
-            <TableCell>
-              <Box
+      {/* Group Name Settings Card */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          borderRadius: "12px",
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255,255,255,0.8)",
+          mb: 1.5,
+        }}
+      >
+        <Box sx={{ flex: 1, width: "100%" }}>
+          {isEditing ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <TextField
+                fullWidth
+                label="Rename Group"
+                value={newGroupName}
+                onChange={handleNameChange}
+                variant="outlined"
+                inputProps={{ maxLength: 25 }}
+                helperText={`${25 - newGroupName.length} characters remaining`}
                 sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  gap: 2,
-                  alignItems: "center",
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.9)",
+                    borderRadius: "12px",
+                  },
                 }}
-              >
-                <Select
-                  sx={{ width: "30%" }}
-                  labelId="currency-select-label"
-                  id="currency-select"
-                  value={currency}
-                  onChange={handleCurrencyChange}
-                  required
-                >
-                  {currencies.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      <img
-                        src={option.flag}
-                        alt={`${option.value} flag`}
-                        width="20"
-                        height="15"
-                        style={{ marginRight: "8px", verticalAlign: "middle" }}
-                      />
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
+              />
+              <Box sx={{ display: "flex", gap: 1 }}>
                 <Button
                   variant="contained"
-                  color="primary"
-                  onClick={handleSaveCurrency}
-                  disabled={!isCurrencyChanged} // Disable if currency is not changed
+                  onClick={handleSubmitNameChange}
+                  disabled={!isGroupNameChanged}
+                  startIcon={<SaveIcon />}
                   sx={{
-                    width: "10%",
-                    backgroundColor: "#007AFF",
-                    color: "#FFF",
-                    borderRadius: "8px",
-                    height: "2rem",
+                    bgcolor: "#2dce89",
+                    "&:hover": { bgcolor: "#26af74" },
+                    borderRadius: "10px",
                   }}
                 >
                   Save
                 </Button>
+                <Button
+                  variant="outlined"
+                  onClick={handleCancelEdit}
+                  color="error"
+                  startIcon={<CancelIcon />}
+                  sx={{ borderRadius: "10px" }}
+                >
+                  Cancel
+                </Button>
               </Box>
-            </TableCell>
-          </TableRow>
-
-          <TableRow>
-            <TableCell>
-              <Typography variant="body1" sx={{ color: "#353E6C" }}>
-                Delete Group:
+            </Box>
+          ) : (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Typography
+                variant="h6"
+                sx={{ color: "#32325d", fontWeight: 600 }}
+              >
+                {newGroupName}
               </Typography>
-            </TableCell>
-            <TableCell>
               <Button
-                variant="contained"
-                color="primary"
-                onClick={handleOpenModal}
+                variant="outlined"
+                onClick={handleEditClick}
+                startIcon={<EditIcon />}
+                size="small"
                 sx={{
-                  backgroundColor: "#FD7289",
-                  color: "#FFF",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
+                  color: "#5e72e4",
+                  borderColor: "#5e72e4",
                   borderRadius: "8px",
+                  "&:hover": {
+                    borderColor: "#4b5cc4",
+                    backgroundColor: "rgba(94, 114, 228, 0.05)",
+                  },
                 }}
               >
-                <DeleteForeverIcon />
-                Delete Group
+                Edit Name
               </Button>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+            </Box>
+          )}
+        </Box>
+      </Paper>
+
+      {/* Currency Settings Card */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          borderRadius: "12px",
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255,255,255,0.8)",
+          mb: 1.5,
+        }}
+      >
+        <Typography
+          variant="subtitle1"
+          sx={{ mb: 1.5, color: "#32325d", fontWeight: 600 }}
+        >
+          Default Currency
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1,
+            alignItems: { xs: "stretch", sm: "center" },
+          }}
+        >
+          <Select
+            value={currency}
+            onChange={handleCurrencyChange}
+            size="small"
+            sx={{
+              flex: 1,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                backgroundColor: "rgba(255,255,255,0.9)",
+              },
+            }}
+          >
+            {currencies.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                <img
+                  src={option.flag}
+                  alt={`${option.value} flag`}
+                  width="20"
+                  height="15"
+                  style={{ marginRight: "8px", verticalAlign: "middle" }}
+                />
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+          <Button
+            variant="contained"
+            onClick={handleSaveCurrency}
+            disabled={!isCurrencyChanged}
+            size="small"
+            sx={{
+              bgcolor: "#2dce89",
+              "&:hover": { bgcolor: "#26af74" },
+              borderRadius: "8px",
+              minWidth: { xs: "100%", sm: "100px" },
+            }}
+          >
+            Save
+          </Button>
+        </Box>
+      </Paper>
+
+      {/* Delete Group Card */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          borderRadius: "12px",
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(245, 54, 92, 0.2)",
+          borderColor: "rgba(245, 54, 92, 0.2)",
+        }}
+      >
+        <Typography
+          variant="subtitle1"
+          sx={{ mb: 1, color: "#f5365c", fontWeight: 600 }}
+        >
+          Danger Zone
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{ display: "block", mb: 1.5, color: "#8898aa" }}
+        >
+          Once deleted, this group cannot be recovered.
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={handleOpenModal}
+          startIcon={<DeleteForeverIcon />}
+          size="small"
+          sx={{
+            bgcolor: "#f5365c",
+            "&:hover": { bgcolor: "#f5365c", opacity: 0.9 },
+            borderRadius: "8px",
+            textTransform: "none",
+          }}
+        >
+          Delete Group
+        </Button>
+      </Paper>
 
       <DeleteGroupModal
         open={openModal}
