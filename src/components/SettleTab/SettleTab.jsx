@@ -115,7 +115,6 @@ const SettleTab = ({ members, groupID }) => {
       <Box
         sx={{
           padding: 1,
-          backgroundColor: "#fff",
           height: allUserSettled
             ? isMobile
               ? "40vh"
