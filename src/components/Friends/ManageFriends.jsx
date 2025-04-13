@@ -111,7 +111,8 @@ const ManageFriends = () => {
   const fetchFriends = async () => {
     try {
       setIsLoading(true);
-      const user = await userService.getUserByEmail(currentUser.email);
+      const user = await userService.getUserByEmail(currentUser?.email);
+      
       if (!user || !user.friends) {
         setMyFriends([]);
         return;
@@ -122,7 +123,11 @@ const ManageFriends = () => {
       );
 
       const friendsData = await Promise.all(friendPromises);
-      setMyFriends(friendsData.filter((friend) => friend !== null));
+      const validFriends = friendsData.filter((friend) => friend !== null);
+      setMyFriends(validFriends);
+      
+      // Store in localStorage for consistent access
+      localStorage.setItem('myFriendsCount', validFriends.length.toString());
     } catch (error) {
       console.error("Error fetching friends:", error);
       setMyFriends([]);
@@ -147,7 +152,7 @@ const ManageFriends = () => {
     if (currentUser?.email) {
       fetchFriends();
     }
-  }, [currentUser]);
+  }, [currentUser?.email, refreshFriends]);
 
   useEffect(() => {
     const fetchUserVisibility = async () => {

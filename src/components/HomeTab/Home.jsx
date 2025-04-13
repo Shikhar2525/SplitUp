@@ -20,7 +20,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import PendingIcon from '@mui/icons-material/Pending';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-
+import userService from "../services/user.service"; // Assuming userService is imported
 
 const StyledTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -59,6 +59,7 @@ const Home = () => {
   const { currentCurrency } = useCurrentCurrency();
   const { userFriends } = useFriends();
   const [totals, setTotals] = useState(null);
+  const [totalFriends, setTotalFriends] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,6 +75,25 @@ const Home = () => {
     };
     fetchTotals();
   }, [allGroups, currentUser, currentCurrency]);
+
+  useEffect(() => {
+    const getFriendCount = async () => {
+      const user = await userService.getUserByEmail(currentUser?.email);
+      const friendCount = user?.friends?.length || 0;
+      setTotalFriends(friendCount);
+    };
+
+    if (currentUser?.email) {
+      getFriendCount();
+    }
+  }, [currentUser?.email]);
+
+  useEffect(() => {
+    const storedCount = localStorage.getItem('myFriendsCount');
+    if (storedCount) {
+      setTotalFriends(parseInt(storedCount, 10));
+    }
+  }, []);
 
   const StatCard = ({ title, value, icon, color, onClick, hoverDetails }) => (
     <Paper
@@ -389,7 +409,7 @@ const Home = () => {
             {/* Balance Card */}
             <StatCard
               title="Overall Balance"
-              value={`${getCurrencySymbol(currentCurrency)} ${Math.abs(totals?.balance || 0).toFixed(2)}`}
+              value={`${Number(totals?.balance || 0).toFixed(2)} ${getCurrencySymbol(currentCurrency)} `}
               icon={<AccountBalanceIcon />}
               color={totals?.balance?.startsWith('-') ? '#fb6340' : '#2dce89'}
               hoverDetails={{
@@ -413,7 +433,7 @@ const Home = () => {
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
             title="Total Friends"
-            value={userFriends?.length || 0}
+            value={totalFriends}
             icon={<PersonIcon />}
             color="#2dce89"
             onClick={() => navigate('/friends')}

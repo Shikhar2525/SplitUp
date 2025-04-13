@@ -135,7 +135,6 @@ const TransactionCard = ({
             display: "none", // Remove the default accordion line
           },
           "& .MuiAccordionSummary-root": {
-         
             borderRadius: "20px",
             transition: "all 0.3s ease",
             "&:hover": {
@@ -143,7 +142,6 @@ const TransactionCard = ({
             },
           },
           "& .MuiAccordionDetails-root": {
-           
             background: "linear-gradient(145deg, #e6e9ef, #f0f3f9)",
             borderTop: "1px solid rgba(255, 255, 255, 0.2)",
             boxShadow:
@@ -197,10 +195,14 @@ const TransactionCard = ({
               },
             }}
           >
-            <Typography sx={{ color: "white", fontWeight: 600, fontSize: "0.9rem" }}>
+            <Typography
+              sx={{ color: "white", fontWeight: 600, fontSize: "0.9rem" }}
+            >
               {dateShort?.month}
             </Typography>
-            <Typography sx={{ color: "white", fontSize: "1.5rem", fontWeight: 700 }}>
+            <Typography
+              sx={{ color: "white", fontSize: "1.5rem", fontWeight: 700 }}
+            >
               {dateShort?.day}
             </Typography>
           </Box>
@@ -328,7 +330,11 @@ const TransactionCard = ({
                   {
                     id: "description",
                     label: "Title",
-                    icon: <DescriptionIcon sx={{ color: colors[index % colors.length] }} />,
+                    icon: (
+                      <DescriptionIcon
+                        sx={{ color: colors[index % colors.length] }}
+                      />
+                    ),
                     content: (
                       <Typography sx={{ fontWeight: 500 }}>
                         {transaction.description}
@@ -338,31 +344,45 @@ const TransactionCard = ({
                   {
                     id: "paidBy",
                     label: "Paid by",
-                    icon: <ReceiptIcon sx={{ color: colors[index % colors.length] }} />,
+                    icon: (
+                      <ReceiptIcon
+                        sx={{ color: colors[index % colors.length] }}
+                      />
+                    ),
                     content: (
-                      <Box sx={{ 
-                        display: "flex", 
-                        flexDirection: { xs: "column", sm: "row" },
-                        alignItems: { xs: "flex-start", sm: "center" }, 
-                        gap: 1.5 
-                      }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: { xs: "column", sm: "row" },
+                          alignItems: { xs: "flex-start", sm: "center" },
+                          gap: 1.5,
+                        }}
+                      >
                         <Chip
                           label={transaction?.paidBy?.name}
                           sx={{
-                            backgroundColor: `${colors[index % colors.length]}15`,
+                            backgroundColor: `${
+                              colors[index % colors.length]
+                            }15`,
                             color: colors[index % colors.length],
                             fontWeight: 500,
                           }}
                         />
                         <Chip
-                          label={!transaction.excludePayer ? "Included in split" : "Not included in split"}
+                          label={
+                            !transaction.excludePayer
+                              ? "Included in split"
+                              : "Not included in split"
+                          }
                           size="small"
-                          color={!transaction.excludePayer ? "success" : "error"}
+                          color={
+                            !transaction.excludePayer ? "success" : "error"
+                          }
                           variant="outlined"
                           sx={{
                             height: "24px",
                             fontSize: "0.75rem",
-                            display: "flex"
+                            display: "flex",
                           }}
                         />
                       </Box>
@@ -371,14 +391,21 @@ const TransactionCard = ({
                   {
                     id: "date",
                     label: "Payment Date",
-                    icon: <AccessTimeIcon sx={{ color: colors[index % colors.length] }} />,
+                    icon: (
+                      <AccessTimeIcon
+                        sx={{ color: colors[index % colors.length] }}
+                      />
+                    ),
                     content: (
                       <Chip
-                        label={new Date(transaction.date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                        label={new Date(transaction.date).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
                         variant="outlined"
                         sx={{ fontWeight: 500 }}
                       />
@@ -387,13 +414,23 @@ const TransactionCard = ({
                   {
                     id: "amount",
                     label: "Spent Amount",
-                    icon: <MonetizationOnIcon sx={{ color: colors[index % colors.length] }} />,
-                    content: `${transaction.amount} ${getCurrencySymbol(transaction?.currency)}`,
+                    icon: (
+                      <MonetizationOnIcon
+                        sx={{ color: colors[index % colors.length] }}
+                      />
+                    ),
+                    content: `${transaction.amount} ${getCurrencySymbol(
+                      transaction?.currency
+                    )}`,
                   },
                   {
                     id: "splitBetween",
                     label: "Split Between",
-                    icon: <AltRouteIcon sx={{ color: colors[index % colors.length] }} />,
+                    icon: (
+                      <AltRouteIcon
+                        sx={{ color: colors[index % colors.length] }}
+                      />
+                    ),
                     content: (
                       <Box className="split-between-box">
                         {transaction.splitBetween?.map((item, idx) => (
@@ -401,7 +438,9 @@ const TransactionCard = ({
                             key={idx}
                             label={item?.name}
                             sx={{
-                              backgroundColor: `${colors[index % colors.length]}15`,
+                              backgroundColor: `${
+                                colors[index % colors.length]
+                              }15`,
                               color: colors[index % colors.length],
                               fontWeight: 600,
                               borderRadius: "6px",
@@ -414,7 +453,11 @@ const TransactionCard = ({
                   {
                     id: "createdBy",
                     label: "Expense added by",
-                    icon: <PersonIcon sx={{ color: colors[index % colors.length] }} />,
+                    icon: (
+                      <PersonIcon
+                        sx={{ color: colors[index % colors.length] }}
+                      />
+                    ),
                     content: (
                       <Chip
                         key={transaction?.createdBy?.name}
@@ -428,22 +471,29 @@ const TransactionCard = ({
                       />
                     ),
                   },
-                  {
-                    id: "actions",
-                    label: "Actions",
-                    icon: <SettingsIcon sx={{ color: colors[index % colors.length] }} />,
-                    content:
-                      transaction?.createdBy?.email === currentUser?.email ||
-                      groupAdmin === currentUser?.email ? (
-                        <IconButton
-                          color="error"
-                          aria-label="delete"
-                          onClick={handleOpenConfirmDialog}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      ) : null,
-                  },
+                  ...(transaction?.createdBy?.email === currentUser?.email ||
+                  groupAdmin === currentUser?.email
+                    ? [
+                        {
+                          id: "actions",
+                          label: "Actions",
+                          icon: (
+                            <SettingsIcon
+                              sx={{ color: colors[index % colors.length] }}
+                            />
+                          ),
+                          content: (
+                            <IconButton
+                              color="error"
+                              aria-label="delete"
+                              onClick={handleOpenConfirmDialog}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          ),
+                        },
+                      ]
+                    : []),
                 ].map((row) => (
                   <TableRow key={row.id}>
                     <TableCell
