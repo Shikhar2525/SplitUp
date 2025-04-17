@@ -517,21 +517,18 @@ const Home = () => {
               </Box>
             ) : (
               <Grid container spacing={2} sx={{ mt: 1 }}>
-                {allGroups.map(group => (
-                  <Grid item xs={12} sm={6} md={4} key={group.id}>
-                    <RecentGroupCard group={group} />
-                  </Grid>
-                ))}
+                {allGroups
+                    ?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 3)
+                    .map(group => (
+                      <Grid item xs={12} sm={6} md={4} key={group.id}>
+                        <RecentGroupCard group={group} />
+                      </Grid>
+                    ))}
               </Grid>
             )}
             <AddGroupModal open={addGroupOpen} handleClose={() => setAddGroupOpen(false)} refreshGroups={() => {}} />
-            <Grid container spacing={2}> {/* Reduced spacing */}
-              {allGroups?.slice(0, 3).map((group, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <RecentGroupCard group={group} />
-                </Grid>
-              ))}
-            </Grid>
+            
           </Box>
         </Grid>
       </Grid>
