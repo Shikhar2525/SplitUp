@@ -38,6 +38,7 @@ import { useLinearProgress } from "../contexts/LinearProgress";
 import SettingsIcon from "@mui/icons-material/Settings";
 import GroupsSettings from "../GroupSettings/GroupsSettings";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import { useAllGroups } from "../contexts/AllGroups";
 import GroupBalances from "../GroupBalances/GroupBalances";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import SettleTab from "../SettleTab/SettleTab";
@@ -100,6 +101,15 @@ const GroupTab = () => {
   const { currentGroupID, setCurrentGroupID } = useCurrentGroup();
   const [allGroups, setAllGroups] = useState([]);
   const { currentUser } = useCurrentUser();
+  const { allGroups: contextGroups } = useAllGroups();
+  const navigate = useNavigate();
+
+  // Redirect to home if user has no groups
+  useEffect(() => {
+    if (contextGroups && contextGroups.length === 0) {
+      navigate("/");
+    }
+  }, [contextGroups, navigate]);
 
   // --- Real-time Firestore group subscription ---
   useEffect(() => {
