@@ -21,6 +21,21 @@ export const FriendsProvider = ({ children }) => {
     };
   }, [userEmail]);
 
+  // Fetch friends immediately on mount for initial value
+  React.useEffect(() => {
+    if (!userEmail) return;
+    (async () => {
+      const user = await userService.getUserByEmail(userEmail);
+      if (!user || !user.friends) {
+        setUserFriends([]);
+        return;
+      }
+      const friendPromises = user.friends.map(friendEmail => userService.getUserByEmail(friendEmail));
+      const friendsData = await Promise.all(friendPromises);
+      setUserFriends(friendsData.filter(friend => friend !== null));
+    })();
+  }, [userEmail]);
+
   // Real-time Firestore subscription for friends list
   React.useEffect(() => {
     if (!userEmail) return;
