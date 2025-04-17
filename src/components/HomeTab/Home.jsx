@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import { getCurrencySymbol } from "../utils";
 import { useNavigate } from "react-router-dom";
+import AddGroupModal from "../AddGroup/AddGroupModal";
 import { useFriends } from "../contexts/FriendsContext";
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -61,6 +62,7 @@ const Home = () => {
   const [totals, setTotals] = useState(null);
 
   const navigate = useNavigate();
+  const [addGroupOpen, setAddGroupOpen] = useState(false);
 
   useEffect(() => {
     const fetchTotals = async () => {
@@ -459,6 +461,70 @@ const Home = () => {
                 View All
               </Button>
             </Box>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              mb: { xs: 1, sm: 2 } // Reduced margin
+            }}>
+             
+            </Box>
+            {(!allGroups || allGroups.length === 0) ? (
+              <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                pt: 1.5,
+                pb: 2,
+                px: 2,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #e0e5ec 0%, #f8f9fe 100%)',
+                boxShadow: '0 2px 12px rgba(94, 114, 228, 0.08)',
+                minHeight: 100,
+                mb: 0
+              }}>
+
+                <Typography variant="h6" fontWeight={700} sx={{ mt: 3, color: '#5e72e4' }}>
+                  No Groups Yet
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mt: 1, mb: 3, maxWidth: 350, textAlign: 'center' }}>
+                  You haven’t been added to any groups yet. Start your splitting journey by creating your first group!
+                </Typography>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    background: 'linear-gradient(135deg, #5e72e4 0%, #825ee4 100%)',
+                    color: '#fff',
+                    fontWeight: 700,
+                    borderRadius: '12px',
+                    px: 2.5,
+                    py: 0.5,
+                    boxShadow: '0 1px 4px rgba(94, 114, 228, 0.10)',
+                    textTransform: 'none',
+                    fontSize: '0.99rem',
+                    minHeight: 32,
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #825ee4 0%, #5e72e4 100%)',
+                    },
+                  }}
+                  onClick={() => setAddGroupOpen(true)}
+                  startIcon={<svg width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="3" width="4" height="12" rx="2" fill="#fff"/><rect x="3" y="7" width="12" height="4" rx="2" fill="#fff"/></svg>}
+                >
+                  Create Group
+                </Button>
+              </Box>
+            ) : (
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                {allGroups.map(group => (
+                  <Grid item xs={12} sm={6} md={4} key={group.id}>
+                    <RecentGroupCard group={group} />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+            <AddGroupModal open={addGroupOpen} handleClose={() => setAddGroupOpen(false)} refreshGroups={() => {}} />
             <Grid container spacing={2}> {/* Reduced spacing */}
               {allGroups?.slice(0, 3).map((group, index) => (
                 <Grid item xs={12} sm={6} md={4} key={index}>
