@@ -30,23 +30,14 @@ function BreadCrumbs() {
   const toggleModal = useCallback(() => setModelOpen((prev) => !prev), []);
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      setLoader(true);
-      try {
-        const fetchedLogs = await ActivityService.fetchActivitiesByEmail(currentUser?.email);
-        setLogs(fetchedLogs || []);
-      } catch (error) {
-        console.error("Error fetching logs:", error);
-        setLogs([]);
-      } finally {
-        setLoader(false);
-      }
-    };
-
-    if (currentUser?.email) {
-      fetchLogs();
-    }
-  }, [currentUser?.email]);
+  if (!currentUser?.email) return;
+  setLoader(true);
+  const unsubscribe = ActivityService.subscribeToActivitiesByEmail(currentUser.email, (fetchedLogs) => {
+    setLogs(fetchedLogs || []);
+    setLoader(false);
+  });
+  return () => unsubscribe();
+}, [currentUser?.email]);
 
   return (
     <Box

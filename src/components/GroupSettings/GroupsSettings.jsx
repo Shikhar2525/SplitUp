@@ -13,7 +13,7 @@ import {
   DialogActions,
   CircularProgress,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import DeleteGroupModal from "../DeleteGroupModal/DeleteGroupModal";
@@ -28,12 +28,27 @@ import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCircularLoader } from "../contexts/CircularLoader";
 import { useAllUserSettled } from "../contexts/AllUserSettled";
 
+
 function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   const isMobile = useScreenSize();
   const [openModal, setOpenModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState(groupName);
   const [isEditing, setIsEditing] = useState(false);
   const [currency, setCurrency] = useState(defaultCurrency);
+  const [liveGroup, setLiveGroup] = useState(group);
+
+  // Real-time group subscription
+  useEffect(() => {
+    if (!groupID) return;
+    const unsubscribe = GroupService.subscribeToGroupById(groupID, (data) => {
+      if (data) {
+        setLiveGroup(data);
+        setNewGroupName(data.name || "");
+        setCurrency(data.defaultCurrency || "");
+      }
+    });
+    return () => unsubscribe();
+  }, [groupID]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const { refreshAllGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
@@ -58,7 +73,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
       await GroupService.updateGroupName(groupID, newGroupName);
       setIsEditing(false);
       setSnackBar({ isOpen: true, message: "Group name changed" });
-      refreshAllGroups();
+      // No need to call refreshAllGroups, real-time subscription handles updates.
     } catch (error) {
       console.error("Error updating group name:", error);
     } finally {
@@ -85,7 +100,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
       setCircularLoader(true);
       await GroupService.updateDefaultCurrency(groupID, currency);
       setSnackBar({ isOpen: true, message: "Currency updated successfully!" });
-      refreshAllGroups();
+      // No need to call refreshAllGroups, real-time subscription handles updates.
     } catch (error) {
       console.error("Error updating currency:", error);
       setSnackBar({ isOpen: true, message: "Failed to update currency." });
@@ -99,7 +114,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
       setCircularLoader(true);
       await GroupService.deleteGroup(groupID);
       setSnackBar({ isOpen: true, message: "Group deleted successfully" });
-      refreshAllGroups();
+      // No need to call refreshAllGroups, real-time subscription handles updates.
     } catch (error) {
       setSnackBar({
         isOpen: true,
@@ -113,9 +128,9 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   };
 
   const isGroupNameChanged =
-    newGroupName.trim() !== "" && newGroupName !== groupName;
+    newGroupName.trim() !== "" && newGroupName !== (liveGroup?.name || groupName);
 
-  const isCurrencyChanged = currency !== defaultCurrency;
+  const isCurrencyChanged = currency !== (liveGroup?.defaultCurrency || defaultCurrency);
 
   return (
     <Box
@@ -194,7 +209,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
                 variant="h6"
                 sx={{ color: "#32325d", fontWeight: 600 }}
               >
-                {newGroupName}
+                {groupName}
               </Typography>
               <Button
                 variant="outlined"

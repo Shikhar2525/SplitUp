@@ -30,7 +30,8 @@ import Expenses from "../Expenses/Expenses";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
 import { convertCurrency, formatDate } from "../utils";
-import { useAllGroups } from "../contexts/AllGroups";
+// import { useAllGroups } from "../contexts/AllGroups"; // Disabled for real-time
+import groupService from "../services/group.service";
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
 import Groups2Icon from "@mui/icons-material/Groups2";
 import { useLinearProgress } from "../contexts/LinearProgress";
@@ -42,7 +43,6 @@ import HowToRegIcon from "@mui/icons-material/HowToReg";
 import SettleTab from "../SettleTab/SettleTab";
 import { useCircularLoader } from "../contexts/CircularLoader";
 import userService from "../services/user.service";
-import groupService from "../services/group.service";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import ShareLink from "../ShareLink/ShareLink";
 import GroupComponent from "../JoinGroup/JoinGroup";
@@ -60,6 +60,7 @@ import FlightIcon from "@mui/icons-material/Flight";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -97,10 +98,22 @@ const GroupTab = () => {
   const [modelOpen, setModelOpen] = useState(false);
   const [memberModal, setMemberModal] = useState(false);
   const { currentGroupID, setCurrentGroupID } = useCurrentGroup();
-  const { allGroups, refreshAllGroups } = useAllGroups();
+  const [allGroups, setAllGroups] = useState([]);
+  const { currentUser } = useCurrentUser();
+
+  // --- Real-time Firestore group subscription ---
+  useEffect(() => {
+    if (!currentUser?.email) return;
+    const unsubscribe = groupService.subscribeToGroupsByAdminEmail(currentUser.email, (groups) => {
+      setAllGroups(groups);
+    });
+    return () => unsubscribe();
+  }, [currentUser?.email]);
+  // --- END real-time Firestore group subscription ---
+
   const [tabIndex, setTabIndex] = useState(0);
   const { setLinearProgress } = useLinearProgress();
-  const { currentUser } = useCurrentUser();
+  
   const [settledMemberStats, setSettledMemberStats] = useState({});
   const { setCircularLoader } = useCircularLoader();
   const [groupsIDs, setGroupIDs] = useState([]);

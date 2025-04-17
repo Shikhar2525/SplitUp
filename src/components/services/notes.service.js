@@ -10,7 +10,8 @@ import {
   updateDoc,
   orderBy,
   serverTimestamp,
-  getDoc
+  getDoc,
+  onSnapshot // <-- Add this import
 } from "firebase/firestore";
 import userService from "./user.service";
 import groupService from './group.service';
@@ -18,6 +19,16 @@ import groupService from './group.service';
 const notesRef = collection(db, "Notes");
 
 class NotesService {
+  // Real-time: Subscribe to notes by groupId
+  subscribeToNotesByGroupId = (groupId, callback) => {
+    const q = query(notesRef, where("groupId", "==", groupId));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(notes);
+    });
+    return unsubscribe;
+  };
+
   addNote = async (noteData) => {
     try {
       const user = await userService.getUserByEmail(noteData.createdBy.email);

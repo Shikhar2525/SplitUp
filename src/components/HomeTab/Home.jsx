@@ -77,16 +77,8 @@ const Home = () => {
   }, [allGroups, currentUser, currentCurrency]);
 
   useEffect(() => {
-    const getFriendCount = async () => {
-      const user = await userService.getUserByEmail(currentUser?.email);
-      const friendCount = user?.friends?.length || 0;
-      setTotalFriends(friendCount);
-    };
-
-    if (currentUser?.email) {
-      getFriendCount();
-    }
-  }, [currentUser?.email]);
+    setTotalFriends(userFriends.length);
+  }, [userFriends]);
 
   useEffect(() => {
     const storedCount = localStorage.getItem('myFriendsCount');

@@ -7,12 +7,50 @@ import {
   where, 
   updateDoc,
   doc,
-  getDoc
+  getDoc,
+  onSnapshot, // <-- Add this import
+  arrayUnion,
+  arrayRemove
 } from "firebase/firestore";
 
 const userRef = collection(db, "User");
 
 class UserService {
+  // Real-time: Subscribe to all users
+  subscribeToAllUsers = (callback) => {
+    const unsubscribe = onSnapshot(userRef, (snapshot) => {
+      const users = [];
+      snapshot.forEach((doc) => {
+        const userData = doc.data();  
+        if (userData.name) {
+          users.push({ id: doc.id, ...userData });
+        }
+      });
+      callback(users.sort((a, b) => a.name.localeCompare(b.name)));
+    });
+    return unsubscribe;
+  };
+
+  // Real-time: Subscribe to user by email
+  // Keeps UI in sync with backend changes in real time
+  subscribeToUserByEmail = (email, callback) => {
+    const q = query(userRef, where("email", "==", email));
+    console.log("Subscribing to user with email:", email);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      console.log("onSnapshot fired for user:", email, snapshot.docs.map(d => d.data()));
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        console.log("Subscription matched doc id:", doc.id, "with email:", doc.data().email, "Full doc:", doc.data());
+        callback({ id: doc.id, ...doc.data() });
+      } else {
+        console.log("No user doc found for email:", email);
+        callback(null);
+      }
+    });
+    return unsubscribe;
+  };
+
+
   userExists = async (email) => {
     const q = query(userRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
@@ -62,34 +100,19 @@ class UserService {
   addFriend = async (userEmail, friendEmail) => {
     try {
       console.log("Adding friend:", { userEmail, friendEmail });
-      
       // Get user document
       const userQuery = query(userRef, where("email", "==", userEmail));
       const userSnapshot = await getDocs(userQuery);
-      
       if (userSnapshot.empty) {
         console.error("User not found");
         return { success: false, message: "User not found" };
       }
-
-      // Get user document reference and data
       const userDoc = userSnapshot.docs[0];
       const userDocRef = doc(db, "User", userDoc.id);
-      const userData = userDoc.data();
-
-      console.log("Current user data:", userData);
-
-      // Initialize or update friends array
-      const currentFriends = userData.friends || [];
-      const newFriends = [...currentFriends, friendEmail];
-
-      console.log("Updating friends array:", newFriends);
-
-      // Update document with new friends array
+      // Atomic update with arrayUnion
       await updateDoc(userDocRef, {
-        friends: newFriends
+        friends: arrayUnion(friendEmail)
       });
-
       console.log("Friend added successfully");
       return { success: true, message: "Friend added successfully" };
     } catch (error) {
@@ -101,34 +124,19 @@ class UserService {
   removeFriend = async (userEmail, friendEmail) => {
     try {
       console.log("Removing friend:", { userEmail, friendEmail });
-      
       // Get user document
       const userQuery = query(userRef, where("email", "==", userEmail));
       const userSnapshot = await getDocs(userQuery);
-      
       if (userSnapshot.empty) {
         console.error("User not found");
         return { success: false, message: "User not found" };
       }
-
-      // Get user document reference and data
       const userDoc = userSnapshot.docs[0];
       const userDocRef = doc(db, "User", userDoc.id);
-      const userData = userDoc.data();
-
-      console.log("Current user data:", userData);  
-
-      // Filter out the friend email
-      const currentFriends = userData.friends || [];
-      const updatedFriends = currentFriends.filter(email => email !== friendEmail);
-
-      console.log("Updating friends array:", updatedFriends);
-
-      // Update document with new friends array
+      // Atomic update with arrayRemove
       await updateDoc(userDocRef, {
-        friends: updatedFriends
+        friends: arrayRemove(friendEmail)
       });
-
       console.log("Friend removed successfully");
       return { success: true, message: "Friend removed successfully" };
     } catch (error) {
