@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import { getCurrencySymbol } from "../utils";
 import { useNavigate } from "react-router-dom";
+import { useCurrentGroup } from "../contexts/CurrentGroup";
 import AddGroupModal from "../AddGroup/AddGroupModal";
 import { useFriends } from "../contexts/FriendsContext";
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
@@ -55,14 +56,20 @@ const StyledTooltip = styled(({ className, ...props }) => (
 }));
 
 const Home = () => {
+  const { setCurrentGroupID } = useCurrentGroup();
   const { currentUser } = useCurrentUser();
-  const { allGroups } = useAllGroups();
+  const { allGroups, fetchAllGroups } = useAllGroups();
   const { currentCurrency } = useCurrentCurrency();
   const { userFriends } = useFriends();
   const [totals, setTotals] = useState(null);
 
   const navigate = useNavigate();
   const [addGroupOpen, setAddGroupOpen] = useState(false);
+
+  // Define refreshGroups to fix 'not defined' error
+  const refreshGroups = () => {
+    if (fetchAllGroups) fetchAllGroups();
+  };
 
   useEffect(() => {
     const fetchTotals = async () => {
@@ -527,7 +534,11 @@ const Home = () => {
                     ))}
               </Grid>
             )}
-            <AddGroupModal open={addGroupOpen} handleClose={() => setAddGroupOpen(false)} refreshGroups={() => {}} />
+<AddGroupModal 
+  open={addGroupOpen}
+  handleClose={() => setAddGroupOpen(false)}
+  refreshGroups={refreshGroups}
+/>
             
           </Box>
         </Grid>
