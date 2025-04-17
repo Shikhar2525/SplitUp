@@ -3,23 +3,8 @@ import userService from '../services/user.service';
 
 const FriendsContext = createContext();
 
-export const FriendsProvider = ({ children }) => {
+export const FriendsProvider = ({ children, userEmail }) => {
   const [userFriends, setUserFriends] = useState([]);
-  const [userEmail, setUserEmail] = useState(localStorage.getItem('userEmail'));
-
-  // Listen for userEmail changes in localStorage
-  React.useEffect(() => {
-    const checkEmail = () => {
-      const email = localStorage.getItem('userEmail');
-      if (email !== userEmail) setUserEmail(email);
-    };
-    window.addEventListener('storage', checkEmail);
-    const interval = setInterval(checkEmail, 500);
-    return () => {
-      window.removeEventListener('storage', checkEmail);
-      clearInterval(interval);
-    };
-  }, [userEmail]);
 
   // Fetch friends immediately on mount for initial value
   React.useEffect(() => {
@@ -52,7 +37,9 @@ export const FriendsProvider = ({ children }) => {
     return () => unsubscribe && unsubscribe();
   }, [userEmail]);
 
-  const refreshFriends = useCallback(async (userEmail) => {
+  const refreshFriends = useCallback(async (userEmailOverride) => {
+    const emailToUse = userEmailOverride || userEmail;
+    if (!emailToUse) return;
     if (!userEmail) return;
     try {
       const user = await userService.getUserByEmail(userEmail);

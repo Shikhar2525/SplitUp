@@ -58,9 +58,8 @@ const Home = () => {
   const { allGroups } = useAllGroups();
   const { currentCurrency } = useCurrentCurrency();
   const { userFriends } = useFriends();
-console.log('[Home] userFriends from useFriends:', userFriends);
   const [totals, setTotals] = useState(null);
-  const [totalFriends, setTotalFriends] = useState(0);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,18 +75,6 @@ console.log('[Home] userFriends from useFriends:', userFriends);
     };
     fetchTotals();
   }, [allGroups, currentUser, currentCurrency]);
-
-  useEffect(() => {
-    console.log('[Home] useEffect userFriends:', userFriends);
-    if (Array.isArray(userFriends)) {
-      setTotalFriends(userFriends.length);
-      console.log('[Home] setTotalFriends called with:', userFriends.length);
-    } else {
-      console.log('[Home] userFriends is not an array:', userFriends);
-    }
-  }, [userFriends]);
-
-  // Removed localStorage fallback for totalFriends to avoid stale data.
 
   const StatCard = ({ title, value, icon, color, onClick, hoverDetails }) => (
     <Paper
@@ -427,7 +414,7 @@ console.log('[Home] userFriends from useFriends:', userFriends);
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
             title="Total Friends"
-value={Array.isArray(userFriends) ? totalFriends : '...'}
+            value={Array.isArray(userFriends) ? userFriends.length : '...'}
             icon={<PersonIcon />}
             color="#2dce89"
             onClick={() => navigate('/friends')}

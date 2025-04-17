@@ -1,5 +1,6 @@
 import { Container, CssBaseline } from "@mui/material";
 import MainContainer from "./components/MainContainer/MainContainer";
+import { FriendsProvider } from "./components/contexts/FriendsContext";
 import { useLocation } from "react-router";
 import { useEffect, useState } from "react";
 import { useCurrentTab } from "./components/contexts/CurrentTabContext";
@@ -10,6 +11,7 @@ import { useCurrentUser } from "./components/contexts/CurrentUser";
 import AddNameModal from "./components/AddNameModal/AddNameModal"; // Modal component for name input
 
 function App() {
+  const { currentUser } = useCurrentUser();
   const { isAuthenticated, user, isLoading } = useAuth0();
   // Store userEmail in localStorage as soon as available
   useEffect(() => {
@@ -117,7 +119,9 @@ function App() {
           flexDirection: "column",
         }}
       >
-        <MainContainer />
+        <FriendsProvider userEmail={currentUser?.email}>
+  <MainContainer />
+</FriendsProvider>
       </Container>
 
       {/* Modal for entering the correct name */}
