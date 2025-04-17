@@ -77,7 +77,9 @@ const Home = () => {
   }, [allGroups, currentUser, currentCurrency]);
 
   useEffect(() => {
-    setTotalFriends(userFriends.length);
+    if (Array.isArray(userFriends)) {
+      setTotalFriends(userFriends.length);
+    }
   }, [userFriends]);
 
   useEffect(() => {
