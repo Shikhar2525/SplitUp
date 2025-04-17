@@ -104,6 +104,7 @@ const GroupTab = () => {
   const { allGroups: contextGroups } = useAllGroups();
   const navigate = useNavigate();
 
+
   // Redirect to home if user has no groups
   useEffect(() => {
     if (contextGroups && contextGroups.length === 0) {
@@ -873,7 +874,18 @@ const GroupTab = () => {
                     {getCategoryInfo(category).emoji}
                   </Typography>
                 </Box>,
-                ...groups.map((group) => (
+                ...groups
+  // Sort groups by createdDate descending (latest first), handling Firestore Timestamp
+  .slice().sort((a, b) => {
+    const getGroupDate = (g) => {
+      if (g.createdDate && typeof g.createdDate === "object" && "seconds" in g.createdDate) {
+        return new Date(g.createdDate.seconds * 1000 + Math.floor(g.createdDate.nanoseconds / 1e6));
+      }
+      return new Date(g.createdDate || 0);
+    };
+    return getGroupDate(b) - getGroupDate(a);
+  })
+  .map((group) => (
                   <MenuItem
                     key={group.id}
                     value={group.id}
