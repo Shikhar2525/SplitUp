@@ -58,6 +58,7 @@ const Home = () => {
   const { allGroups } = useAllGroups();
   const { currentCurrency } = useCurrentCurrency();
   const { userFriends } = useFriends();
+console.log('[Home] userFriends from useFriends:', userFriends);
   const [totals, setTotals] = useState(null);
   const [totalFriends, setTotalFriends] = useState(0);
   const navigate = useNavigate();
@@ -77,17 +78,16 @@ const Home = () => {
   }, [allGroups, currentUser, currentCurrency]);
 
   useEffect(() => {
+    console.log('[Home] useEffect userFriends:', userFriends);
     if (Array.isArray(userFriends)) {
       setTotalFriends(userFriends.length);
+      console.log('[Home] setTotalFriends called with:', userFriends.length);
+    } else {
+      console.log('[Home] userFriends is not an array:', userFriends);
     }
   }, [userFriends]);
 
-  useEffect(() => {
-    const storedCount = localStorage.getItem('myFriendsCount');
-    if (storedCount) {
-      setTotalFriends(parseInt(storedCount, 10));
-    }
-  }, []);
+  // Removed localStorage fallback for totalFriends to avoid stale data.
 
   const StatCard = ({ title, value, icon, color, onClick, hoverDetails }) => (
     <Paper
@@ -427,7 +427,7 @@ const Home = () => {
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
             title="Total Friends"
-            value={totalFriends}
+value={Array.isArray(userFriends) ? totalFriends : '...'}
             icon={<PersonIcon />}
             color="#2dce89"
             onClick={() => navigate('/friends')}
