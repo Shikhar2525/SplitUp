@@ -101,58 +101,53 @@ const ManageFriends = () => {
   const [processingRequest, setProcessingRequest] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const { currentUser } = useCurrentUser();
+
+// Debug: Log currentUser on every update to verify live subscription
+useEffect(() => {
+  console.log("ManageFriends: currentUser updated", currentUser);
+}, [currentUser]);
   const [addingFriendMap, setAddingFriendMap] = useState({});
-  const [myFriends, setMyFriends] = useState([]);
+  // Custom hook to resolve friends in real time
+function useResolvedFriends(friendEmails) {
+  const [friends, setFriends] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!friendEmails || friendEmails.length === 0) {
+      setFriends([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    let cancelled = false;
+    Promise.all(friendEmails.map(email => userService.getUserByEmail(email)))
+      .then(friendsData => {
+        if (!cancelled) setFriends(friendsData.filter(f => f));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [JSON.stringify(friendEmails)]);
+  return [friends, loading];
+}
+
+const [myFriendsRaw, friendsLoading] = useResolvedFriends(currentUser?.friends || []);
+const myFriends = Array.isArray(myFriendsRaw) ? myFriendsRaw : [];
   const [removingFriend, setRemovingFriend] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  
   const [isHidden, setIsHidden] = useState(false);
   const { refreshFriends } = useFriends();
 
-  const fetchFriends = async () => {
-    try {
-      setIsLoading(true);
-      const user = await userService.getUserByEmail(currentUser?.email);
-      
-      if (!user || !user.friends) {
-        setMyFriends([]);
-        return;
-      }
-
-      const friendPromises = user.friends.map((friendEmail) =>
-        userService.getUserByEmail(friendEmail)
-      );
-
-      const friendsData = await Promise.all(friendPromises);
-      const validFriends = friendsData.filter((friend) => friend !== null);
-      setMyFriends(validFriends);
-      
-      // Store in localStorage for consistent access
-      localStorage.setItem('myFriendsCount', validFriends.length.toString());
-    } catch (error) {
-      console.error("Error fetching friends:", error);
-      setMyFriends([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const users = await userService.getAllUsers();
-        setAllUsers(users);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-    fetchUsers();
+    const unsubscribe = userService.subscribeToAllUsers(setAllUsers);
+    return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (currentUser?.email) {
-      fetchFriends();
-    }
-  }, [currentUser?.email, refreshFriends]);
+  // Remove fetchFriends effect; useResolvedFriends handles updates
+
 
   useEffect(() => {
     const fetchUserVisibility = async () => {
@@ -171,7 +166,7 @@ const ManageFriends = () => {
       .filter(user => {
         const isNotCurrentUser = user.email !== currentUser.email;
         const isNotHidden = user.isHidden !== true;
-        const isNotFriend = !myFriends.some(friend => friend.email === user.email);
+        const isNotFriend = !(Array.isArray(myFriends) && myFriends.some(friend => friend.email === user.email));
         const matchesSearch = 
           user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           user.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -205,48 +200,40 @@ const ManageFriends = () => {
   };
 
   const handleAddFriend = async (friendEmail) => {
-    try {
-      setAddingFriendMap((prev) => ({ ...prev, [friendEmail]: true }));
-      const result = await userService.addFriend(currentUser.email, friendEmail);
-
-      if (result.success) {
-        await refreshFriends(currentUser.email);
-        await fetchFriends();
-        setSearchQuery(""); // Clear search bar
-      } else {
-        console.error(result.message);
-      }
-    } catch (error) {
-      console.error("Error adding friend:", error);
-    } finally {
-      setAddingFriendMap((prev) => ({ ...prev, [friendEmail]: false }));
-      setAnchorEl(null);
+  try {
+    setAddingFriendMap((prev) => ({ ...prev, [friendEmail]: true }));
+    const result = await userService.addFriend(currentUser.email, friendEmail);
+    if (result.success) {
+      setSearchQuery(""); // Clear search bar
+    } else {
+      console.error(result.message);
     }
-  };
+  } catch (error) {
+    console.error("Error adding friend:", error);
+  } finally {
+    setAddingFriendMap((prev) => ({ ...prev, [friendEmail]: false }));
+    setAnchorEl(null);
+  }
+};
 
   const handleRemoveFriend = async (friendEmail) => {
-    try {
-      console.log("Attempting to remove friend:", friendEmail);
-      setRemovingFriend(friendEmail);
-      
-      const result = await userService.removeFriend(currentUser.email, friendEmail);
-      console.log("Remove friend result:", result);
-      
-      if (result.success) {
-        await refreshFriends(currentUser.email);
-        await fetchFriends();
-      } else {
-        console.error("Failed to remove friend:", result.message);
-      }
-    } catch (error) {
-      console.error("Error in handleRemoveFriend:", error);
-    } finally {
-      setRemovingFriend(null);
+  try {
+    console.log("Attempting to remove friend:", friendEmail);
+    setRemovingFriend(friendEmail);
+    const result = await userService.removeFriend(currentUser.email, friendEmail);
+    console.log("Remove friend result:", result);
+    if (!result.success) {
+      console.error("Failed to remove friend:", result.message);
     }
-  };
+  } catch (error) {
+    console.error("Error in handleRemoveFriend:", error);
+  } finally {
+    setRemovingFriend(null);
+  }
+};
 
   const isAlreadyFriend = (email) => {
-    return myFriends.some(friend => friend.email === email);
+    return Array.isArray(myFriends) && myFriends.some(friend => friend.email === email);
   };
 
   return (
@@ -318,7 +305,7 @@ const ManageFriends = () => {
                 minWidth: '80px',
               }}
             >
-              {myFriends.length} total
+              {Array.isArray(myFriends) ? myFriends.length : 0} total
             </Typography>
           </Box>
 
@@ -569,7 +556,7 @@ const ManageFriends = () => {
             scrollbarColor: "rgba(94, 114, 228, 0.2) rgba(94, 114, 228, 0.05)"
           }}
         >
-          {isLoading ? (
+          {friendsLoading ? (
             <Box 
               sx={{ 
                 display: 'flex',
@@ -583,7 +570,7 @@ const ManageFriends = () => {
                 sx={{ color: '#5e72e4' }}
               />
             </Box>
-          ) : myFriends.length > 0 ? (
+          ) : (Array.isArray(myFriends) && myFriends.length > 0) ? (
             myFriends.map((friend) => (
               <ListItem
                 key={friend.id}

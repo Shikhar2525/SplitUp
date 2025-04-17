@@ -53,29 +53,22 @@ const Notes = ({ groupId }) => {
     }
   };
 
-  const fetchNotes = async () => {
+  useEffect(() => {
     setLoading(true);
-    try {
-      console.log("Fetching notes for group:", groupId); // Debug log
-      const fetchedNotes = await notesService.getNotesByGroupId(groupId);
-      console.log("Fetched notes:", fetchedNotes); // Debug log
+    if (!groupId) return;
+    const unsubscribe = notesService.subscribeToNotesByGroupId(groupId, async (fetchedNotes) => {
+      // Enrich notes with user profile pictures if needed
       const notesWithProfiles = await Promise.all(
         fetchedNotes.map(fetchUserProfilePicture)
       );
       setNotes(notesWithProfiles || []);
-    } catch (error) {
-      console.error("Error fetching notes:", error);
-      setNotes([]);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+    return () => unsubscribe();
+  }, [groupId]);
 
   useEffect(() => {
     console.log("Component mounted with groupId:", groupId); // Debug log
-    if (groupId) {
-      fetchNotes();
-    }
   }, [groupId]);
 
   const handleAddNote = async () => {
@@ -102,7 +95,6 @@ const Notes = ({ groupId }) => {
       if (result.success) {
         setNewNote("");
         setIsAdding(false);
-        await fetchNotes();
       } else {
         console.error("Failed to add note:", result.error);
       }
@@ -122,8 +114,6 @@ const Notes = ({ groupId }) => {
 
       if (result.success) {
         setEditingNote(null);
-        // Fetch notes immediately after update
-        await fetchNotes();
       } else {
         console.error("Failed to update note:", result.message);
       }
@@ -137,8 +127,6 @@ const Notes = ({ groupId }) => {
       const result = await notesService.deleteNote(noteId, currentUser?.email);
 
       if (result.success) {
-        // Immediately fetch notes after successful deletion
-        await fetchNotes();
       } else {
         console.error("Failed to delete note:", result.message);
       }

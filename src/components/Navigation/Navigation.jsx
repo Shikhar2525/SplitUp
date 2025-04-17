@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import Diversity3Icon from "@mui/icons-material/Diversity3";
+import { useAllGroups } from "../contexts/AllGroups";
 import MenuIcon from "@mui/icons-material/Menu";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
@@ -62,9 +63,10 @@ function Navigation() {
     setDrawerOpen(open);
   };
 
-  const list = () => {
-    const isCurrentPath = (path) => window.location.pathname === path;
+  const { allGroups } = useAllGroups();
 
+  const list = (allGroups) => {
+    const isCurrentPath = (path) => window.location.pathname === path;
     return (
       <List
         sx={{
@@ -83,7 +85,7 @@ function Navigation() {
       >
         {[
           { path: "/", icon: <HomeIcon />, text: "Home" },
-          { path: "/groups", icon: <Diversity3Icon />, text: "Groups" },
+          ...(allGroups && allGroups.length > 0 ? [{ path: "/groups", icon: <Diversity3Icon />, text: "Groups" }] : []),
           { path: "/friends", icon: <GroupAddIcon />, text: "Friends" },
         ].map((item) => (
           <ListItem
@@ -329,11 +331,11 @@ function Navigation() {
             open={drawerOpen}
             onClose={toggleDrawer(false)}
           >
-            {list()}
+            {list(allGroups)}
           </Drawer>
         </>
       ) : (
-        list()
+        list(allGroups)
       )}
 
       {/* Moved Illustration section to bottom */}

@@ -9,11 +9,45 @@ import {
   arrayRemove,
   arrayUnion,
   deleteDoc,
+  onSnapshot // <-- Add this import
 } from "firebase/firestore";
 
 const groupRef = collection(db, "Groups");
 
 class GroupService {
+  // Real-time: Subscribe to groups where the user is admin
+  subscribeToGroupsByAdminEmail = (adminEmail, callback) => {
+    const q = query(groupRef);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const groups = [];
+      snapshot.forEach((doc) => {
+        const groupData = doc.data();
+        const isAdmin = groupData.members.some(
+          (member) => member.email === adminEmail
+        );
+        if (isAdmin) {
+          groups.push({ id: doc.id, ...groupData });
+        }
+      });
+      callback(groups);
+    });
+    return unsubscribe;
+  };
+
+  // Real-time: Subscribe to a single group by groupIdField
+  subscribeToGroupById = (groupIdField, callback) => {
+    const q = query(collection(db, "Groups"), where("id", "==", groupIdField));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        callback({ id: doc.id, ...doc.data() });
+      } else {
+        callback(null);
+      }
+    });
+    return unsubscribe;
+  };
+
   createGroup = async (newGroup) => {
     try {
       const docRef = await addDoc(groupRef, newGroup);
