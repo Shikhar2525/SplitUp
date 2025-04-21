@@ -40,8 +40,13 @@ import ActivityService from "../services/activity.service";
 import { currencies } from "../../constants";
 import { Box as MuiBox } from "@mui/material";
 import { useFriends } from "../contexts/FriendsContext";
+import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
+import { useCurrentGroup } from "../contexts/CurrentGroup";
 
-const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
+const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => {
+  const { setCurrentGroupID } = useCurrentGroup();
+  const navigate = useNavigate();
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
   const [category, setCategory] = useState("");
@@ -249,13 +254,17 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
       await ActivityService.addActivityLog(log);
 
       resetForm();
-      handleClose();
       setSnackBar({
         isOpen: true,
         message: "Group created",
       });
       localStorage.setItem("currentGroupID", JSON.stringify(newGroup?.id));
-      refreshGroups();
+      if (typeof setCurrentGroupID === 'function') setCurrentGroupID(newGroup?.id);
+      if (typeof refreshGroups === 'function') refreshGroups();
+      if (typeof handleClose === 'function') handleClose();
+      setTimeout(() => {
+        if (typeof navigate === 'function') navigate("/groups");
+      }, 200);
     } catch (error) {
       setError("Failed to create group. Please try again.");
     } finally {
@@ -694,6 +703,13 @@ const AddGroupModal = ({ open, handleClose, refreshGroups }) => {
       </DialogActions>
     </Dialog>
   );
+};
+
+AddGroupModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  refreshGroups: PropTypes.func.isRequired,
+  onGroupCreated: PropTypes.func,
 };
 
 export default AddGroupModal;

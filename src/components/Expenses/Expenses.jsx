@@ -49,7 +49,7 @@ const Expenses = () => {
           }
         }}
       >
-        {sortByISODate(currentGroup?.expenses)?.map((expense, index) => {
+        {sortByISODate(currentGroup?.expenses || [])?.map((expense, index) => {
           return (
             <ExpenseCard
               groupTitle={currentGroup?.title}

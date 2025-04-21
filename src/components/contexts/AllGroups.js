@@ -20,32 +20,24 @@ export const AllGroupsProvider = ({ children }) => {
   const { setLinearProgress } = useLinearProgress();
   const [refresh, setRefresh] = useState(false);
 
-  const fetchGroups = useCallback(async () => {
+  // Real-time Firestore group subscription
+  useEffect(() => {
+    if (!currentUser?.email) return;
     setLinearProgress(true);
-    try {
-      const fetchedGroups = await GroupService.fetchGroupsByAdminEmail(
-        currentUser?.email ?? ""
-      );
-      const sortedGroups = sortByDate(fetchedGroups);
+    const unsubscribe = GroupService.subscribeToGroupsByAdminEmail(currentUser.email, (groups) => {
+      const sortedGroups = sortByDate(groups);
       setAllGroups(sortedGroups);
-
       if (sortedGroups?.length > 0) {
         setCurrentGroupID(sortedGroups[0]?.id);
       }
-    } catch (error) {
-      console.error("Error fetching groups:", error);
-    } finally {
       setLinearProgress(false);
-    }
+    });
+    return () => unsubscribe();
   }, [currentUser?.email, setCurrentGroupID, setLinearProgress]);
 
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups, refresh]);
+  // Optionally keep refreshAllGroups for legacy/manual refresh, but it's not needed for real-time
+  const refreshAllGroups = () => {};
 
-  const refreshAllGroups = () => {
-    setRefresh((prev) => !prev);
-  };
 
   return (
     <AllGroupsContext.Provider

@@ -699,7 +699,6 @@ const AddExpenseModal = ({ open, handleClose }) => {
                   sx={{
                     fontSize: "0.875rem",
                     color: activeStep === index ? "#32325d" : "#8898aa",
-                    fontWeight: activeStep === index ? 600 : 500,
                   }}
                 >
                   {step.label}
@@ -708,6 +707,15 @@ const AddExpenseModal = ({ open, handleClose }) => {
             </Step>
           ))}
         </Stepper>
+
+        {/* Show warning if only one member in group */}
+        {users.length === 1 && (
+          <Box sx={{ mt: 2, mb: 2, p: 2, background: '#fff3cd', borderRadius: 2, border: '1px solid #ffeeba', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography color="#856404" fontWeight={600}>
+              You need at least 2 members in a group to add an expense. Please add more members first.
+            </Typography>
+          </Box>
+        )}
 
         {getStepContent(activeStep)}
       </DialogContent>
@@ -726,7 +734,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
         <Button
           variant="contained"
           onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
-          disabled={loading}
+          disabled={loading || users.length === 1}
           sx={{
             bgcolor: "#5e72e4",
             "&:hover": { bgcolor: "#4454c3" },

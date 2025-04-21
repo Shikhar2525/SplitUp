@@ -7,12 +7,40 @@ import {
   addDoc,
   deleteDoc,
   doc, // Import addDoc to add a new document
+  onSnapshot // <-- Add this import
 } from "firebase/firestore";
 
 // Reference to the 'Activity' collection in Firestore
 const activityRef = collection(db, "Activity");
 
 class ActivityService {
+  // Real-time: Subscribe to activities by email (performedBy, userAffected, splitBetween, or members)
+  subscribeToActivitiesByEmail = (email, callback) => {
+    // Listen to all activity logs and filter client-side for all relevant ones
+    const unsubscribe = onSnapshot(collection(db, "Activity"), (snapshot) => {
+      const activities = [];
+      snapshot.forEach((doc) => {
+        const log = doc.data();
+        const details = log.details || {};
+        const members = details.members || [];
+        if (
+          details.performedBy?.email === email ||
+          details.userAffected?.email === email ||
+          (Array.isArray(details.splitBetween) && details.splitBetween.includes(email)) ||
+          (Array.isArray(members) && members.some((member) => member.email === email))
+        ) {
+          activities.push(log);
+        }
+      });
+      // Filter unique activities by logId
+      const uniqueActivities = Array.from(
+        new Map(activities.map((activity) => [activity.logId, activity])).values()
+      );
+      callback(uniqueActivities);
+    });
+    return unsubscribe;
+  };
+
   // Fetch activities by user email
   fetchActivitiesByEmail = async (email) => {
     try {

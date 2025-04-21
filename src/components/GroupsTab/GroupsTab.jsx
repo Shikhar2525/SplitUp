@@ -30,19 +30,20 @@ import Expenses from "../Expenses/Expenses";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
 import { convertCurrency, formatDate } from "../utils";
-import { useAllGroups } from "../contexts/AllGroups";
+// import { useAllGroups } from "../contexts/AllGroups"; // Disabled for real-time
+import groupService from "../services/group.service";
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
 import Groups2Icon from "@mui/icons-material/Groups2";
 import { useLinearProgress } from "../contexts/LinearProgress";
 import SettingsIcon from "@mui/icons-material/Settings";
 import GroupsSettings from "../GroupSettings/GroupsSettings";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import { useAllGroups } from "../contexts/AllGroups";
 import GroupBalances from "../GroupBalances/GroupBalances";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import SettleTab from "../SettleTab/SettleTab";
 import { useCircularLoader } from "../contexts/CircularLoader";
 import userService from "../services/user.service";
-import groupService from "../services/group.service";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import ShareLink from "../ShareLink/ShareLink";
 import GroupComponent from "../JoinGroup/JoinGroup";
@@ -60,6 +61,7 @@ import FlightIcon from "@mui/icons-material/Flight";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -97,10 +99,32 @@ const GroupTab = () => {
   const [modelOpen, setModelOpen] = useState(false);
   const [memberModal, setMemberModal] = useState(false);
   const { currentGroupID, setCurrentGroupID } = useCurrentGroup();
-  const { allGroups, refreshAllGroups } = useAllGroups();
+  const [allGroups, setAllGroups] = useState([]);
+  const { currentUser } = useCurrentUser();
+  const { allGroups: contextGroups } = useAllGroups();
+  const navigate = useNavigate();
+
+
+  // Redirect to home if user has no groups
+  useEffect(() => {
+    if (contextGroups && contextGroups.length === 0) {
+      navigate("/");
+    }
+  }, [contextGroups, navigate]);
+
+  // --- Real-time Firestore group subscription ---
+  useEffect(() => {
+    if (!currentUser?.email) return;
+    const unsubscribe = groupService.subscribeToGroupsByAdminEmail(currentUser.email, (groups) => {
+      setAllGroups(groups);
+    });
+    return () => unsubscribe();
+  }, [currentUser?.email]);
+  // --- END real-time Firestore group subscription ---
+
   const [tabIndex, setTabIndex] = useState(0);
   const { setLinearProgress } = useLinearProgress();
-  const { currentUser } = useCurrentUser();
+  
   const [settledMemberStats, setSettledMemberStats] = useState({});
   const { setCircularLoader } = useCircularLoader();
   const [groupsIDs, setGroupIDs] = useState([]);
@@ -850,7 +874,18 @@ const GroupTab = () => {
                     {getCategoryInfo(category).emoji}
                   </Typography>
                 </Box>,
-                ...groups.map((group) => (
+                ...groups
+  // Sort groups by createdDate descending (latest first), handling Firestore Timestamp
+  .slice().sort((a, b) => {
+    const getGroupDate = (g) => {
+      if (g.createdDate && typeof g.createdDate === "object" && "seconds" in g.createdDate) {
+        return new Date(g.createdDate.seconds * 1000 + Math.floor(g.createdDate.nanoseconds / 1e6));
+      }
+      return new Date(g.createdDate || 0);
+    };
+    return getGroupDate(b) - getGroupDate(a);
+  })
+  .map((group) => (
                   <MenuItem
                     key={group.id}
                     value={group.id}
