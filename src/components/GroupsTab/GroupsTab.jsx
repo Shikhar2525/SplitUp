@@ -101,7 +101,7 @@ const GroupTab = () => {
   const { currentGroupID, setCurrentGroupID } = useCurrentGroup();
   const [allGroups, setAllGroups] = useState([]);
   const { currentUser } = useCurrentUser();
-  const { allGroups: contextGroups } = useAllGroups();
+  const { allGroups: contextGroups, refreshAllGroups } = useAllGroups();
   const navigate = useNavigate();
 
 
