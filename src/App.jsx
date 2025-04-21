@@ -9,6 +9,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { v4 as uuidv4 } from "uuid";
 import { useCurrentUser } from "./components/contexts/CurrentUser";
 import AddNameModal from "./components/AddNameModal/AddNameModal"; // Modal component for name input
+import ChangelogModal from "./components/ChangelogModal/ChangelogModal"; // Modal component for changelog
 
 function App() {
   const { currentUser } = useCurrentUser();
@@ -23,6 +24,7 @@ function App() {
   const { setCurrentTab } = useCurrentTab();
   const { setCurrentUser } = useCurrentUser();
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
+  const [showChangelog, setShowChangelog] = useState(false);
   let currentPath = window.location.pathname.replace(/^\/+/, "");
   currentPath = currentPath ? currentPath : "home";
 
@@ -107,6 +109,18 @@ function App() {
     setCurrentTab(currentPath.charAt(0).toUpperCase() + currentPath.slice(1));
   }, [location]);
 
+  useEffect(() => {
+    const hasSeenChangelog = localStorage.getItem('hasSeenChangelog_v2');
+    if (!hasSeenChangelog && isAuthenticated) {
+      setShowChangelog(true);
+    }
+  }, [isAuthenticated]);
+
+  const handleCloseChangelog = () => {
+    localStorage.setItem('hasSeenChangelog_v2', 'true');
+    setShowChangelog(false);
+  };
+
   return (
     <>
       <CssBaseline />
@@ -120,8 +134,8 @@ function App() {
         }}
       >
         <FriendsProvider userEmail={currentUser?.email}>
-  <MainContainer />
-</FriendsProvider>
+          <MainContainer />
+        </FriendsProvider>
       </Container>
 
       {/* Modal for entering the correct name */}
@@ -129,6 +143,12 @@ function App() {
         open={isNameModalOpen}
         onClose={() => setIsNameModalOpen(false)}
         onSubmit={handleNameSubmit}
+      />
+
+      {/* Modal for changelog */}
+      <ChangelogModal 
+        open={showChangelog} 
+        onClose={handleCloseChangelog} 
       />
     </>
   );
