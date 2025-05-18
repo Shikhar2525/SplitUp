@@ -370,6 +370,78 @@ export function getCurrencyLabel(value) {
   return null; // Return null if currency not found
 }
 
+export async function calculateSimplifiedBalances(group, finalCurrency) {
+  // First get the normal balances
+  const normalBalances = await calculateBalances(group, finalCurrency);
+  
+  // Create a map of net balances for each person
+  const netBalances = new Map();
+  
+  // Calculate net balance for each person
+  for (const transaction of normalBalances) {
+    const { debtor, creditor, amount } = transaction;
+    
+    // Update debtor balance
+    netBalances.set(debtor.email, 
+      (netBalances.get(debtor.email) || 0) - amount
+    );
+    
+    // Update creditor balance
+    netBalances.set(creditor.email, 
+      (netBalances.get(creditor.email) || 0) + amount
+    );
+  }
+
+  // Convert to array of people with their balances
+  const people = Array.from(netBalances.entries()).map(([email, balance]) => ({
+    email,
+    name: group.members.find(m => m.email === email)?.name || email,
+    balance
+  }));
+
+  // Sort by balance (descending)
+  people.sort((a, b) => b.balance - a.balance);
+
+  const result = [];
+  let i = 0;  // index for people who are owed money (positive balance)
+  let j = people.length - 1;  // index for people who owe money (negative balance)
+
+  while (i < j) {
+    const creditor = people[i];
+    const debtor = people[j];
+
+    if (creditor.balance <= 0 || debtor.balance >= 0) break;
+
+    const amount = Math.min(creditor.balance, -debtor.balance);
+    
+    // Skip very small amounts (less than 0.01)
+    if (amount < 0.01) continue;
+
+    result.push({
+      id: uuidv4(),
+      creditor: {
+        email: creditor.email,
+        name: creditor.name
+      },
+      debtor: {
+        email: debtor.email,
+        name: debtor.name
+      },
+      amount: parseFloat(amount.toFixed(2)),
+      currency: finalCurrency,
+      simplified: true
+    });
+
+    creditor.balance -= amount;
+    debtor.balance += amount;
+
+    if (Math.abs(creditor.balance) < 0.01) i++;
+    if (Math.abs(debtor.balance) < 0.01) j--;
+  }
+
+  return result;
+}
+
 export function formatIsoDate(isoDate) {
   const date = new Date(isoDate);
 
