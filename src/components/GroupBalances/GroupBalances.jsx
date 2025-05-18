@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { calculateBalances } from "../utils";
+import { calculateBalances, calculateSimplifiedBalances } from "../utils";
 import BalanceCard from "../BalanceCard/BalanceCard";
 import { useEffect, useState } from "react";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
@@ -7,19 +7,21 @@ import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 function GroupBalances({ group }) {
   const { currentCurrency } = useCurrentCurrency();
   const [balances, setBalances] = useState([]);
+  const [isSimplified, setIsSimplified] = useState(false);
 
   const fetchBalances = async () => {
-    calculateBalances(group, currentCurrency).then((result) =>
-      setBalances(result)
-    );
+    const result = isSimplified
+      ? await calculateSimplifiedBalances(group, currentCurrency)
+      : await calculateBalances(group, currentCurrency);
+    setBalances(result);
   };
 
   useEffect(() => {
     fetchBalances();
-  }, [group, currentCurrency]);
+  }, [group, currentCurrency, isSimplified]);
 
   return (
-    <Box sx={{ 
+    <Box sx={{
       height: "100%",
       overflow: "auto",
       "&::-webkit-scrollbar": {
@@ -30,7 +32,11 @@ function GroupBalances({ group }) {
         borderRadius: "4px",
       }
     }}>
-      <BalanceCard balances={balances} groupId={group?.id} />
+      <BalanceCard 
+        balances={balances} 
+        isSimplified={isSimplified}
+        onSimplifiedChange={(value) => setIsSimplified(value)}
+      />
     </Box>
   );
 }
