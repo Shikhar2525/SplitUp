@@ -21,10 +21,13 @@ import {
   FormControlLabel,
   Checkbox,
   Switch,
+  Paper
 } from "@mui/material";
 import React, { useState } from "react";
 import GradingIcon from "@mui/icons-material/Grading";
 import InfoIcon from "@mui/icons-material/Info";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatIsoDate, getCurrencySymbol } from "../utils";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import { useCurrentUser } from "../contexts/CurrentUser";
@@ -59,10 +62,10 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange }) {
       <Card
         sx={{
           borderRadius: 3,
+          boxShadow: "0 3px 10px rgba(0, 0, 0, 0.1)",
           width: "100%",
           overflow: "hidden",
           fontFamily: "Poppins, sans-serif",
-          boxShadow: "0 3px 10px rgba(0, 0, 0, 0.1)",
         }}
       >
         {balances?.length > 0 ? (
@@ -70,15 +73,16 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange }) {
             <Alert severity="info">
               Currency conversion rates may vary; results are approximate.
             </Alert>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                px: 2,
-                mt: 1,
-              }}
-            >
+            <Box sx={{ 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "space-between", 
+              px: 2, 
+              mt: 1,
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 2, sm: 2 }
+            }}>
+              {/* View Balances Checkbox - Shown first on mobile */}
               <FormControlLabel
                 control={
                   <Checkbox
@@ -91,12 +95,32 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange }) {
                 label="View Balances Involving Me"
                 sx={{
                   "& .MuiFormControlLabel-label": {
-                    fontSize: "0.9rem",
+                    fontSize: { xs: '0.8rem', sm: '0.9rem' },
                   },
+                  width: { xs: '100%', sm: 'auto' },
+                  order: { xs: 1, sm: 1 }
                 }}
               />
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Typography variant="body2" sx={{ mr: 1, fontSize: "0.9rem" }}>
+
+              {/* Split Mode Toggle - Now aligned right on mobile */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                gap: { xs: 3, sm: 2 },
+                width: { xs: '100%', sm: 'auto' },
+                order: { xs: 2, sm: 2 },
+                justifyContent: { xs: 'flex-start', sm: 'flex-start' },
+                borderBottom: { xs: '1px solid rgba(94, 114, 228, 0.1)', sm: 'none' },
+                paddingBottom: { xs: 2, sm: 0 }
+              }}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                    whiteSpace: 'nowrap',
+                    color: '#525f7f'
+                  }}
+                >
                   Split Mode:
                 </Typography>
                 <Tooltip
@@ -114,13 +138,99 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange }) {
                         checked={isSimplified}
                         onChange={(e) => onSimplifiedChange(e.target.checked)}
                         color="primary"
+                        sx={{
+                          ml: { xs: 0, sm: 1 },
+                          width: 42,
+                          height: 26,
+                          padding: 0,
+                          '& .MuiSwitch-switchBase': {
+                            padding: 0,
+                            margin: '2px',
+                            '&.Mui-checked': {
+                              transform: 'translateX(16px)',
+                              '& + .MuiSwitch-track': {
+                                backgroundColor: 'rgba(94, 114, 228, 0.8) !important',
+                                opacity: 1,
+                                border: 0,
+                              },
+                              '& .MuiSwitch-thumb': {
+                                backgroundColor: '#5e72e4',
+                                '&::before': {
+                                  content: '"⚡"',
+                                  position: 'absolute',
+                                  width: '100%',
+                                  height: '100%',
+                                  top: 0,
+                                  left: 0,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '10px',
+                                }
+                              },
+                            },
+                          },
+                          '& .MuiSwitch-thumb': {
+                            boxSizing: 'border-box',
+                            width: 22,
+                            height: 22,
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              width: '100%',
+                              height: '100%',
+                              left: 0,
+                              top: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }
+                          },
+                          '& .MuiSwitch-track': {
+                            borderRadius: 26 / 2,
+                            backgroundColor: 'rgba(0,0,0,0.1) !important',
+                            opacity: 1,
+                            transition: 'background-color 0.2s',
+                          },
+                        }}
                       />
                     }
-                    label={isSimplified ? "Advanced" : "Normal"}
+                    label={
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 0.5,
+                        ml: 1,
+                        color: isSimplified ? '#5e72e4' : 'inherit',
+                        fontWeight: isSimplified ? 600 : 400,
+                        transition: 'all 0.2s',
+                        fontSize: { xs: '0.8rem', sm: '0.9rem' }
+                      }}>
+                        {isSimplified ? "Advanced" : "Normal"}
+                        {isSimplified && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 260,
+                              damping: 20
+                            }}
+                          >
+                            <AutoAwesomeIcon 
+                              sx={{ 
+                                fontSize: { xs: '0.8rem', sm: '1rem' },
+                                color: '#5e72e4',
+                                filter: 'drop-shadow(0 0 2px rgba(94, 114, 228, 0.3))'
+                              }} 
+                            />
+                          </motion.div>
+                        )}
+                      </Box>
+                    }
                     sx={{
-                      "& .MuiFormControlLabel-label": {
-                        fontSize: "0.9rem",
-                      },
+                      marginRight: 0,
+                      marginLeft: 0
                     }}
                   />
                 </Tooltip>
