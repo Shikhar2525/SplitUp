@@ -249,56 +249,23 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange }) {
                   <Table aria-label="balance table">
                     <TableHead>
                       <TableRow>
-                        <TableCell
-                          sx={{
-                            fontWeight: "bold",
-                            backgroundColor: "#8675FF",
-                            color: "white",
-                            padding: "4px 16px",
-                          }}
-                        >
+                        <TableCell sx={{ fontWeight: "bold", backgroundColor: "#8675FF", color: "white", padding: "4px 16px" }}>
                           Will Give
                         </TableCell>
-                        <TableCell
-                          sx={{
-                            fontWeight: "bold",
-                            backgroundColor: "#8675FF",
-                            color: "white",
-                            padding: "4px 16px",
-                          }}
-                        >
+                        <TableCell sx={{ fontWeight: "bold", backgroundColor: "#8675FF", color: "white", padding: "4px 16px" }}>
                           Will Receive
                         </TableCell>
-                        <TableCell
-                          sx={{
-                            fontWeight: "bold",
-                            backgroundColor: "#8675FF",
-                            color: "white",
-                            padding: "4px 16px",
-                          }}
-                        >
+                        <TableCell sx={{ fontWeight: "bold", backgroundColor: "#8675FF", color: "white", padding: "4px 16px" }}>
                           Amount
                         </TableCell>
-                        <TableCell
-                          sx={{
-                            fontWeight: "bold",
-                            backgroundColor: "#8675FF",
-                            color: "white",
-                            padding: "4px 16px",
-                          }}
-                        >
+                        <TableCell sx={{ fontWeight: "bold", backgroundColor: "#8675FF", color: "white", padding: "4px 16px" }}>
                           Currency
                         </TableCell>
-                        <TableCell
-                          sx={{
-                            fontWeight: "bold",
-                            backgroundColor: "#8675FF",
-                            color: "white",
-                            padding: "4px 16px",
-                          }}
-                        >
-                          View all transactions
-                        </TableCell>
+                        {!isSimplified && ( // Only show breakdown column in normal mode
+                          <TableCell sx={{ fontWeight: "bold", backgroundColor: "#8675FF", color: "white", padding: "4px 16px" }}>
+                            View all transactions
+                          </TableCell>
+                        )}
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -385,26 +352,28 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange }) {
                                 </Tooltip>
                               </Box>
                             </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outlined"
-                                onClick={() => handleOpenModal(breakdown)}
-                                sx={{
-                                  color: "#8675FF",
-                                  borderColor: "#8675FF",
-                                  borderRadius: 20,
-                                  padding: "4px 10px",
-                                  minWidth: "120px",
-                                  whiteSpace: "nowrap",
-                                  flexShrink: 0,
-                                  "&:hover": {
-                                    backgroundColor: "#e3f2fd",
-                                  },
-                                }}
-                              >
-                                View Breakdown
-                              </Button>
-                            </TableCell>
+                            {!isSimplified && ( // Only show breakdown button in normal mode
+                              <TableCell>
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => handleOpenModal(breakdown)}
+                                  sx={{
+                                    color: "#8675FF",
+                                    borderColor: "#8675FF",
+                                    borderRadius: 20,
+                                    padding: "4px 10px",
+                                    minWidth: "120px",
+                                    whiteSpace: "nowrap",
+                                    flexShrink: 0,
+                                    "&:hover": {
+                                      backgroundColor: "#e3f2fd",
+                                    },
+                                  }}
+                                >
+                                  View Breakdown
+                                </Button>
+                              </TableCell>
+                            )}
                           </TableRow>
                         )
                       )}
