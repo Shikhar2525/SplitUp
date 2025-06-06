@@ -36,6 +36,8 @@ function GroupBalances({ group }) {
         balances={balances} 
         isSimplified={isSimplified}
         onSimplifiedChange={(value) => setIsSimplified(value)}
+        groupName={group.title}
+        groupCreatedDate={group.createdDate} // Add creation date
       />
     </Box>
   );
