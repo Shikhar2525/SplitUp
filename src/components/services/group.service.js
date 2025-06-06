@@ -389,6 +389,39 @@ class GroupService {
       throw error;
     }
   };
+
+  checkGroupNameExists = async (groupName) => {
+    try {
+      const q = query(groupRef, where("title", "==", groupName));
+      const snapshot = await getDocs(q);
+      return !snapshot.empty;
+    } catch (error) {
+      console.error("Error checking group name:", error);
+      throw error;
+    }
+  };
+
+  checkGroupNameExistsForUser = async (groupName, userEmail) => {
+    try {
+      const q = query(groupRef);
+      const snapshot = await getDocs(q);
+      let exists = false;
+
+      snapshot.forEach((doc) => {
+        const groupData = doc.data();
+        // Check if user is a member or admin of a group with the same name
+        const isMember = groupData.members.some(member => member.email === userEmail);
+        if (isMember && groupData.title.toLowerCase() === groupName.toLowerCase()) {
+          exists = true;
+        }
+      });
+
+      return exists;
+    } catch (error) {
+      console.error("Error checking group name:", error);
+      throw error;
+    }
+  };
 }
 
 export default new GroupService();

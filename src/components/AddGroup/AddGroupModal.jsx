@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -31,6 +31,7 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import HomeIcon from "@mui/icons-material/Home";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import CategoryIcon from "@mui/icons-material/Category";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { v4 as uuidv4 } from "uuid";
 import GroupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
@@ -43,6 +44,7 @@ import { useFriends } from "../contexts/FriendsContext";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
+import debounce from 'lodash/debounce';
 
 const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => {
   const { setCurrentGroupID } = useCurrentGroup();
@@ -67,6 +69,10 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
     groupName: "",
     category: "",
   });
+
+  // Add new state for group name validation
+  const [groupNameError, setGroupNameError] = useState("");
+  const [isCheckingName, setIsCheckingName] = useState(false);
 
   const steps = ["Group Details", "Currency", "Members"];
 
@@ -188,14 +194,128 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
     setError("");
   };
 
+  // Debounced function to check group name
+  const checkGroupName = useCallback(
+    debounce(async (name) => {
+      if (!name) return;
+      
+      setIsCheckingName(true);
+      try {
+        const exists = await GroupService.checkGroupNameExistsForUser(name, currentUser?.email);
+        if (exists) {
+          setErrors(prev => ({
+            ...prev,
+            groupName: "You already have a group with this name"
+          }));
+        }
+      } catch (error) {
+        console.error("Error checking group name:", error);
+      } finally {
+        setIsCheckingName(false);
+      }
+    }, 500),
+    [currentUser?.email]
+  );
+
+  const validateGroupName = (name) => {
+    // Check if starts with letter
+    if (!/^[A-Za-z]/.test(name)) {
+      return "Group name must start with a letter";
+    }
+
+    // Check for special characters (allow only letters, numbers, spaces, and basic punctuation)
+    if (!/^[A-Za-z0-9\s\-_.,'()]+$/.test(name)) {
+      return "Group name contains invalid characters";
+    }
+
+    // Check minimum length
+    if (name.length < 3) {
+      return "Group name must be at least 3 characters";
+    }
+
+    // Check if contains only whitespace
+    if (name.trim().length === 0) {
+      return "Group name cannot be empty";
+    }
+
+    // Check for consecutive spaces
+    if (/\s\s/.test(name)) {
+      return "Group name cannot contain consecutive spaces";
+    }
+
+    return "";
+  };
+
+  const validateGroupDescription = (description) => {
+    if (description.length > 100) {
+      return "Description must not exceed 100 characters";
+    }
+
+    // Check for excessive whitespace
+    if (/\s{3,}/.test(description)) {
+      return "Description contains excessive spaces";
+    }
+
+    // Check for common spam patterns
+    if (/([A-Za-z0-9])\1{4,}/.test(description)) {
+      return "Description contains repetitive characters";
+    }
+
+    // Check for URL spam
+    if ((description.match(/http/g) || []).length > 1) {
+      return "Description contains too many links";
+    }
+
+    return "";
+  };
+
+  // Modify handleGroupNameChange
+  const handleGroupNameChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 25) {
+      setGroupName(value);
+      const validationError = validateGroupName(value);
+      if (validationError) {
+        setErrors(prev => ({ ...prev, groupName: validationError }));
+        return;
+      }
+      setErrors(prev => ({ ...prev, groupName: "" }));
+      if (value.trim()) {
+        checkGroupName(value);
+      }
+    }
+  };
+
+  // Add description change handler
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 100) {
+      setGroupDescription(value);
+      const validationError = validateGroupDescription(value);
+      if (validationError) {
+        setErrors(prev => ({ ...prev, description: validationError }));
+      } else {
+        setErrors(prev => ({ ...prev, description: "" }));
+      }
+    }
+  };
+
+  // Modify the validate step function
   const validateStep = (step) => {
     let isValid = true;
     const newErrors = { ...errors };
 
     switch (step) {
       case 0:
-        if (!groupName.trim()) {
-          newErrors.groupName = "Group name is required";
+        const nameValidation = validateGroupName(groupName);
+        const descValidation = validateGroupDescription(groupDescription);
+
+        if (nameValidation) {
+          newErrors.groupName = nameValidation;
+          isValid = false;
+        }
+        if (descValidation) {
+          newErrors.description = descValidation;
           isValid = false;
         }
         if (!category) {
@@ -223,9 +343,12 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
       currentUser?.email
     );
 
+    // Capitalize first letter of group name
+    const capitalizedGroupName = groupName.charAt(0).toUpperCase() + groupName.slice(1);
+
     const newGroup = {
       id: uuidv4(),
-      title: groupName,
+      title: capitalizedGroupName, // Use capitalized group name
       description: groupDescription,
       category: category,
       members: [adminUserObject, ...members],
@@ -281,15 +404,34 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
               fullWidth
               label="Group Name"
               value={groupName}
-              onChange={(e) => {
-                setGroupName(e.target.value);
-                setErrors({ ...errors, groupName: "" });
-              }}
+              onChange={handleGroupNameChange}
               required
               error={!!errors.groupName}
+              inputProps={{ maxLength: 25 }}
               helperText={
-                errors.groupName || `${25 - groupName.length} characters remaining`
+                errors.groupName || 
+                `${25 - (groupName?.length || 0)} characters remaining`
               }
+              InputProps={{
+                endAdornment: (
+                  <>
+                    {isCheckingName && <CircularProgress size={20} color="inherit" />}
+                    {groupName && !errors.groupName && !isCheckingName && (
+                      <CheckCircleIcon 
+                        sx={{ 
+                          color: '#2dce89',
+                          marginLeft: 1,
+                          animation: 'fadeIn 0.3s ease-in',
+                          '@keyframes fadeIn': {
+                            from: { opacity: 0, transform: 'scale(0.8)' },
+                            to: { opacity: 1, transform: 'scale(1)' }
+                          }
+                        }} 
+                      />
+                    )}
+                  </>
+                ),
+              }}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "16px",
@@ -304,6 +446,19 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                     backgroundColor: "white",
                     boxShadow: "0 4px 20px rgba(94, 114, 228, 0.15)",
                   },
+                  // Add green border when group name is valid
+                  ...(groupName && !errors.groupName && !isCheckingName && {
+                    "& fieldset": {
+                      borderColor: '#2dce89',
+                      borderWidth: '2px'
+                    },
+                    "&:hover fieldset": {
+                      borderColor: '#2dce89'
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: '#2dce89'
+                    }
+                  })
                 },
               }}
             />
@@ -312,7 +467,15 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
               fullWidth
               label="Group Description"
               value={groupDescription}
-              onChange={(e) => setGroupDescription(e.target.value)}
+              onChange={handleDescriptionChange}
+              error={!!errors.description}
+              inputProps={{ maxLength: 100 }}
+              helperText={
+                errors.description || 
+                `${100 - (groupDescription?.length || 0)} characters remaining`
+              }
+              multiline
+              rows={2}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "16px",

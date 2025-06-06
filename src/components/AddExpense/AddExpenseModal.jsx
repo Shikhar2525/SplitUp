@@ -261,6 +261,33 @@ const AddExpenseModal = ({ open, handleClose }) => {
     return currencyObj ? currencyObj.symbol : currency;
   };
 
+  const validateDescription = (desc) => {
+    if (!desc.trim()) {
+      return "Description is required";
+    }
+    if (desc.length > 35) {
+      return "Description must not exceed 35 characters";
+    }
+    // Check if starts with letter
+    if (!/^[A-Za-z]/.test(desc)) {
+      return "Description must start with a letter";
+    }
+    // Check for special characters (allow only letters, numbers, spaces, and basic punctuation)
+    if (!/^[A-Za-z0-9\s\-_.,'()]+$/.test(desc)) {
+      return "Description contains invalid characters";
+    }
+    return "";
+  };
+
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 35) {
+      setDescription(value);
+      const validationError = validateDescription(value);
+      setErrors(prev => ({ ...prev, description: validationError }));
+    }
+  };
+
   const getStepContent = (step) => {
     switch (step) {
       case 0:
@@ -277,13 +304,16 @@ const AddExpenseModal = ({ open, handleClose }) => {
               fullWidth
               label="Description"
               value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                setErrors({ ...errors, description: "" });
-              }}
+              onChange={handleDescriptionChange}
               required
               error={!!errors.description}
-              helperText={errors.description || `${35 - description.length} characters remaining`}
+              inputProps={{ 
+                maxLength: 35
+              }}
+              helperText={
+                errors.description || 
+                `${35 - description.length} characters remaining`
+              }
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "16px",
@@ -298,9 +328,21 @@ const AddExpenseModal = ({ open, handleClose }) => {
                     backgroundColor: "white",
                     boxShadow: "0 4px 20px rgba(94, 114, 228, 0.15)",
                   },
+                  // Add green border when description is valid
+                  ...(description && !errors.description && {
+                    "& fieldset": {
+                      borderColor: '#2dce89',
+                      borderWidth: '2px'
+                    },
+                    "&:hover fieldset": {
+                      borderColor: '#2dce89'
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: '#2dce89'
+                    }
+                  })
                 },
               }}
-              inputProps={{ maxLength: 35 }}
             />
 
             <LocalizationProvider dateAdapter={AdapterDayjs}>
