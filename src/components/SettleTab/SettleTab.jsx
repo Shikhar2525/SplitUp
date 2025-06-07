@@ -113,7 +113,6 @@ const SettleTab = ({ members, groupID }) => {
         sx={{
           flex: 1,
           overflowY: "auto",
-          overflowX: "hidden", // Prevent horizontal scroll
           pr: { xs: 0.5, sm: 1 },
           "&::-webkit-scrollbar": {
             width: "6px",
@@ -126,11 +125,14 @@ const SettleTab = ({ members, groupID }) => {
       >
         <Box
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 1.5,
+            display: "grid",
+            gap: { xs: 1, sm: 2 },
+            gridTemplateColumns: {
+              xs: "1fr", // Single column on mobile
+              sm: "repeat(2, 1fr)", // Two columns on larger screens
+              lg: "repeat(2, 1fr)", // Keep two columns on large screens
+            },
             width: "100%",
-            maxWidth: "100%", // Ensure content doesn't overflow
           }}
         >
           {members?.map((member) => {
