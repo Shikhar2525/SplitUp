@@ -61,7 +61,7 @@ import FlightIcon from "@mui/icons-material/Flight";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -104,7 +104,6 @@ const GroupTab = () => {
   const { allGroups: contextGroups, refreshAllGroups } = useAllGroups();
   const navigate = useNavigate();
 
-
   // Redirect to home if user has no groups
   useEffect(() => {
     if (contextGroups && contextGroups.length === 0) {
@@ -115,16 +114,19 @@ const GroupTab = () => {
   // --- Real-time Firestore group subscription ---
   useEffect(() => {
     if (!currentUser?.email) return;
-    const unsubscribe = groupService.subscribeToGroupsByAdminEmail(currentUser.email, (groups) => {
-      setAllGroups(groups);
-    });
+    const unsubscribe = groupService.subscribeToGroupsByAdminEmail(
+      currentUser.email,
+      (groups) => {
+        setAllGroups(groups);
+      }
+    );
     return () => unsubscribe();
   }, [currentUser?.email]);
   // --- END real-time Firestore group subscription ---
 
   const [tabIndex, setTabIndex] = useState(0);
   const { setLinearProgress } = useLinearProgress();
-  
+
   const [settledMemberStats, setSettledMemberStats] = useState({});
   const { setCircularLoader } = useCircularLoader();
   const [groupsIDs, setGroupIDs] = useState([]);
@@ -554,6 +556,15 @@ const GroupTab = () => {
           lightBg: "rgba(245, 54, 92, 0.1)",
           emoji: "💑"
         };
+      case "settled":
+        return {
+          icon: <CheckCircleIcon />,
+          label: "Settled Groups",
+          color: "#8898aa",
+          gradient: "linear-gradient(135deg, #8898aa 0%, #99a6b5 100%)",
+          lightBg: "rgba(136, 152, 170, 0.1)",
+          emoji: "✅"
+        };
       default:
         return {
           icon: <CategoryIcon />,
@@ -567,14 +578,36 @@ const GroupTab = () => {
   };
 
   const groupedItems = useMemo(() => {
-    return allGroups?.reduce((acc, group) => {
-      const category = group.category || "Other";
-      if (!acc[category]) {
-        acc[category] = [];
+    const categorized = allGroups?.reduce((acc, group) => {
+      // Check if all members in the group are settled
+      const isGroupSettled = group.members?.every((member) => member.userSettled);
+
+      // First categorize non-settled groups
+      if (!isGroupSettled) {
+        const category = group.category || "Other";
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(group);
       }
-      acc[category].push(group);
+      // Then add settled groups to a separate category
+      else {
+        if (!acc["Settled"]) {
+          acc["Settled"] = [];
+        }
+        acc["Settled"].push(group);
+      }
       return acc;
     }, {});
+
+    // If there are settled groups, ensure they appear last
+    if (categorized?.Settled) {
+      const settled = categorized.Settled;
+      delete categorized.Settled;
+      categorized.Settled = settled;
+    }
+
+    return categorized;
   }, [allGroups]);
 
   return (
@@ -895,9 +928,10 @@ const GroupTab = () => {
                       padding: { xs: '12px', sm: '16px' },
                       gap: { xs: 1.5, sm: 2 },
                       transition: 'all 0.3s ease',
-                      background: 'rgba(255,255,255,0.8)',
+                      background: category === 'Settled' ? 'rgba(136, 152, 170, 0.05)' : 'rgba(255,255,255,0.8)',
                       border: '1px solid rgba(255,255,255,0.9)',
                       backdropFilter: 'blur(8px)',
+                      opacity: category === 'Settled' ? 0.8 : 1,
                       '&:hover': {
                         backgroundColor: getCategoryInfo(category).lightBg,
                         transform: 'translateX(8px)',
