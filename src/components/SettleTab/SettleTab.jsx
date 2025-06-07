@@ -1,4 +1,4 @@
-import { Avatar, Box, Tooltip, Typography, ButtonBase } from "@mui/material";
+import { Avatar, Box, Tooltip, Typography, ButtonBase, Chip } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import React from "react";
 import GroupService from "../services/group.service.js";
@@ -80,147 +80,187 @@ const SettleTab = ({ members, groupID }) => {
     <Box
       sx={{
         height: "100%",
-        overflow: "auto", // Only this container should scroll
+        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        "&::-webkit-scrollbar": {
-          width: "8px",
-        },
-        "&::-webkit-scrollbar-thumb": {
-          backgroundColor: "rgba(94, 114, 228, 0.2)",
-          borderRadius: "4px",
-        },
-        "&::-webkit-scrollbar-track": {
-          backgroundColor: "rgba(94, 114, 228, 0.05)",
-          borderRadius: "4px",
-        },
+        gap: 2,
+        p: { xs: 1, sm: 2 },
       }}
     >
-      <Typography
-        variant="subtitle1"
-        marginTop={1}
-        marginLeft={1}
-        sx={{ color: "#353E6C" }}
-      >
-        Settle up members
-      </Typography>
-      <Typography
-        variant="subtitle2"
-        marginLeft={1}
-        fontSize="10px"
-        color="textSecondary"
-      >
-        Only admin can settle all members
-      </Typography>
+      <Box sx={{ mb: 2 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            color: "#32325d",
+            fontWeight: 600,
+            fontSize: { xs: "1rem", sm: "1.25rem" },
+          }}
+        >
+          Settlement Status
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            color: "#8898aa",
+            fontSize: { xs: "0.8rem", sm: "0.9rem" },
+          }}
+        >
+          Track and manage settlements for all group members
+        </Typography>
+      </Box>
+
       <Box
         sx={{
-          padding: 1,
-          height: allUserSettled
-            ? isMobile
-              ? "40vh"
-              : "40vh"
-            : isMobile
-            ? "40vh"
-            : "55vh",
-          marginBottom: 2,
-          overflowX: "hidden",
-          whiteSpace: "nowrap",
+          flex: 1,
+          overflowY: "auto",
+          overflowX: "hidden", // Prevent horizontal scroll
+          pr: { xs: 0.5, sm: 1 },
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "rgba(94, 114, 228, 0.2)",
+            borderRadius: "8px",
+          },
         }}
       >
-        {members?.map((member) => {
-          const isSettled = member?.userSettled; // Use the property directly from the member
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1.5,
+            width: "100%",
+            maxWidth: "100%", // Ensure content doesn't overflow
+          }}
+        >
+          {members?.map((member) => {
+            const isSettled = member?.userSettled;
+            const isCurrentUser = currentUser?.email === member?.email;
+            const canSettle =
+              currentGroup?.admin?.email === currentUser?.email || isCurrentUser;
 
-          return (
-            <ButtonBase
-              disabled={
-                currentGroup?.admin?.email !== currentUser?.email &&
-                currentUser?.email !== member?.email
-              }
-              key={member?.email}
-              sx={{
-                width: "99%",
-                borderRadius: "8px",
-                marginTop: 1,
-                marginRight: 1,
-                padding: { lg: 0.8, xs: 1, sm: 2 },
-                boxShadow: 2,
-                transition: "0.3s",
-                display: "block",
-                backgroundColor: isSettled ? "#d4edda" : "#fff",
-                "&:hover": {
-                  backgroundColor: isSettled ? "#c3e6cb" : "#f0f0f0",
-                  transform: "scale(1.02)",
-                },
-              }}
-              onClick={() =>
-                handleSettleToggle(member?.email, member?.name, isSettled)
-              } // Pass current settled state
-            >
-              <Box
+            return (
+              <ButtonBase
+                disabled={!canSettle}
+                key={member?.email}
+                onClick={() =>
+                  handleSettleToggle(member?.email, member?.name, isSettled)
+                }
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
                   width: "100%",
+                  display: "block",
+                  textAlign: "left",
                 }}
               >
                 <Box
                   sx={{
+                    p: { xs: 1.5, sm: 2 },
+                    borderRadius: "16px",
+                    backgroundColor:
+                      isSettled ? "rgba(45, 206, 137, 0.1)" : "white",
+                    border: "1px solid",
+                    borderColor:
+                      isSettled
+                        ? "rgba(45, 206, 137, 0.2)"
+                        : "rgba(94, 114, 228, 0.1)",
                     display: "flex",
                     alignItems: "center",
-                    width: "100%",
+                    gap: { xs: 1, sm: 1.5 },
+                    minWidth: 0, // Allow content to shrink
+                    maxWidth: "100%", // Prevent overflow
                   }}
                 >
                   <Avatar
-                    sx={{ width: 25, height: 25, marginRight: 1 }}
                     src={member?.profilePicture}
+                    sx={{
+                      width: { xs: 35, sm: 40 },
+                      height: { xs: 35, sm: 40 },
+                      flexShrink: 0,
+                    }}
                   >
-                    {member?.name?.charAt(0)}
+                    {member?.name?.[0]}
                   </Avatar>
-                  <Tooltip title={member?.name} arrow>
-                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+
+                  <Box
+                    sx={{
+                      flex: "1 1 auto",
+                      minWidth: 0,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mb: 0.5,
+                        flexWrap: "wrap",
+                      }}
+                    >
                       <Typography
-                        variant="caption"
+                        noWrap
                         sx={{
-                          color: "#353E6C",
-                          maxWidth: "150px",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          textDecoration: isSettled ? "line-through" : "none",
+                          fontWeight: 600,
+                          fontSize: { xs: "0.85rem", sm: "0.9rem" },
+                          color: "#32325d",
+                          maxWidth: { xs: "120px", sm: "150px" },
                         }}
                       >
                         {member?.name}
-                        {currentUser?.email === member?.email && " (You)"}
                       </Typography>
+                      {isCurrentUser && (
+                        <Chip
+                          label="You"
+                          size="small"
+                          sx={{
+                            height: { xs: 18, sm: 20 },
+                            fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                          }}
+                        />
+                      )}
                     </Box>
-                  </Tooltip>
-                </Box>
-
-                {isSettled && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    <CheckCircleIcon
-                      sx={{ color: "#28a745", marginRight: 0.5 }}
-                    />
                     <Typography
-                      variant="body2"
+                      noWrap
                       sx={{
-                        color: "#28a745",
+                        fontSize: { xs: "0.75rem", sm: "0.8rem" },
+                        color: "#8898aa",
+                        maxWidth: { xs: "150px", sm: "200px" },
                       }}
                     >
-                      Settled
+                      {member?.email}
                     </Typography>
                   </Box>
-                )}
-              </Box>
-            </ButtonBase>
-          );
-        })}
+
+                  {isSettled && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        backgroundColor: "rgba(45, 206, 137, 0.1)",
+                        color: "#2dce89",
+                        py: 0.5,
+                        px: { xs: 1, sm: 1.5 },
+                        borderRadius: "8px",
+                        ml: "auto",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                          fontWeight: 600,
+                        }}
+                      >
+                        Settled
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </ButtonBase>
+            );
+          })}
+        </Box>
       </Box>
     </Box>
   );
