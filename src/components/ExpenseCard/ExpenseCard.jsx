@@ -110,7 +110,7 @@ const TransactionCard = ({
   return (
     <Box
       sx={{
-        mb: 2,
+        mb: { xs: 1, sm: 2 }, // Reduced margin for mobile
         borderRadius: "20px",
         background: "#E0E5EC",
         boxShadow:
@@ -137,6 +137,8 @@ const TransactionCard = ({
           "& .MuiAccordionSummary-root": {
             borderRadius: "20px",
             transition: "all 0.3s ease",
+            minHeight: { xs: "48px", sm: "56px" }, // Reduced height on mobile
+            padding: { xs: "4px 12px", sm: "6px 16px" }, // Reduced padding on mobile
             "&:hover": {
               background: "rgba(255, 255, 255, 0.1)",
             },
@@ -146,6 +148,9 @@ const TransactionCard = ({
             borderTop: "1px solid rgba(255, 255, 255, 0.2)",
             boxShadow:
               "inset 3px 3px 7px rgba(163,177,198,0.6), inset -3px -3px 7px rgba(255,255,255, 0.5)",
+            padding: { xs: "8px", sm: "16px" }, // Reduced padding on mobile
+            maxHeight: { xs: "60vh", sm: "70vh" }, // Limit max height
+            overflow: "auto",
           },
           "& .Mui-expanded": {
             margin: "0 !important", // Remove default margin when expanded
@@ -167,14 +172,14 @@ const TransactionCard = ({
             borderBottom: expanded
               ? "1px solid rgba(226, 232, 240, 0.8)"
               : "none",
-            minHeight: "56px", // Reduced from 72
-            padding: "6px 16px", // Reduced padding
+            minHeight: { xs: "48px", sm: "56px" }, // Reduced height on mobile
+            padding: { xs: "4px 12px", sm: "6px 16px" }, // Reduced padding on mobile
           }}
         >
           <Box
             sx={{
               backgroundColor: colors[index % colors.length],
-              width: 90,
+              width: { xs: 70, sm: 90 }, // Reduced width on mobile
               height: "100%",
               position: "absolute",
               left: 0,
@@ -196,12 +201,20 @@ const TransactionCard = ({
             }}
           >
             <Typography
-              sx={{ color: "white", fontWeight: 600, fontSize: "0.9rem" }}
+              sx={{
+                color: "white",
+                fontWeight: 600,
+                fontSize: { xs: "0.75rem", sm: "0.9rem" },
+              }}
             >
               {dateShort?.month}
             </Typography>
             <Typography
-              sx={{ color: "white", fontSize: "1.5rem", fontWeight: 700 }}
+              sx={{
+                color: "white",
+                fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                fontWeight: 700,
+              }}
             >
               {dateShort?.day}
             </Typography>
@@ -212,16 +225,22 @@ const TransactionCard = ({
               display: "flex",
               justifyContent: "space-between",
               flexGrow: 1,
-              marginLeft: 14,
+              marginLeft: { xs: 10, sm: 14 },
               alignItems: "center",
+              gap: { xs: 1, sm: 2 },
             }}
           >
             <Typography
               sx={{
                 color: "#1E293B",
-                fontSize: "1rem",
+                fontSize: { xs: "0.8rem", sm: "1rem" },
                 fontWeight: 600,
                 flexGrow: 1,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                lineHeight: { xs: 1.2, sm: 1.4 },
               }}
             >
               {transaction?.description}
@@ -229,27 +248,29 @@ const TransactionCard = ({
             <Typography
               sx={{
                 color: colors[index % colors.length],
-                fontSize: "1.25rem",
+                fontSize: { xs: "1rem", sm: "1.25rem" },
                 fontWeight: 700,
                 display: "flex",
                 alignItems: "baseline",
                 gap: 0.5,
+                flexShrink: 0,
+                whiteSpace: "nowrap",
               }}
             >
               {transaction.amount}
-              <span style={{ fontSize: "0.875rem", opacity: 0.9 }}>
+              <span
+                style={{
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  opacity: 0.9,
+                }}
+              >
                 {getCurrencySymbol(transaction?.currency)}
               </span>
             </Typography>
           </Box>
         </AccordionSummary>
 
-        <AccordionDetails
-          sx={{
-            padding: { xs: "4px 8px", sm: "8px 12px" },
-            overflow: "hidden",
-          }}
-        >
+        <AccordionDetails>
           <TableContainer
             sx={{
               borderRadius: "8px",
@@ -258,7 +279,7 @@ const TransactionCard = ({
               "& .MuiTableCell-root": {
                 border: "1px solid rgba(224, 224, 224, 1)",
                 borderCollapse: "collapse",
-                padding: { xs: "6px 8px", sm: "8px 12px" },
+                padding: { xs: "6px 8px", sm: "8px 16px" },
               },
               "& .MuiTable-root": {
                 borderCollapse: "separate",
@@ -273,7 +294,7 @@ const TransactionCard = ({
               sx={{
                 tableLayout: "fixed",
                 "& .MuiTableCell-root": {
-                  padding: { xs: "6px 8px", sm: "8px 12px" },
+                  padding: { xs: "6px 8px", sm: "8px 16px" },
                   fontSize: { xs: "0.75rem", sm: "0.85rem" },
                   borderColor: "#E9ECEF",
                   height: { xs: "auto", sm: "48px" },
@@ -283,16 +304,10 @@ const TransactionCard = ({
                   hyphens: "auto",
                 },
                 "& .MuiChip-root": {
-                  height: { xs: "24px", sm: "28px" },
-                  maxWidth: "100%",
-                  padding: "0 8px",
+                  height: { xs: "24px", sm: "32px" },
                   "& .MuiChip-label": {
-                    padding: "0 6px",
                     fontSize: { xs: "0.7rem", sm: "0.8rem" },
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    display: "block",
+                    padding: { xs: "0 6px", sm: "0 12px" },
                   },
                 },
                 "& .MuiTableCell-head": {

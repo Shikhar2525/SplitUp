@@ -7,7 +7,7 @@ import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 function GroupBalances({ group }) {
   const { currentCurrency } = useCurrentCurrency();
   const [balances, setBalances] = useState([]);
-  const [isSimplified, setIsSimplified] = useState(false);
+  const [isSimplified, setIsSimplified] = useState(true); // Changed default to true for advanced mode
 
   const fetchBalances = async () => {
     const result = isSimplified

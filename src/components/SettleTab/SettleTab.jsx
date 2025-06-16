@@ -105,7 +105,7 @@ const SettleTab = ({ members, groupID }) => {
             fontSize: { xs: "0.8rem", sm: "0.9rem" },
           }}
         >
-          Track and manage settlements for all group members
+          A settled member has no dues to pay but may still receive by others.
         </Typography>
       </Box>
 
