@@ -344,16 +344,16 @@ const GroupTab = () => {
 
   const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {
     const [convertedTotal, setConvertedTotal] = useState(0);
-    const [convertedPerHead, setConvertedPerHead] = useState(0);
+    const [myTotalShare, setMyTotalShare] = useState(0);
     const { currentCurrency } = useCurrentCurrency();
+    const { currentUser } = useCurrentUser();
     const [expanded, setExpanded] = useState(false);
-    const isMobile = useScreenSize();
 
     useEffect(() => {
       const calculateTotalAmount = async () => {
         let totalInCurrentCurrency = 0;
+        let myShare = 0;
 
-        // Convert each expense to current currency and sum
         if (selectedGroupDetails?.expenses) {
           for (const expense of selectedGroupDetails.expenses) {
             try {
@@ -362,23 +362,29 @@ const GroupTab = () => {
                 expense.currency || selectedGroupDetails.defaultCurrency,
                 currentCurrency
               );
+
               totalInCurrentCurrency += parseFloat(convertedAmount);
+
+              // Calculate if I'm included in the split
+              if (expense.splitBetween.some(member => member.email === currentUser?.email)) {
+                const splitCount = expense.excludePayer 
+                  ? expense.splitBetween.length 
+                  : expense.splitBetween.length + 1;
+                const myExpenseShare = parseFloat(convertedAmount) / splitCount;
+                myShare += myExpenseShare;
+              }
             } catch (error) {
               console.error("Currency conversion error:", error);
             }
           }
         }
 
-        // Calculate per head cost
-        const memberCount = selectedGroupDetails?.members?.length || 1;
-        const perHeadAmount = totalInCurrentCurrency / memberCount;
-
         setConvertedTotal(totalInCurrentCurrency);
-        setConvertedPerHead(perHeadAmount);
+        setMyTotalShare(myShare);
       };
 
       calculateTotalAmount();
-    }, [selectedGroupDetails, currentCurrency]);
+    }, [selectedGroupDetails, currentCurrency, currentUser]);
 
     return (
       <Box sx={{
@@ -487,8 +493,8 @@ const GroupTab = () => {
               
               <StatItem
                 icon={<AccountBalanceWalletIcon sx={{ color: '#2dce89' }} />}
-                label="Appx Per Person"
-                value={`${convertedPerHead.toFixed(2)} ${currentCurrency}`}
+                label="My Total Expenses "
+                value={`${myTotalShare.toFixed(2)} ${currentCurrency}`}
                 color="#2dce89"
               />
               
