@@ -7,6 +7,7 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCircularLoader } from "../contexts/CircularLoader";
 import userService from "../services/user.service";
+import { useCurrentGroup } from "../contexts/CurrentGroup";
 
 const GroupComponent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,6 +23,7 @@ const GroupComponent = () => {
   const { refreshAllGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
   const { setCircularLoader } = useCircularLoader();
+  const { setCurrentGroupID } = useCurrentGroup();
 
   // Check if the user is already in the group when component mounts
   useEffect(() => {
@@ -58,22 +60,37 @@ const GroupComponent = () => {
       setCircularLoader(true);
       await GroupService.addMemberToGroup(joinGroupId, currentUser);
 
-      // Close the modal and navigate to the group
-      setIsModalOpen(false);
+      // Set as current group and store in localStorage
+      setCurrentGroupID(joinGroupId);
       localStorage.setItem("currentGroupID", JSON.stringify(joinGroupId));
-      navigate(`/groups`);
-      setSnackBar({ isOpen: true, message: "You have joined the group" });
-      refreshAllGroups();
+
+      // Close modal and update UI
+      setIsModalOpen(false);
+      await refreshAllGroups(); // Refresh groups first
+
+      // Show success message
+      setSnackBar({
+        isOpen: true,
+        message: "Successfully joined the group!",
+      });
+
+      // Navigate to groups page after successful join
+      navigate("/groups");
     } catch (error) {
-      console.error("Error joining group: ", error);
+      console.error("Error joining group:", error);
+      setSnackBar({
+        isOpen: true,
+        message: "Failed to join group. Please try again.",
+        severity: "error",
+      });
     } finally {
       setCircularLoader(false);
     }
   };
 
-  // Handle closing the modal
+  // Handle closing the modal and navigating to home
   const handleCancelJoin = () => {
-    navigate("/groups");
+    navigate("/"); // Navigate to home instead of /groups
     setIsModalOpen(false);
   };
 
@@ -121,7 +138,7 @@ const GroupComponent = () => {
               color="secondary"
               onClick={handleCancelJoin}
             >
-              Close
+              Cancel
             </Button>
           </Box>
         </Box>
