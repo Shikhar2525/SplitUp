@@ -54,7 +54,7 @@ import InfoIcon from "@mui/icons-material/Info";
 import GroupIcon from "@mui/icons-material/Group";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import CategoryIcon from "@mui/icons-material/Category";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
@@ -103,10 +103,14 @@ const GroupTab = () => {
   const { currentUser } = useCurrentUser();
   const { allGroups: contextGroups, refreshAllGroups } = useAllGroups();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Retrieve group ID and name from the URL
+  const joinGroupId = new URLSearchParams(location.search).get("joinGroupId");
 
   // Redirect to home if user has no groups
   useEffect(() => {
-    if (contextGroups && contextGroups.length === 0) {
+    if (!joinGroupId && contextGroups && contextGroups.length === 0) {
       navigate("/");
     }
   }, [contextGroups, navigate]);
@@ -283,7 +287,12 @@ const GroupTab = () => {
     }
 
     return tabs;
-  }, [settledMemberStats, currentGroup, currentGroupAdminEmail, currentUser?.email]);
+  }, [
+    settledMemberStats,
+    currentGroup,
+    currentGroupAdminEmail,
+    currentUser?.email,
+  ]);
 
   useEffect(() => {
     setLinearProgress(true);
@@ -366,9 +375,13 @@ const GroupTab = () => {
               totalInCurrentCurrency += parseFloat(convertedAmount);
 
               // Calculate if I'm included in the split
-              if (expense.splitBetween.some(member => member.email === currentUser?.email)) {
-                const splitCount = expense.excludePayer 
-                  ? expense.splitBetween.length 
+              if (
+                expense.splitBetween.some(
+                  (member) => member.email === currentUser?.email
+                )
+              ) {
+                const splitCount = expense.excludePayer
+                  ? expense.splitBetween.length
                   : expense.splitBetween.length + 1;
                 const myExpenseShare = parseFloat(convertedAmount) / splitCount;
                 myShare += myExpenseShare;
@@ -387,47 +400,60 @@ const GroupTab = () => {
     }, [selectedGroupDetails, currentCurrency, currentUser]);
 
     return (
-      <Box sx={{
-        p: { xs: 1.5, sm: 2 },
-        backgroundColor: "rgba(94, 114, 228, 0.03)",
-        borderRadius: "12px",
-        border: '1px solid rgba(94, 114, 228, 0.1)',
-      }}>
+      <Box
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          backgroundColor: "rgba(94, 114, 228, 0.03)",
+          borderRadius: "12px",
+          border: "1px solid rgba(94, 114, 228, 0.1)",
+        }}
+      >
         {/* Title and Share Section */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 2,
-          mb: 1
-        }}>
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'flex-start', // Changed from center to flex-start
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
             gap: 2,
-            flex: 1,
-            minWidth: 0
-          }}>
-            <Box sx={{
-              backgroundColor: 'rgba(94, 114, 228, 0.1)',
-              borderRadius: '12px',
-              width: { xs: 40, sm: 45, md: 50 },
-              height: { xs: 40, sm: 45, md: 50 },
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <InfoIcon sx={{ color: '#5e72e4', fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
+            mb: 1,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "flex-start", // Changed from center to flex-start
+              gap: 2,
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            <Box
+              sx={{
+                backgroundColor: "rgba(94, 114, 228, 0.1)",
+                borderRadius: "12px",
+                width: { xs: 40, sm: 45, md: 50 },
+                height: { xs: 40, sm: 45, md: 50 },
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <InfoIcon
+                sx={{
+                  color: "#5e72e4",
+                  fontSize: { xs: "1.25rem", sm: "1.5rem" },
+                }}
+              />
             </Box>
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography
                 variant="h6"
                 sx={{
                   color: "#32325d",
-                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                  fontSize: { xs: "0.9rem", sm: "1rem" },
                   fontWeight: 600,
-                  mb: 0.5 // Added margin bottom
+                  mb: 0.5, // Added margin bottom
                 }}
               >
                 {selectedGroupDetails?.title}
@@ -437,14 +463,14 @@ const GroupTab = () => {
                   variant="body2"
                   sx={{
                     color: "#525f7f",
-                    fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                    fontSize: { xs: "0.75rem", sm: "0.85rem" },
                     opacity: 0.85,
-                    display: '-webkit-box',
+                    display: "-webkit-box",
                     WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
                     lineHeight: 1.4,
-                    width: '100%'
+                    width: "100%",
                   }}
                 >
                   {selectedGroupDetails?.description}
@@ -455,65 +481,69 @@ const GroupTab = () => {
           </Box>
         </Box>
 
-        <Accordion 
-          expanded={expanded} 
+        <Accordion
+          expanded={expanded}
           onChange={() => setExpanded(!expanded)}
           sx={{
-            backgroundColor: 'transparent',
-            boxShadow: 'none',
-            '&:before': { display: 'none' },
-            '& .MuiAccordionSummary-root': {
+            backgroundColor: "transparent",
+            boxShadow: "none",
+            "&:before": { display: "none" },
+            "& .MuiAccordionSummary-root": {
               minHeight: 0,
               padding: 1,
-              marginTop: 0
+              marginTop: 0,
             },
-            '& .MuiAccordionSummary-content': {
-              margin: 0
-            }
+            "& .MuiAccordionSummary-content": {
+              margin: 0,
+            },
           }}
         >
           <AccordionSummary
-            expandIcon={<ExpandMoreIcon sx={{ color: '#5e72e4' }} />}
-            sx={{ 
-              backgroundColor: 'rgba(94, 114, 228, 0.05)',
-              borderRadius: '8px',
-              padding: '8px 16px',
-              '&:hover': {
-                backgroundColor: 'rgba(94, 114, 228, 0.08)'
+            expandIcon={<ExpandMoreIcon sx={{ color: "#5e72e4" }} />}
+            sx={{
+              backgroundColor: "rgba(94, 114, 228, 0.05)",
+              borderRadius: "8px",
+              padding: "8px 16px",
+              "&:hover": {
+                backgroundColor: "rgba(94, 114, 228, 0.08)",
               },
-              '& .MuiAccordionSummary-content': {
-                margin: '0',
-                display: 'flex',
-                alignItems: 'center'
-              }
+              "& .MuiAccordionSummary-content": {
+                margin: "0",
+                display: "flex",
+                alignItems: "center",
+              },
             }}
           >
-            <Typography sx={{ color: '#5e72e4', fontSize: '0.8rem', fontWeight: 600 }}>
+            <Typography
+              sx={{ color: "#5e72e4", fontSize: "0.8rem", fontWeight: 600 }}
+            >
               View Details
             </Typography>
           </AccordionSummary>
-          <AccordionDetails sx={{ padding: '16px 0 0' }}>
-            <Box sx={{ 
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2
-            }}>
+          <AccordionDetails sx={{ padding: "16px 0 0" }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+              }}
+            >
               <StatItem
-                icon={<AccountBalanceWalletIcon sx={{ color: '#5e72e4' }} />}
+                icon={<AccountBalanceWalletIcon sx={{ color: "#5e72e4" }} />}
                 label="Total Amount"
                 value={`${convertedTotal.toFixed(2)} ${currentCurrency}`}
                 color="#5e72e4"
               />
-              
+
               <StatItem
-                icon={<AccountBalanceWalletIcon sx={{ color: '#2dce89' }} />}
+                icon={<AccountBalanceWalletIcon sx={{ color: "#2dce89" }} />}
                 label="My Total Expenses "
                 value={`${myTotalShare.toFixed(2)} ${currentCurrency}`}
                 color="#2dce89"
               />
-              
+
               <StatItem
-                icon={<CalendarTodayIcon sx={{ color: '#8898aa' }} />}
+                icon={<CalendarTodayIcon sx={{ color: "#8898aa" }} />}
                 label="Created"
                 value={formatDate(selectedGroupDetails?.createdDate) ?? "N/A"}
                 color="#525f7f"
@@ -526,21 +556,26 @@ const GroupTab = () => {
   });
 
   const StatItem = ({ icon, label, value, color }) => (
-    <Box sx={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 2,
-      p: 1.5,
-      borderRadius: '12px',
-      backgroundColor: 'rgba(94, 114, 228, 0.05)',
-      border: '1px solid rgba(94, 114, 228, 0.1)'
-    }}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 2,
+        p: 1.5,
+        borderRadius: "12px",
+        backgroundColor: "rgba(94, 114, 228, 0.05)",
+        border: "1px solid rgba(94, 114, 228, 0.1)",
+      }}
+    >
       {icon}
       <Box>
-        <Typography variant="caption" sx={{ color: '#8898aa', display: 'block' }}>
+        <Typography
+          variant="caption"
+          sx={{ color: "#8898aa", display: "block" }}
+        >
           {label}
         </Typography>
-        <Typography sx={{ color: color, fontWeight: 600, fontSize: '0.9rem' }}>
+        <Typography sx={{ color: color, fontWeight: 600, fontSize: "0.9rem" }}>
           {value}
         </Typography>
       </Box>
@@ -556,7 +591,7 @@ const GroupTab = () => {
           color: "#2dce89",
           gradient: "linear-gradient(135deg, #2dce89 0%, #2fcca0 100%)",
           lightBg: "rgba(45, 206, 137, 0.1)",
-          emoji: "🏠"
+          emoji: "🏠",
         };
       case "trip":
         return {
@@ -565,7 +600,7 @@ const GroupTab = () => {
           color: "#fb6340",
           gradient: "linear-gradient(135deg, #fb6340 0%, #fbb140 100%)",
           lightBg: "rgba(251, 99, 64, 0.1)",
-          emoji: "✈️"
+          emoji: "✈️",
         };
       case "couple":
         return {
@@ -574,7 +609,7 @@ const GroupTab = () => {
           color: "#f5365c",
           gradient: "linear-gradient(135deg, #f5365c 0%, #f56036 100%)",
           lightBg: "rgba(245, 54, 92, 0.1)",
-          emoji: "💑"
+          emoji: "💑",
         };
       case "settled":
         return {
@@ -583,7 +618,7 @@ const GroupTab = () => {
           color: "#8898aa",
           gradient: "linear-gradient(135deg, #8898aa 0%, #99a6b5 100%)",
           lightBg: "rgba(136, 152, 170, 0.1)",
-          emoji: "✅"
+          emoji: "✅",
         };
       default:
         return {
@@ -592,7 +627,7 @@ const GroupTab = () => {
           color: "#5e72e4",
           gradient: "linear-gradient(135deg, #5e72e4 0%, #825ee4 100%)",
           lightBg: "rgba(94, 114, 228, 0.1)",
-          emoji: "📁"
+          emoji: "📁",
         };
     }
   };
@@ -600,7 +635,9 @@ const GroupTab = () => {
   const groupedItems = useMemo(() => {
     const categorized = allGroups?.reduce((acc, group) => {
       // Check if all members in the group are settled
-      const isGroupSettled = group.members?.every((member) => member.userSettled);
+      const isGroupSettled = group.members?.every(
+        (member) => member.userSettled
+      );
 
       // First categorize non-settled groups
       if (!isGroupSettled) {
@@ -847,36 +884,36 @@ const GroupTab = () => {
                 PaperProps: {
                   sx: {
                     mt: 1,
-                    borderRadius: '20px',
-                    maxHeight: { xs: '60vh', sm: '70vh' },
-                    minWidth: { xs: '280px', sm: '320px', md: '360px' },
-                    maxWidth: '90vw',
-                    background: 'rgba(255,255,255,0.9)',
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: '0 8px 32px rgba(94, 114, 228, 0.15)',
+                    borderRadius: "20px",
+                    maxHeight: { xs: "60vh", sm: "70vh" },
+                    minWidth: { xs: "280px", sm: "320px", md: "360px" },
+                    maxWidth: "90vw",
+                    background: "rgba(255,255,255,0.9)",
+                    backdropFilter: "blur(10px)",
+                    boxShadow: "0 8px 32px rgba(94, 114, 228, 0.15)",
                     padding: { xs: 1, sm: 2 },
-                    '.MuiMenuItem-root': {
-                      borderRadius: '16px',
-                      margin: '4px 0',
-                      transition: 'all 0.2s ease'
+                    ".MuiMenuItem-root": {
+                      borderRadius: "16px",
+                      margin: "4px 0",
+                      transition: "all 0.2s ease",
                     },
-                    '&::-webkit-scrollbar': {
-                      width: '6px'
+                    "&::-webkit-scrollbar": {
+                      width: "6px",
                     },
-                    '&::-webkit-scrollbar-thumb': {
-                      backgroundColor: 'rgba(94, 114, 228, 0.2)',
-                      borderRadius: '10px'
-                    }
-                  }
+                    "&::-webkit-scrollbar-thumb": {
+                      backgroundColor: "rgba(94, 114, 228, 0.2)",
+                      borderRadius: "10px",
+                    },
+                  },
                 },
                 anchorOrigin: {
-                  vertical: 'bottom',
-                  horizontal: 'left'
+                  vertical: "bottom",
+                  horizontal: "left",
                 },
                 transformOrigin: {
-                  vertical: 'top',
-                  horizontal: 'left'
-                }
+                  vertical: "top",
+                  horizontal: "left",
+                },
               }}
             >
               {Object.entries(groupedItems || {}).map(([category, groups]) => [
@@ -885,180 +922,212 @@ const GroupTab = () => {
                   sx={{
                     px: { xs: 2, sm: 3 },
                     py: { xs: 1.5, sm: 2 },
-                    display: 'flex',
-                    alignItems: 'center',
+                    display: "flex",
+                    alignItems: "center",
                     gap: 2,
                     background: getCategoryInfo(category).gradient,
-                    color: 'white',
-                    borderRadius: '12px',
-                    margin: '8px 4px',
-                    position: 'sticky',
+                    color: "white",
+                    borderRadius: "12px",
+                    margin: "8px 4px",
+                    position: "sticky",
                     top: 0,
                     zIndex: 1,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    backdropFilter: 'blur(8px)',
-                    transform: 'scale(0.98)',
-                    transition: 'transform 0.2s ease',
-                    '&:hover': {
-                      transform: 'scale(1)'
-                    }
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    backdropFilter: "blur(8px)",
+                    transform: "scale(0.98)",
+                    transition: "transform 0.2s ease",
+                    "&:hover": {
+                      transform: "scale(1)",
+                    },
                   }}
                 >
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: { xs: 1, sm: 1.5 } 
-                  }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: { xs: 1, sm: 1.5 },
+                    }}
+                  >
                     {getCategoryInfo(category).icon}
                     <Typography
                       sx={{
-                        fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                        fontSize: { xs: "0.8rem", sm: "0.9rem" },
                         fontWeight: 700,
-                        letterSpacing: '0.5px'
+                        letterSpacing: "0.5px",
                       }}
                     >
                       {getCategoryInfo(category).label} ({groups.length})
                     </Typography>
                   </Box>
-                  <Typography sx={{ 
-                    fontSize: { xs: '1.2rem', sm: '1.4rem' },
-                    marginLeft: 'auto' 
-                  }}>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: "1.2rem", sm: "1.4rem" },
+                      marginLeft: "auto",
+                    }}
+                  >
                     {getCategoryInfo(category).emoji}
                   </Typography>
                 </Box>,
                 ...groups
-  // Sort groups by createdDate descending (latest first), handling Firestore Timestamp
-  .slice().sort((a, b) => {
-    const getGroupDate = (g) => {
-      if (g.createdDate && typeof g.createdDate === "object" && "seconds" in g.createdDate) {
-        return new Date(g.createdDate.seconds * 1000 + Math.floor(g.createdDate.nanoseconds / 1e6));
-      }
-      return new Date(g.createdDate || 0);
-    };
-    return getGroupDate(b) - getGroupDate(a);
-  })
-  .map((group) => (
-                  <MenuItem
-                    key={group.id}
-                    value={group.id}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: { xs: '12px', sm: '16px' },
-                      gap: { xs: 1.5, sm: 2 },
-                      transition: 'all 0.3s ease',
-                      background: category === 'Settled' ? 'rgba(136, 152, 170, 0.05)' : 'rgba(255,255,255,0.8)',
-                      border: '1px solid rgba(255,255,255,0.9)',
-                      backdropFilter: 'blur(8px)',
-                      opacity: category === 'Settled' ? 0.8 : 1,
-                      '&:hover': {
-                        backgroundColor: getCategoryInfo(category).lightBg,
-                        transform: 'translateX(8px)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                      },
-                      '&.Mui-selected': {
-                        backgroundColor: getCategoryInfo(category).lightBg,
-                        '&:hover': {
-                          backgroundColor: getCategoryInfo(category).lightBg,
-                          opacity: 0.9
-                        }
+                  // Sort groups by createdDate descending (latest first), handling Firestore Timestamp
+                  .slice()
+                  .sort((a, b) => {
+                    const getGroupDate = (g) => {
+                      if (
+                        g.createdDate &&
+                        typeof g.createdDate === "object" &&
+                        "seconds" in g.createdDate
+                      ) {
+                        return new Date(
+                          g.createdDate.seconds * 1000 +
+                            Math.floor(g.createdDate.nanoseconds / 1e6)
+                        );
                       }
-                    }}
-                  >
-                    <Box sx={{
-                      position: 'relative',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: { xs: 1.5, sm: 2 },
-                      width: '100%'
-                    }}>
-                      <Avatar
+                      return new Date(g.createdDate || 0);
+                    };
+                    return getGroupDate(b) - getGroupDate(a);
+                  })
+                  .map((group) => (
+                    <MenuItem
+                      key={group.id}
+                      value={group.id}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: { xs: "12px", sm: "16px" },
+                        gap: { xs: 1.5, sm: 2 },
+                        transition: "all 0.3s ease",
+                        background:
+                          category === "Settled"
+                            ? "rgba(136, 152, 170, 0.05)"
+                            : "rgba(255,255,255,0.8)",
+                        border: "1px solid rgba(255,255,255,0.9)",
+                        backdropFilter: "blur(8px)",
+                        opacity: category === "Settled" ? 0.8 : 1,
+                        "&:hover": {
+                          backgroundColor: getCategoryInfo(category).lightBg,
+                          transform: "translateX(8px)",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                        },
+                        "&.Mui-selected": {
+                          backgroundColor: getCategoryInfo(category).lightBg,
+                          "&:hover": {
+                            backgroundColor: getCategoryInfo(category).lightBg,
+                            opacity: 0.9,
+                          },
+                        },
+                      }}
+                    >
+                      <Box
                         sx={{
-                          width: { xs: 40, sm: 45 },
-                          height: { xs: 40, sm: 45 },
-                          background: getCategoryInfo(category).gradient,
-                          fontSize: { xs: '1rem', sm: '1.2rem' },
-                          fontWeight: 600,
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                          border: '2px solid #fff'
+                          position: "relative",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: { xs: 1.5, sm: 2 },
+                          width: "100%",
                         }}
                       >
-                        {group.title[0]}
-                      </Avatar>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Box sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: 1,
-                          flexWrap: 'wrap'
-                        }}>
-                          <Typography
+                        <Avatar
+                          sx={{
+                            width: { xs: 40, sm: 45 },
+                            height: { xs: 40, sm: 45 },
+                            background: getCategoryInfo(category).gradient,
+                            fontSize: { xs: "1rem", sm: "1.2rem" },
+                            fontWeight: 600,
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                            border: "2px solid #fff",
+                          }}
+                        >
+                          {group.title[0]}
+                        </Avatar>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Box
                             sx={{
-                              fontWeight: 600,
-                              color: '#32325d',
-                              fontSize: { xs: '0.9rem', sm: '1rem' },
-                              lineHeight: '1.2',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              maxWidth: { xs: '120px', sm: '150px', md: '200px' }
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              flexWrap: "wrap",
                             }}
                           >
-                            {group.title}
-                          </Typography>
-                          {group.admin?.email === currentUser?.email && (
-                            <Chip
-                              label="Admin"
-                              size="small"
-                              sx={{
-                                height: { xs: 18, sm: 20 },
-                                fontSize: { xs: '0.6rem', sm: '0.65rem' },
-                                backgroundColor: getCategoryInfo(category).lightBg,
-                                color: getCategoryInfo(category).color,
-                                fontWeight: 600,
-                                px: 0.5
-                              }}
-                            />
-                          )}
-                        </Box>
-                        <Box sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: { xs: 1.5, sm: 2 },
-                          mt: 0.5
-                        }}>
-                          <Typography
-                            sx={{
-                              color: '#8898aa',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 0.5,
-                              fontSize: { xs: '0.7rem', sm: '0.75rem' }
-                            }}
-                          >
-                            <GroupIcon sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }} />
-                            {group.members?.length || 0}
-                          </Typography>
-                          {group.expenses?.length > 0 && (
                             <Typography
                               sx={{
-                                color: '#8898aa',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 0.5,
-                                fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                                fontWeight: 600,
+                                color: "#32325d",
+                                fontSize: { xs: "0.9rem", sm: "1rem" },
+                                lineHeight: "1.2",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                maxWidth: {
+                                  xs: "120px",
+                                  sm: "150px",
+                                  md: "200px",
+                                },
                               }}
                             >
-                              <PaidIcon sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }} />
-                              {group.expenses.length}
+                              {group.title}
                             </Typography>
-                          )}
+                            {group.admin?.email === currentUser?.email && (
+                              <Chip
+                                label="Admin"
+                                size="small"
+                                sx={{
+                                  height: { xs: 18, sm: 20 },
+                                  fontSize: { xs: "0.6rem", sm: "0.65rem" },
+                                  backgroundColor:
+                                    getCategoryInfo(category).lightBg,
+                                  color: getCategoryInfo(category).color,
+                                  fontWeight: 600,
+                                  px: 0.5,
+                                }}
+                              />
+                            )}
+                          </Box>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: { xs: 1.5, sm: 2 },
+                              mt: 0.5,
+                            }}
+                          >
+                            <Typography
+                              sx={{
+                                color: "#8898aa",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                                fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                              }}
+                            >
+                              <GroupIcon
+                                sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+                              />
+                              {group.members?.length || 0}
+                            </Typography>
+                            {group.expenses?.length > 0 && (
+                              <Typography
+                                sx={{
+                                  color: "#8898aa",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 0.5,
+                                  fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                                }}
+                              >
+                                <PaidIcon
+                                  sx={{
+                                    fontSize: { xs: "0.9rem", sm: "1rem" },
+                                  }}
+                                />
+                                {group.expenses.length}
+                              </Typography>
+                            )}
+                          </Box>
                         </Box>
                       </Box>
-                    </Box>
-                  </MenuItem>
-                ))
+                    </MenuItem>
+                  )),
               ])}
             </CustomSelect>
           </FormControl>
@@ -1133,15 +1202,18 @@ const GroupTab = () => {
               ))}
             </Tabs>
           </AppBar>
-          <Box sx={{ 
-            p: 2,
-            height: "calc(100% - 180px)", // Subtract header height and tabs height
-            overflow: "hidden", // Change from "auto" to "hidden"
-            "& > *": { // This ensures all child components (tabs) take full height
-              height: "100%",
-              overflow: "hidden" // Change from "auto" to "hidden"
-            }
-          }}>
+          <Box
+            sx={{
+              p: 2,
+              height: "calc(100% - 180px)", // Subtract header height and tabs height
+              overflow: "hidden", // Change from "auto" to "hidden"
+              "& > *": {
+                // This ensures all child components (tabs) take full height
+                height: "100%",
+                overflow: "hidden", // Change from "auto" to "hidden"
+              },
+            }}
+          >
             {dynamicTabs[tabIndex]?.component}
           </Box>
         </>
@@ -1195,7 +1267,6 @@ const AvatarGroupSection = React.memo(({ members }) => {
 
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
-     
       <Tooltip title={tooltipContent} arrow>
         <AvatarGroup max={4}>
           {members?.slice(0, 4)?.map((member, index) => (
