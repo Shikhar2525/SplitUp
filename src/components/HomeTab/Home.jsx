@@ -1,11 +1,10 @@
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Box, Grid, Paper, Typography, Button, Avatar, AvatarGroup, Chip } from "@mui/material";
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import { calculateTotalsAcrossGroups } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useAllGroups } from "../contexts/AllGroups";
-import { useEffect, useState } from "react";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import { getCurrencySymbol } from "../utils";
 import { useNavigate } from "react-router-dom";
@@ -361,6 +360,30 @@ const Home = () => {
     </Box>
   );
 
+  // Modify the sorting logic for recent groups
+  const sortedGroups = useMemo(() => {
+    if (!allGroups) return [];
+    
+    return [...allGroups].sort((a, b) => {
+      // First compare settlement status
+      const isASettled = a.members?.every(member => member.userSettled);
+      const isBSettled = b.members?.every(member => member.userSettled);
+      
+      if (isASettled && !isBSettled) return 1;  // A is settled, move to end
+      if (!isASettled && isBSettled) return -1; // B is settled, move to end
+      
+      // If both have same settlement status, sort by creation date (newest first)
+      const getDate = (group) => {
+        if (group.createdDate && typeof group.createdDate === "object" && "seconds" in group.createdDate) {
+          return new Date(group.createdDate.seconds * 1000);
+        }
+        return new Date(group.createdDate || 0);
+      };
+      
+      return getDate(b) - getDate(a);
+    });
+  }, [allGroups]);
+
   return (
     <Box sx={{ 
       height: 'auto',
@@ -524,8 +547,7 @@ const Home = () => {
               </Box>
             ) : (
               <Grid container spacing={2} sx={{ mt: 1 }}>
-                {allGroups
-                    ?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                {sortedGroups
                     .slice(0, 3)
                     .map(group => (
                       <Grid item xs={12} sm={6} md={4} key={group.id}>
