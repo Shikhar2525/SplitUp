@@ -425,6 +425,7 @@ const Home = () => {
               value={`${Number(totals?.balance || 0).toFixed(2)} ${getCurrencySymbol(currentCurrency)} `}
               icon={<AccountBalanceIcon />}
               color={totals?.balance?.startsWith('-') ? '#fb6340' : '#2dce89'}
+              onClick={() => navigate('/groups')} // Add onClick to enable hover
               hoverDetails={{
                 youGet: Math.abs(totals?.youGet || 0),
                 youGive: Math.abs(totals?.youGive || 0)
@@ -440,7 +441,7 @@ const Home = () => {
             value={allGroups?.length || 0}
             icon={<GroupAddIcon />}
             color="#5e72e4"
-            onClick={() => navigate('/groups')}
+            onClick={() => navigate('/groups')} // already has onClick
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
@@ -449,7 +450,7 @@ const Home = () => {
             value={Array.isArray(userFriends) ? userFriends.length : '...'}
             icon={<PersonIcon />}
             color="#2dce89"
-            onClick={() => navigate('/friends')}
+            onClick={() => navigate('/friends')} // already has onClick
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
@@ -458,6 +459,7 @@ const Home = () => {
             value={allGroups?.reduce((total, group) => total + (group.expenses?.length || 0), 0)}
             icon={<ReceiptLongIcon />}
             color="#fb6340"
+            onClick={() => navigate('/groups')} // Add onClick to enable hover
           />
         </Grid>
 
