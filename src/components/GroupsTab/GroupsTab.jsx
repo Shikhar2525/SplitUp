@@ -403,7 +403,7 @@ const GroupTab = () => {
         }}>
           <Box sx={{ 
             display: 'flex', 
-            alignItems: 'center', 
+            alignItems: 'flex-start', // Changed from center to flex-start
             gap: 2,
             flex: 1,
             minWidth: 0
@@ -421,21 +421,35 @@ const GroupTab = () => {
               <InfoIcon sx={{ color: '#5e72e4', fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
             </Box>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Tooltip title={selectedGroupDetails?.description || selectedGroupDetails?.title} arrow>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: "#32325d",
+                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                  fontWeight: 600,
+                  mb: 0.5 // Added margin bottom
+                }}
+              >
+                {selectedGroupDetails?.title}
+              </Typography>
+              {selectedGroupDetails?.description && (
                 <Typography
-                  variant="h6"
+                  variant="body2"
                   sx={{
                     color: "#525f7f",
-                    fontSize: { xs: '0.9rem', sm: '1rem' },
-                    fontWeight: 600,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap"
+                    fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                    opacity: 0.85,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    lineHeight: 1.4,
+                    width: '100%'
                   }}
                 >
-                  {selectedGroupDetails?.description || selectedGroupDetails?.title}
+                  {selectedGroupDetails?.description}
                 </Typography>
-              </Tooltip>
+              )}
             </Box>
             <ShareLink />
           </Box>
