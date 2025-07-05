@@ -75,6 +75,10 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
     paidBy: "",
     splitOptions: "",
   });
+  const [saveDisabled, setSaveDisabled] = useState(false);
+
+  // Track original values for edit comparison
+  const [originalExpense, setOriginalExpense] = useState(null);
 
   const currentGroupObj = allGroups.find(
     (group) => group?.id === currentGroupID
@@ -140,11 +144,60 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
       setSelectedDate(parsedDate && parsedDate.isValid() ? parsedDate : dayjs());
       setCurrency(expenseToEdit.currency);
       setExcludePayer(expenseToEdit.excludePayer || false);
+
+      setOriginalExpense({
+        description: expenseToEdit.description,
+        amount: expenseToEdit.amount,
+        paidBy: expenseToEdit.paidBy.email,
+        splitBetween: JSON.stringify(expenseToEdit.splitBetween),
+        createdDate: (expenseToEdit.createdDate || expenseToEdit.date),
+        currency: expenseToEdit.currency,
+        excludePayer: expenseToEdit.excludePayer || false,
+      });
     } else if (!isEditing && open) {
-      setSelectedDate(dayjs());
+      setOriginalExpense(null);
     }
     // eslint-disable-next-line
   }, [isEditing, expenseToEdit, open]);
+
+  // Detect changes for Save Changes button
+  useEffect(() => {
+    if (isEditing && originalExpense) {
+      // Compare splitBetween arrays ignoring order
+      const splitOptionsChanged = !arraysEqualIgnoreOrder(
+        splitOptions,
+        JSON.parse(originalExpense.splitBetween)
+      );
+
+      const hasChanged =
+        description !== originalExpense.description ||
+        Number(amount) !== Number(originalExpense.amount) ||
+        paidBy !== originalExpense.paidBy ||
+        splitOptionsChanged ||
+        (selectedDate && originalExpense.createdDate && (
+          // Compare ISO strings for date
+          (typeof originalExpense.createdDate === "object" && typeof originalExpense.createdDate.seconds === "number"
+            ? selectedDate.toISOString() !== new Date(originalExpense.createdDate.seconds * 1000).toISOString()
+            : selectedDate.toISOString() !== dayjs(originalExpense.createdDate).toISOString())
+        )) ||
+        currency !== originalExpense.currency ||
+        excludePayer !== originalExpense.excludePayer;
+
+      setSaveDisabled(!hasChanged);
+    } else {
+      setSaveDisabled(false);
+    }
+  }, [
+    isEditing,
+    originalExpense,
+    description,
+    amount,
+    paidBy,
+    splitOptions,
+    selectedDate,
+    currency,
+    excludePayer,
+  ]);
 
   const validateStep = (step) => {
     let isValid = true;
@@ -823,8 +876,30 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
         </Button>
         <Button
           variant="contained"
-          onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
-          disabled={loading || users.length === 1}
+          onClick={() => {
+            if (
+              isEditing &&
+              activeStep === steps.length - 1 &&
+              saveDisabled
+            ) {
+              setSnackBar({
+                isOpen: true,
+                message: "Nothing to save. You haven't made any changes to this expense.",
+                severity: "info",
+              });
+              return;
+            }
+            if (activeStep === steps.length - 1) {
+              handleSubmit();
+            } else {
+              handleNext();
+            }
+          }}
+          disabled={
+            loading ||
+            users.length === 1 ||
+            (isEditing && activeStep === steps.length - 1 && saveDisabled)
+          }
           sx={{
             bgcolor: "#5e72e4",
             "&:hover": { bgcolor: "#4454c3" },
@@ -844,3 +919,12 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
 };
 
 export default AddExpenseModal;
+
+// Utility function to compare arrays of objects (ignoring order)
+function arraysEqualIgnoreOrder(a, b, key = "email") {
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  if (a.length !== b.length) return false;
+  const aSorted = [...a].sort((x, y) => (x[key] > y[key] ? 1 : -1));
+  const bSorted = [...b].sort((x, y) => (x[key] > y[key] ? 1 : -1));
+  return aSorted.every((item, idx) => item[key] === bSorted[idx][key]);
+}
