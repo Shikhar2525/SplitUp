@@ -831,7 +831,11 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
             "&.Mui-disabled": { bgcolor: "rgba(94, 114, 228, 0.3)" },
           }}
         >
-          {activeStep === steps.length - 1 ? "Add Expense" : "Next"}
+          {activeStep === steps.length - 1
+            ? isEditing
+              ? "Save Changes"
+              : "Add Expense"
+            : "Next"}
           {loading && <CircularProgress size={20} sx={{ ml: 1 }} />}
         </Button>
       </DialogActions>
