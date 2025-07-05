@@ -31,6 +31,8 @@ import AltRouteIcon from "@mui/icons-material/AltRoute";
 import PersonIcon from "@mui/icons-material/Person";
 import DescriptionIcon from "@mui/icons-material/Description";
 import SettingsIcon from "@mui/icons-material/Settings";
+import EditIcon from "@mui/icons-material/Edit";
+import AddExpenseModal from "../AddExpense/AddExpenseModal";
 import { formatTransactionDate, getCurrencySymbol } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import GroupService from "../services/group.service";
@@ -49,6 +51,7 @@ const TransactionCard = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const dateShort = formatTransactionDate(transaction?.date);
   const { currentUser } = useCurrentUser();
   const colors = [
@@ -105,6 +108,11 @@ const TransactionCard = ({
 
   const handleCloseConfirmDialog = () => {
     setOpenConfirmDialog(false);
+  };
+
+  const handleEditClick = (e) => {
+    e.stopPropagation();
+    setEditModalOpen(true);
   };
 
   return (
@@ -498,13 +506,34 @@ const TransactionCard = ({
                             />
                           ),
                           content: (
-                            <IconButton
-                              color="error"
-                              aria-label="delete"
-                              onClick={handleOpenConfirmDialog}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              <IconButton
+                                onClick={handleEditClick}
+                                size="small"
+                                sx={{
+                                  color: "#5e72e4",
+                                  "&:hover": {
+                                    backgroundColor: "rgba(94, 114, 228, 0.1)",
+                                  },
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                color="error"
+                                aria-label="delete"
+                                onClick={handleOpenConfirmDialog}
+                                size="small"
+                                sx={{
+                                  color: "#f5365c",
+                                  "&:hover": {
+                                    backgroundColor: "rgba(245, 54, 92, 0.1)",
+                                  },
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
                           ),
                         },
                       ]
@@ -565,6 +594,14 @@ const TransactionCard = ({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Edit Modal */}
+      <AddExpenseModal
+        open={editModalOpen}
+        handleClose={() => setEditModalOpen(false)}
+        isEditing={true}
+        expenseToEdit={transaction}
+      />
     </Box>
   );
 };

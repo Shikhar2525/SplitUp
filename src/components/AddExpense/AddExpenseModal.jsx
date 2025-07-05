@@ -49,13 +49,14 @@ const steps = [
   { label: "Split Details", icon: <GroupIcon /> },
 ];
 
-const AddExpenseModal = ({ open, handleClose }) => {
+const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit = null }) => {
   const [group, setGroup] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [paidBy, setPaidBy] = useState("");
   const [splitOptions, setSplitOptions] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(dayjs());
+  // Use null as initial value for selectedDate, so we can control it for both add and edit
+  const [selectedDate, setSelectedDate] = useState(null);
   const { allGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
   const [users, setUsers] = useState([]);
@@ -103,6 +104,47 @@ const AddExpenseModal = ({ open, handleClose }) => {
       setUsers([]);
     }
   }, [group, allGroups]);
+
+  // Initialize form with expense data if editing
+  useEffect(() => {
+    if (isEditing && expenseToEdit) {
+      setDescription(expenseToEdit.description);
+      setAmount(expenseToEdit.amount);
+      setPaidBy(expenseToEdit.paidBy.email);
+      setSplitOptions(expenseToEdit.splitBetween);
+
+      // --- Robust date parsing for all formats ---
+      let parsedDate = null;
+      const rawDate = expenseToEdit.createdDate || expenseToEdit.date;
+      if (rawDate) {
+        // Firestore Timestamp object (seconds + nanoseconds)
+        if (
+          typeof rawDate === "object" &&
+          rawDate !== null &&
+          typeof rawDate.seconds === "number"
+        ) {
+          // Prefer nanoseconds if present for more accuracy
+          const ms = rawDate.seconds * 1000 + (rawDate.nanoseconds ? Math.floor(rawDate.nanoseconds / 1e6) : 0);
+          parsedDate = dayjs(ms);
+        }
+        // JS Date object
+        else if (rawDate instanceof Date) {
+          parsedDate = dayjs(rawDate.getTime());
+        }
+        // ISO string or already dayjs
+        else if (typeof rawDate === "string" || dayjs.isDayjs(rawDate)) {
+          parsedDate = dayjs(rawDate);
+        }
+      }
+      // If parsedDate is invalid, fallback to today
+      setSelectedDate(parsedDate && parsedDate.isValid() ? parsedDate : dayjs());
+      setCurrency(expenseToEdit.currency);
+      setExcludePayer(expenseToEdit.excludePayer || false);
+    } else if (!isEditing && open) {
+      setSelectedDate(dayjs());
+    }
+    // eslint-disable-next-line
+  }, [isEditing, expenseToEdit, open]);
 
   const validateStep = (step) => {
     let isValid = true;
@@ -195,8 +237,8 @@ const AddExpenseModal = ({ open, handleClose }) => {
     if (splitOptions?.length <= 0) {
       return;
     }
-    const expense = {
-      id: uuidv4(),
+    const expenseData = {
+      id: isEditing ? expenseToEdit.id : uuidv4(),
       description,
       amount: Number(amount),
       paidBy: { email: paidBy, name: userNameByEmail },
@@ -212,11 +254,17 @@ const AddExpenseModal = ({ open, handleClose }) => {
       const selectedGroupID = allGroups.find(
         (item) => item?.title === group
       )?.id;
-      await GroupService.addExpenseToGroup(selectedGroupID, expense);
+
+      if (isEditing) {
+        // First remove old expense
+        await GroupService.removeExpenseFromGroup(selectedGroupID, expenseToEdit.id);
+      }
+      // Then add new/updated expense
+      await GroupService.addExpenseToGroup(selectedGroupID, expenseData);
 
       const log = {
         logId: uuidv4(),
-        logType: "addExpense",
+        logType: isEditing ? "editExpense" : "addExpense",
         details: {
           expenseTitle: description,
           performedBy: { email: currentUser?.email, name: currentUser?.name },
@@ -236,11 +284,11 @@ const AddExpenseModal = ({ open, handleClose }) => {
       handleClose();
       setSnackBar({
         isOpen: true,
-        message: "Expense added",
+        message: isEditing ? "Expense updated" : "Expense added",
       });
       refreshAllGroups();
     } catch (error) {
-      console.error("Failed to add expense:", error);
+      console.error("Failed to handle expense:", error);
     } finally {
       setLoading(false);
     }
@@ -692,7 +740,7 @@ const AddExpenseModal = ({ open, handleClose }) => {
           }}
         >
           <Typography variant="h6" sx={{ color: "#32325d", fontWeight: 600 }}>
-            Add Expense
+            {isEditing ? "Edit Expense" : "Add Expense"}
           </Typography>
           <IconButton onClick={handleClose}>
             <CloseIcon />
