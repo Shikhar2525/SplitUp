@@ -55,8 +55,8 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
   const [amount, setAmount] = useState("");
   const [paidBy, setPaidBy] = useState("");
   const [splitOptions, setSplitOptions] = useState([]);
-  // Use null as initial value for selectedDate, so we can control it for both add and edit
-  const [selectedDate, setSelectedDate] = useState(null);
+  // Use today's date as default for add, null for edit (will be set in useEffect)
+  const [selectedDate, setSelectedDate] = useState(dayjs());
   const { allGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
   const [users, setUsers] = useState([]);
@@ -109,7 +109,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
     }
   }, [group, allGroups]);
 
-  // Initialize form with expense data if editing
+  // Initialize form with expense data if editing, or reset to today if adding
   useEffect(() => {
     if (isEditing && expenseToEdit) {
       setDescription(expenseToEdit.description);
@@ -155,6 +155,8 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
         excludePayer: expenseToEdit.excludePayer || false,
       });
     } else if (!isEditing && open) {
+      // Reset to today's date when adding a new expense
+      setSelectedDate(dayjs());
       setOriginalExpense(null);
     }
     // eslint-disable-next-line
