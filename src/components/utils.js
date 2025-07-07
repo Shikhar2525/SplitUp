@@ -188,6 +188,7 @@ export function isEmail(input) {
   // Return true if the input matches the pattern, otherwise false
   return emailRegex.test(input);
 }
+
 export async function calculateTotalsAcrossGroups(
   groups,
   yourEmail,
@@ -197,12 +198,12 @@ export async function calculateTotalsAcrossGroups(
   let totalYouGive = 0;
 
   for (const group of groups) {
-    // Assuming calculateBalances(group, finalCurrency) returns balances in the desired currency
-    const balances = await calculateBalances(group, finalCurrency);
+    const balances = await calculateSimplifiedBalances(group, finalCurrency);
+    const user = group?.members.find((member) => member?.email === yourEmail);
+    const amISettled = user?.userSettled || false;
 
     for (const balance of balances) {
-      // Convert the balance to the final currency if necessary
-      const balanceAmount =
+      const amount =
         balance.currency !== finalCurrency
           ? (
               await convertCurrency(
@@ -213,31 +214,28 @@ export async function calculateTotalsAcrossGroups(
             ).amount
           : balance.amount;
 
-      // If you are the creditor, add the amount to totalYouGet
-      if (balance.creditor.email === yourEmail) {
-        totalYouGet += balanceAmount;
+      // ✅ You are the one who is owed money
+      if (balance.creditor.email === yourEmail && !amISettled) {
+        totalYouGet += parseFloat(amount);
       }
-      // If you are the debtor, add the amount to totalYouGive
-      if (balance.debtor.email === yourEmail) {
-        totalYouGive += balanceAmount;
+
+      // ✅ You are the one who has to pay
+      if (balance.debtor.email === yourEmail && !amISettled) {
+        totalYouGive += parseFloat(amount);
       }
     }
-
-    console.log(balances);
   }
 
-  // Calculate the total balance
   const totalBalance = totalYouGet - totalYouGive;
-
-  // Add "+" sign for positive balances, "-" will be added automatically for negative
-  const formattedBalance =
-    totalBalance > 0 ? `+${totalBalance}` : `${totalBalance}`;
 
   return {
     youGet: parseFloat(totalYouGet.toFixed(2)),
     youGive: parseFloat(totalYouGive.toFixed(2)),
-    balance: formattedBalance,
-    currency: finalCurrency, // Include the final currency for clarity
+    balance:
+      totalBalance > 0
+        ? `+${totalBalance.toFixed(2)}`
+        : `${totalBalance.toFixed(2)}`,
+    currency: finalCurrency,
   };
 }
 
