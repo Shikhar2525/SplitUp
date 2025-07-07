@@ -72,41 +72,35 @@ export async function calculateBalances(group, finalCurrency) {
   const balances = {};
   const transactions = {};
 
-  // Initialize balances for each member
+  // Initialize balances
   group?.members?.forEach((member) => {
     balances[member?.email] = 0;
   });
 
-  // Process each expense with currency conversion
+  // Loop through expenses
   for (const expense of group?.expenses || []) {
     const amount = expense.amount || 0;
     const paidBy = expense.paidBy;
     const splitBetween = expense.splitBetween || [];
-    let currency = expense.currency || finalCurrency;
+    const currency = expense.currency || finalCurrency;
 
-    // Convert the amount to the final currency if needed
     const convertedAmount =
       currency !== finalCurrency
         ? (await convertCurrency(amount, currency, finalCurrency))?.amount || 0
         : amount;
 
-    // Calculate split count based on excludePayer flag
-    const splitCount = expense.excludePayer 
-      ? splitBetween.length 
-      : splitBetween.length + 1; // Only add payer if not excluded
+    const splitCount = expense.excludePayer
+      ? splitBetween.length
+      : splitBetween.length + 1;
 
-    // Calculate the share for each member
     const share = convertedAmount / splitCount;
 
     // Update balances and transactions
     for (const { email, name } of splitBetween) {
-      balances[email] -= share; // Each member owes their share
-      balances[paidBy.email] += share; // The payer is owed that amount
+      balances[email] -= share;
+      balances[paidBy.email] += share;
 
-      // Record the transaction for breakdown
-      if (!transactions[email]) {
-        transactions[email] = {};
-      }
+      if (!transactions[email]) transactions[email] = {};
       if (!transactions[email][paidBy.email]) {
         transactions[email][paidBy.email] = {
           amount: 0,
@@ -119,81 +113,68 @@ export async function calculateBalances(group, finalCurrency) {
         description: expense.description,
         amount: parseFloat(share.toFixed(2)),
         paidBy: { email: paidBy.email, name: paidBy.name },
-        owedBy: { email: email, name: name },
+        owedBy: { email, name },
         createdDate: expense.createdDate,
         currency: finalCurrency,
-        excludePayer: expense.excludePayer, // Include this in breakdown for reference
+        excludePayer: expense.excludePayer,
       });
     }
 
-    // If payer is not excluded, add their share to the balances
     if (!expense.excludePayer) {
       balances[paidBy.email] -= share;
     }
   }
 
+  // Final step: compute settlements
   const result = [];
-  const processedPairs = new Set(); // Track processed pairs to avoid duplication
+  const processedPairs = new Set();
 
-  // Loop through the transactions and calculate net settlements
   for (const debtor of Object.keys(transactions)) {
     for (const creditor of Object.keys(transactions[debtor])) {
-      const pairKey = [debtor, creditor].sort().join("-"); // Unique pair key
+      const pairKey = [debtor, creditor].sort().join("-");
+      if (processedPairs.has(pairKey)) continue;
 
-      if (!processedPairs.has(pairKey)) {
-        const debtorAmount = transactions[debtor][creditor].amount;
-        const creditorAmount = transactions[creditor]?.[debtor]?.amount || 0;
+      const debtorAmount = transactions[debtor][creditor].amount;
+      const creditorAmount = transactions[creditor]?.[debtor]?.amount || 0;
+      const netAmount = debtorAmount - creditorAmount;
 
-        // Calculate the net amount to be settled
-        const netAmount = debtorAmount - creditorAmount;
+      let finalDebtor = debtor;
+      let finalCreditor = creditor;
 
-        let finalDebtor = debtor;
-        let finalCreditor = creditor;
-
-        // Adjust the settlement direction if the net amount is negative
-        if (netAmount < 0) {
-          finalDebtor = creditor;
-          finalCreditor = debtor;
-        }
-
-        // Only include the transaction if there is an outstanding amount
-        if (netAmount !== 0) {
-          // Check if the debtor's userSettled is true or not present
-          const debtorMember = group.members.find(
-            (m) => m.email === finalDebtor
-          );
-          if (
-            !debtorMember ||
-            debtorMember.userSettled === false ||
-            debtorMember.userSettled === undefined
-          ) {
-            result.push({
-              id: uuidv4(), // Add a unique ID for each settlement entry
-              debtor: {
-                email: finalDebtor,
-                name:
-                  group.members.find((m) => m.email === finalDebtor)?.name ||
-                  debtor + " (left)",
-              }, // Include name and email
-              creditor: {
-                email: finalCreditor,
-                name:
-                  group.members.find((m) => m.email === finalCreditor)?.name ||
-                  creditor + " (left)",
-              }, // Include name and email
-              amount: parseFloat(Math.abs(netAmount).toFixed(2)), // Round to 2 decimals
-              currency: finalCurrency, // Include the final currency for the transaction
-              breakdown: [
-                ...transactions[debtor][creditor].breakdown,
-                ...(transactions[creditor]?.[debtor]?.breakdown || []),
-              ], // Combine breakdowns from both sides for clarity
-            });
-          }
-        }
-
-        // Mark this pair as processed
-        processedPairs.add(pairKey);
+      if (netAmount < 0) {
+        finalDebtor = creditor;
+        finalCreditor = debtor;
       }
+
+      const absoluteNetAmount = Math.abs(netAmount);
+      const debtorMember = group.members.find((m) => m.email === finalDebtor);
+      const creditorMember = group.members.find(
+        (m) => m.email === finalCreditor
+      );
+
+      // ✅ Push all balances, just mark hidden if debtor is settled
+      if (absoluteNetAmount > 0) {
+        result.push({
+          id: uuidv4(),
+          debtor: {
+            email: finalDebtor,
+            name: debtorMember?.name || `${finalDebtor} (left)`,
+          },
+          creditor: {
+            email: finalCreditor,
+            name: creditorMember?.name || `${finalCreditor} (left)`,
+          },
+          amount: parseFloat(absoluteNetAmount.toFixed(2)),
+          currency: finalCurrency,
+          breakdown: [
+            ...(transactions[debtor]?.[creditor]?.breakdown || []),
+            ...(transactions[creditor]?.[debtor]?.breakdown || []),
+          ],
+          hidden: debtorMember?.userSettled === true, // ✅ Final fix
+        });
+      }
+
+      processedPairs.add(pairKey);
     }
   }
 
@@ -373,21 +354,23 @@ export function getCurrencyLabel(value) {
 export async function calculateSimplifiedBalances(group, finalCurrency) {
   // First get the normal balances
   const normalBalances = await calculateBalances(group, finalCurrency);
-  
+
   // Create a map of net balances for each person
   const netBalances = new Map();
-  
+
   // Calculate net balance for each person
   for (const transaction of normalBalances) {
     const { debtor, creditor, amount } = transaction;
-    
+
     // Update debtor balance
-    netBalances.set(debtor.email, 
+    netBalances.set(
+      debtor.email,
       (netBalances.get(debtor.email) || 0) - amount
     );
-    
+
     // Update creditor balance
-    netBalances.set(creditor.email, 
+    netBalances.set(
+      creditor.email,
       (netBalances.get(creditor.email) || 0) + amount
     );
   }
@@ -395,16 +378,16 @@ export async function calculateSimplifiedBalances(group, finalCurrency) {
   // Convert to array of people with their balances
   const people = Array.from(netBalances.entries()).map(([email, balance]) => ({
     email,
-    name: group.members.find(m => m.email === email)?.name || email,
-    balance
+    name: group.members.find((m) => m.email === email)?.name || email,
+    balance,
   }));
 
   // Sort by balance (descending)
   people.sort((a, b) => b.balance - a.balance);
 
   const result = [];
-  let i = 0;  // index for people who are owed money (positive balance)
-  let j = people.length - 1;  // index for people who owe money (negative balance)
+  let i = 0; // index for people who are owed money (positive balance)
+  let j = people.length - 1; // index for people who owe money (negative balance)
 
   while (i < j) {
     const creditor = people[i];
@@ -413,7 +396,7 @@ export async function calculateSimplifiedBalances(group, finalCurrency) {
     if (creditor.balance <= 0 || debtor.balance >= 0) break;
 
     const amount = Math.min(creditor.balance, -debtor.balance);
-    
+
     // Skip very small amounts (less than 0.01)
     if (amount < 0.01) continue;
 
@@ -421,15 +404,15 @@ export async function calculateSimplifiedBalances(group, finalCurrency) {
       id: uuidv4(),
       creditor: {
         email: creditor.email,
-        name: creditor.name
+        name: creditor.name,
       },
       debtor: {
         email: debtor.email,
-        name: debtor.name
+        name: debtor.name,
       },
       amount: parseFloat(amount.toFixed(2)),
       currency: finalCurrency,
-      simplified: true
+      simplified: true,
     });
 
     creditor.balance -= amount;
