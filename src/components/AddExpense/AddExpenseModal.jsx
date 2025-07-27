@@ -284,7 +284,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!validateStep(activeStep)) {
       return;
     }
