@@ -7,16 +7,13 @@ import {
   Select,
   Typography,
   Divider,
-  styled,
   Chip,
-  AvatarGroup,
   Avatar,
   Tabs,
   Tab,
   Button,
   IconButton,
   Alert,
-  Tooltip,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -52,7 +49,7 @@ import StickyNote2Icon from "@mui/icons-material/StickyNote2";
 import Notes from "../Notes/Notes";
 import InfoIcon from "@mui/icons-material/Info";
 import GroupIcon from "@mui/icons-material/Group";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import CalendarTodayIcon from "@mui/icons-material/AccountBalanceWallet";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import { useLocation, useNavigate } from "react-router-dom";
 import CategoryIcon from "@mui/icons-material/Category";
@@ -62,6 +59,11 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import presenceService from "../services/presence.service";
+import Tooltip from "@mui/material/Tooltip";
+import AvatarGroup from "@mui/material/AvatarGroup";
+import Badge from "@mui/material/Badge";
+import { styled } from "@mui/material/styles";
 
 // Custom styled Select component
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -90,6 +92,35 @@ const CustomSelect = styled(Select)(({ theme }) => ({
   "&:hover": {
     "& .MuiSelect-select": {
       backgroundColor: theme.palette.action.hover,
+    },
+  },
+}));
+
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    backgroundColor: "#44b700",
+    color: "#44b700",
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      animation: "ripple 1.2s infinite ease-in-out",
+      border: "1px solid currentColor",
+      content: '""',
+    },
+  },
+  "@keyframes ripple": {
+    "0%": {
+      transform: "scale(.8)",
+      opacity: 1,
+    },
+    "100%": {
+      transform: "scale(2.4)",
+      opacity: 0,
     },
   },
 }));
@@ -431,7 +462,7 @@ const GroupTab = () => {
           <Box
             sx={{
               display: "flex",
-              alignItems: "flex-start", // Changed from center to flex-start
+              alignItems: "center",
               gap: 2,
               flex: 1,
               minWidth: 0,
@@ -457,17 +488,79 @@ const GroupTab = () => {
               />
             </Box>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography
-                variant="h6"
+              <Box
                 sx={{
-                  color: "#32325d",
-                  fontSize: { xs: "0.9rem", sm: "1rem" },
-                  fontWeight: 600,
-                  mb: 0.5, // Added margin bottom
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  flexWrap: "wrap",
                 }}
               >
-                {selectedGroupDetails?.title}
-              </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: "#32325d",
+                    fontSize: { xs: "0.9rem", sm: "1rem" },
+                    fontWeight: 600,
+                    mb: 0.5, // Added margin bottom
+                  }}
+                >
+                  {selectedGroupDetails?.title}
+                </Typography>
+                {/* Active Users Display */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    background: "rgba(94, 114, 228, 0.05)",
+                    padding: "4px 12px",
+                    borderRadius: "12px",
+                    border: "1px solid rgba(94, 114, 228, 0.1)",
+                  }}
+                >
+                  {activeUsers.length > 0 ? (
+                    <>
+                      <AvatarGroup
+                        max={3}
+                        sx={{
+                          "& .MuiAvatar-root": {
+                            width: 24,
+                            height: 24,
+                            fontSize: "0.8rem",
+                            border: "2px solid #fff",
+                          },
+                        }}
+                      >
+                        {activeUsers.map((user) => (
+                          <Tooltip key={user.id} title={`${user.name} (Active)`} arrow>
+                            <StyledBadge
+                              overlap="circular"
+                              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                              variant="dot"
+                            >
+                              <Avatar
+                                alt={user.name}
+                                src={user.profilePicture}
+                                sx={{ width: 24, height: 24 }}
+                              >
+                                {user.name?.[0]}
+                              </Avatar>
+                            </StyledBadge>
+                          </Tooltip>
+                        ))}
+                      </AvatarGroup>
+                      <Typography variant="caption" sx={{ color: "#5e72e4", fontWeight: 600, fontSize: "0.75rem" }}>
+                        {activeUsers.length} active
+                      </Typography>
+                    </>
+                  ) : (
+                    <Typography variant="caption" sx={{ color: "#8898aa", fontWeight: 500, fontSize: "0.75rem" }}>
+                      No active users
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
               {selectedGroupDetails?.description && (
                 <Typography
                   variant="body2"
@@ -677,6 +770,109 @@ const GroupTab = () => {
     return categorized;
   }, [allGroups]);
 
+  const [activeUsers, setActiveUsers] = useState([]);
+
+  // Add presence effect
+  useEffect(() => {
+    if (!currentGroupID || !currentUser) return;
+
+    // Update user's presence
+    const updatePresence = async () => {
+      await presenceService.updatePresence(currentGroupID, currentUser.email, {
+        name: currentUser.name,
+        profilePicture: currentUser.profilePicture,
+      });
+    };
+
+    // Initial presence update
+    updatePresence();
+    
+    // Update presence more frequently (every 10 seconds)
+    const interval = setInterval(updatePresence, 10000);
+
+    // Subscribe to presence updates
+    const unsubscribe = presenceService.subscribeToPresence(
+      currentGroupID,
+      currentUser.email,
+      (users) => {
+        setActiveUsers(users);
+      }
+    );
+
+    // Cleanup function
+    const handleBeforeUnload = () => {
+      presenceService.removePresence(currentGroupID, currentUser.email);
+    };
+
+    // Add beforeunload event listener
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      presenceService.removePresence(currentGroupID, currentUser.email);
+    };
+  }, [currentGroupID, currentUser]);
+
+  // Find where you render the group header section and add this component:
+  const ActiveUsersDisplay = () => (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        ml: 2,
+      }}
+    >
+      <AvatarGroup
+        max={3}
+        sx={{
+          "& .MuiAvatar-root": {
+            width: 30,
+            height: 30,
+            fontSize: "0.875rem",
+            border: "2px solid #fff",
+          },
+        }}
+      >
+        {activeUsers.map((user) => (
+          <Tooltip
+            key={user.id}
+            title={`${user.name} (Active)`}
+            arrow
+          >
+            <StyledBadge
+              overlap="circular"
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              variant="dot"
+            >
+              <Avatar
+                alt={user.name}
+                src={user.profilePicture}
+                sx={{ width: 30, height: 30 }}
+              >
+                {user.name?.[0]}
+              </Avatar>
+            </StyledBadge>
+          </Tooltip>
+        ))}
+      </AvatarGroup>
+      {activeUsers.length > 0 && (
+        <Typography
+          variant="caption"
+          sx={{
+            color: "#525f7f",
+            fontSize: "0.75rem",
+          }}
+        >
+          {activeUsers.length} active now
+        </Typography>
+      )}
+    </Box>
+  );
+
+  // Find the Box component that contains the group header and add ActiveUsersDisplay:
   return (
     <Box
       sx={{
@@ -1295,5 +1491,7 @@ const AvatarGroupSection = React.memo(({ members }) => {
     </Box>
   );
 });
+
+
 
 export default GroupTab;
