@@ -33,9 +33,15 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   const isMobile = useScreenSize();
   const [openModal, setOpenModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState(groupName);
+  const [newDescription, setNewDescription] = useState(group?.description || ''); // Add this
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingDesc, setIsEditingDesc] = useState(false); // Add this
   const [currency, setCurrency] = useState(defaultCurrency);
   const [liveGroup, setLiveGroup] = useState(group);
+  const [errors, setErrors] = useState({
+    description: "",
+    groupName: ""
+  });
 
   // Real-time group subscription
   useEffect(() => {
@@ -43,12 +49,14 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
     const unsubscribe = GroupService.subscribeToGroupById(groupID, (data) => {
       if (data) {
         setLiveGroup(data);
-        setNewGroupName(data.name || "");
+        setNewGroupName(data.title || "");
+        setNewDescription(data.description || "");
         setCurrency(data.defaultCurrency || "");
       }
     });
     return () => unsubscribe();
   }, [groupID]);
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const { refreshAllGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
@@ -65,6 +73,19 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
 
   const handleNameChange = (event) => {
     setNewGroupName(event.target.value);
+  };
+
+  const handleDescriptionChange = (event) => {
+    const value = event.target.value;
+    if (value.length <= 100) {
+      setNewDescription(value);
+      const validationError = validateGroupDescription(value);
+      if (validationError) {
+        setErrors(prev => ({ ...prev, description: validationError }));
+      } else {
+        setErrors(prev => ({ ...prev, description: "" }));
+      }
+    }
   };
 
   const handleSubmitNameChange = async () => {
@@ -88,6 +109,28 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setNewGroupName(groupName);
+  };
+
+  const handleEditDescClick = () => {
+    setIsEditingDesc(true);
+  };
+
+  const handleCancelDescEdit = () => {
+    setIsEditingDesc(false);
+    setNewDescription(liveGroup?.description || '');
+  };
+
+  const handleSubmitDescChange = async () => {
+    try {
+      setCircularLoader(true);
+      await GroupService.updateGroupDescription(groupID, newDescription);
+      setIsEditingDesc(false);
+      setSnackBar({ isOpen: true, message: "Group description updated" });
+    } catch (error) {
+      console.error("Error updating group description:", error);
+    } finally {
+      setCircularLoader(false);
+    }
   };
 
   const handleCurrencyChange = (e) => {
@@ -132,12 +175,51 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
 
   const isCurrencyChanged = currency !== (liveGroup?.defaultCurrency || defaultCurrency);
 
+  // Add description validation
+  const isDescriptionValid = newDescription.length <= 100 && 
+                           !/\s{3,}/.test(newDescription) && 
+                           !/([A-Za-z0-9])\1{4,}/.test(newDescription) &&
+                           (newDescription.match(/http/g) || []).length <= 1;
+
+  const isDescriptionChanged = newDescription !== (liveGroup?.description || '') && isDescriptionValid;
+
+  // Add validateGroupDescription function
+  const validateGroupDescription = (description) => {
+    if (description.length > 100) {
+      return "Description must not exceed 100 characters";
+    }
+
+    // Check for excessive whitespace
+    if (/\s{3,}/.test(description)) {
+      return "Description contains excessive spaces";
+    }
+
+    // Check for common spam patterns
+    if (/([A-Za-z0-9])\1{4,}/.test(description)) {
+      return "Description contains repetitive characters";
+    }
+
+    // Check for URL spam
+    if ((description.match(/http/g) || []).length > 1) {
+      return "Description contains too many links";
+    }
+
+    return "";
+  };
+
   return (
     <Box
       sx={{
-        height: allUserSettled ? (isMobile ? "40vh" : "40vh") : (isMobile ? '46vh' :"55vh"),
-        overflow: "auto",
+        height: '100%', // Changed from fixed height to 100%
+        overflow: 'auto',
         padding: { xs: 1.5, sm: 2 },
+        "&::-webkit-scrollbar": {
+          width: "8px",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "rgba(94, 114, 228, 0.2)",
+          borderRadius: "4px",
+        },
         "& .MuiPaper-root": {
           transition: "transform 0.2s ease, box-shadow 0.2s ease",
           "&:hover": {
@@ -228,6 +310,105 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
               >
                 Edit Name
               </Button>
+            </Box>
+          )}
+        </Box>
+      </Paper>
+
+      {/* Description Settings Card */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          borderRadius: "12px",
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255,255,255,0.8)",
+          mb: 1.5,
+        }}
+      >
+        <Box sx={{ flex: 1, width: "100%" }}>
+          {isEditingDesc ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <TextField
+                fullWidth
+                label="Edit Description"
+                value={newDescription}
+                onChange={handleDescriptionChange}
+                variant="outlined"
+                multiline
+                rows={3}
+                inputProps={{ maxLength: 100 }}
+                helperText={
+                  errors.description || 
+                  `${100 - newDescription.length} characters remaining`
+                }
+                error={!!errors.description}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255,255,255,0.9)",
+                    borderRadius: "12px",
+                  },
+                }}
+              />
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Button
+                  variant="contained"
+                  onClick={handleSubmitDescChange}
+                  disabled={!isDescriptionChanged}
+                  startIcon={<SaveIcon />}
+                  sx={{
+                    bgcolor: "#2dce89",
+                    "&:hover": { bgcolor: "#26af74" },
+                    borderRadius: "10px",
+                  }}
+                >
+                  Save
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={handleCancelDescEdit}
+                  color="error"
+                  startIcon={<CancelIcon />}
+                  sx={{ borderRadius: "10px" }}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Box>
+          ) : (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box sx={{ 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "flex-start",
+                mb: 1
+              }}>
+                <Typography variant="subtitle1" sx={{ color: "#32325d", fontWeight: 600,mr: 1.5 }}>
+                  Group Description
+                </Typography>
+                <Button
+                  variant="outlined"
+                  onClick={handleEditDescClick}
+                  startIcon={<EditIcon />}
+                  size="small"
+                  sx={{
+                    color: "#5e72e4",
+                    borderColor: "#5e72e4",
+                    borderRadius: "8px",
+                    "&:hover": {
+                      borderColor: "#4b5cc4",
+                      backgroundColor: "rgba(94, 114, 228, 0.05)",
+                    },
+                  }}
+                >
+                  Edit Description
+                </Button>
+              </Box>
+              <Typography variant="body2" sx={{ color: "#525f7f" }}>
+                {liveGroup?.description || "No description added"}
+              </Typography>
             </Box>
           )}
         </Box>

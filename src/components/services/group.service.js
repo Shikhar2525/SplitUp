@@ -422,6 +422,27 @@ class GroupService {
       throw error;
     }
   };
+
+  updateGroupDescription = async (groupIdField, description) => {
+    try {
+      const q = query(collection(db, "Groups"), where("id", "==", groupIdField));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      const groupDocRef = querySnapshot.docs[0].ref;
+      await updateDoc(groupDocRef, {
+        description: description
+      });
+
+      console.log(`Group description updated to: ${description}`);
+    } catch (error) {
+      console.error("Error updating group description:", error);
+      throw error;
+    }
+  };
 }
 
 export default new GroupService();
