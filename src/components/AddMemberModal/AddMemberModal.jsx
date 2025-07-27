@@ -38,23 +38,140 @@ const styles = {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: "90%",
-    maxWidth: 400,
+    width: "95%",
+    maxWidth: 500,
+    maxHeight: "90vh",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
     bgcolor: "#FFF",
-    borderRadius: "16px",
-    boxShadow: 24,
-    p: 4,
+    borderRadius: "24px",
+    boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+    p: 0,
   },
-  button: {
-    backgroundColor: "#8675FF",
-    color: "#FFF",
-    "&:hover": {
-      backgroundColor: "#FD7289",
+  header: {
+    p: 3,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottom: "1px solid rgba(94, 114, 228, 0.1)",
+  },
+  content: {
+    p: 3,
+    overflowY: "auto",
+    flex: 1,
+    "&::-webkit-scrollbar": {
+      width: "6px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "rgba(94, 114, 228, 0.2)",
+      borderRadius: "10px",
     },
   },
-  searchingMessage: {
-    marginTop: "0.5rem",
-    color: "#FFBB38",
+  membersList: {
+    maxHeight: "35vh",
+    overflowY: "auto",
+    mb: 3,
+    "&::-webkit-scrollbar": {
+      width: "6px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "rgba(94, 114, 228, 0.2)",
+      borderRadius: "10px",
+    },
+  },
+  memberCard: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    p: 2,
+    mb: 1,
+    borderRadius: "16px",
+    backgroundColor: "rgba(94, 114, 228, 0.02)",
+    border: "1px solid rgba(94, 114, 228, 0.08)",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      backgroundColor: "rgba(94, 114, 228, 0.05)",
+      transform: "translateY(-1px)",
+      boxShadow: "0 4px 12px rgba(94, 114, 228, 0.05)",
+    },
+  },
+  searchInput: {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "12px",
+      backgroundColor: "rgba(255,255,255,0.8)",
+      backdropFilter: "blur(10px)",
+      transition: "all 0.2s ease",
+      "&:hover": {
+        backgroundColor: "rgba(255,255,255,0.9)",
+        boxShadow: "0 4px 20px rgba(94, 114, 228, 0.1)",
+      },
+      "&.Mui-focused": {
+        backgroundColor: "white",
+        boxShadow: "0 4px 20px rgba(94, 114, 228, 0.15)",
+      },
+    },
+  },
+  suggestionsBox: {
+    position: "absolute",
+    width: "100%",
+    maxHeight: "250px",
+    backgroundColor: "white",
+    borderRadius: "16px",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+    zIndex: 1000,
+    border: "1px solid rgba(94, 114, 228, 0.2)",
+    overflow: "auto",
+    mt: 1,
+    "&::-webkit-scrollbar": {
+      width: "6px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "rgba(94, 114, 228, 0.2)",
+      borderRadius: "10px",
+    },
+  },
+  suggestionItem: {
+    p: 2,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      backgroundColor: "rgba(94, 114, 228, 0.08)",
+      transform: "translateX(8px)",
+    },
+  },
+  footer: {
+    p: 3,
+    borderTop: "1px solid rgba(94, 114, 228, 0.1)",
+    backgroundColor: "rgba(255,255,255,0.9)",
+    backdropFilter: "blur(10px)",
+  },
+  addButton: {
+    bgcolor: "#5e72e4",
+    color: "white",
+    borderRadius: "12px",
+    textTransform: "none",
+    px: 3,
+    py: 1,
+    "&:hover": {
+      bgcolor: "#4b5cc4",
+    },
+    "&.Mui-disabled": {
+      bgcolor: "rgba(94, 114, 228, 0.3)",
+    },
+  },
+  chip: {
+    m: 0.5,
+    borderRadius: "10px",
+    backgroundColor: "rgba(94, 114, 228, 0.1)",
+    border: "1px solid rgba(94, 114, 228, 0.2)",
+    "& .MuiChip-label": {
+      color: "#5e72e4",
+      fontWeight: 600,
+    },
+    "& .MuiChip-deleteIcon": {
+      color: "#5e72e4",
+    },
   },
 };
 
@@ -282,41 +399,36 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
       }}
     >
       <Box sx={styles.modalBox}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography variant="h6" component="h2" gutterBottom>
-            Members
+        {/* Header */}
+        <Box sx={styles.header}>
+          <Typography variant="h6" sx={{ color: "#32325d", fontWeight: 600 }}>
+            Manage Members
           </Typography>
-          <IconButton onClick={handleClose} aria-label="close">
+          <IconButton onClick={handleClose} size="small">
             <CloseIcon />
           </IconButton>
-        </div>
-        {existingMembers?.length > 0 ? (
-          <Box
-            sx={{
-              padding: 1,
-              backgroundColor: "#fff",
-              maxHeight: "40vh", // Set a fixed height
-              marginBottom: 2,
-              overflowY: "auto", // Prevent vertical scroll
-              whiteSpace: "nowrap", // Prevent text from wrapping
-            }}
-          >
-            {existingMembers?.map((member) => {
-              return (
-                <Box
-                  key={member?.name}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center", // Align items vertically center
-                    borderRadius: "8px",
-                    boxShadow: 2,
-                    padding: { lg: 0.5, xs: 1, sm: 2 }, // Responsive padding
-                    marginTop: 1,
-                    marginRight: 1,
-                    backgroundColor: "#fff",
-                  }}
-                >
+        </Box>
+
+        {/* Content */}
+        <Box sx={styles.content}>
+          {error && (
+            <Alert
+              severity="error"
+              sx={{
+                mb: 2,
+                borderRadius: "12px",
+                "& .MuiAlert-icon": { color: "#f5365c" },
+              }}
+            >
+              {error}
+            </Alert>
+          )}
+
+          {/* Existing Members Section */}
+          {existingMembers?.length > 0 && (
+            <Box sx={styles.membersList}>
+              {existingMembers?.map((member) => (
+                <Box key={member?.email} sx={styles.memberCard}>
                   <Box
                     sx={{
                       display: "flex",
@@ -372,186 +484,158 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                     </IconButton>
                   )}
                 </Box>
-              );
-            })}
-          </Box>
-        ) : (
-          <Typography
-            variant="subtitle2"
-            color="textSecondary"
-            gutterBottom
-            sx={{ marginBottom: 2 }}
-          >
-            No members, add new
-          </Typography>
-        )}
-        {error && (
-          <Alert severity="error" sx={{ marginBottom: 2 }}>
-            {error}
-          </Alert>
-        )}
-        <form onSubmit={handleSubmit}>
-          <Box sx={{ position: "relative" }}>
-            <TextField
-              disabled={
-                currentUser?.email !== currentGroupObj?.admin?.email ||
-                showNameField
-              }
-              fullWidth
-              label="Add Members"
-              variant="outlined"
-              value={
-                currentUser?.email !== currentGroupObj?.admin?.email
-                  ? ""
-                  : inputEmail
-              }
-              onChange={handleEmailChange}
-              onKeyDown={handleEmailAdd}
-              helperText="Type to search friends or press 'Enter' to add new member"
-            />
-            {suggestions.length > 0 && inputEmail && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  width: "100%",
-                  maxHeight: "200px",
-                  overflowY: "auto",
-                  backgroundColor: "white",
-                  borderRadius: "0 0 8px 8px",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                  zIndex: 1000,
-                }}
-              >
-                {suggestions.map((friend) => (
-                  <Box
-                    key={friend.email}
-                    sx={{
-                      padding: "8px 16px",
-                      cursor: "pointer",
-                      "&:hover": {
-                        backgroundColor: "rgba(94, 114, 228, 0.05)",
-                      },
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 2,
-                    }}
-                    onClick={() => handleSelectFriend(friend)}
-                  >
-                    <Avatar
-                      src={friend.profilePicture}
-                      alt={friend.name}
-                      sx={{ width: 32, height: 32 }}
-                    >
-                      {friend.name?.[0]}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {friend.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {friend.email}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-            )}
-          </Box>
-          {showNameField && (
-            <TextField
-              fullWidth
-              sx={{ marginTop: 2 }}
-              label="Enter Name"
-              variant="outlined"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={handleName}
-              helperText="Press 'Enter' to add name"
-            />
+              ))}
+            </Box>
           )}
 
-          <div style={{ marginTop: "0.8rem", marginBottom: "0.8rem" }}>
-            {members?.map((member, index) => (
-              <Chip
-                key={index} // Using index as key since member object can change
-                label={member?.name}
-                avatar={
-                  <Avatar alt={member?.email} src={member?.profilePicture}>
-                    {member?.email.charAt(0)}
-                  </Avatar>
+          {/* Add Members Form */}
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ position: "relative" }}>
+              <TextField
+                disabled={
+                  currentUser?.email !== currentGroupObj?.admin?.email ||
+                  showNameField
                 }
-                onDelete={() => handleChipDelete(member)} // Directly remove the chip
-                sx={{ marginRight: 1, marginTop: 1 }}
+                fullWidth
+                label="Add Members"
+                variant="outlined"
+                value={
+                  currentUser?.email !== currentGroupObj?.admin?.email
+                    ? ""
+                    : inputEmail
+                }
+                onChange={handleEmailChange}
+                onKeyDown={handleEmailAdd}
+                helperText="Type to search friends or press 'Enter' to add new member"
+                sx={styles.searchInput}
               />
-            ))}
-          </div>
+
+              {/* Suggestions Dropdown */}
+              {suggestions.length > 0 && inputEmail && (
+                <Box sx={styles.suggestionsBox}>
+                  {suggestions.map((friend) => (
+                    <Box
+                      key={friend.email}
+                      sx={styles.suggestionItem}
+                      onClick={() => handleSelectFriend(friend)}
+                    >
+                      <Avatar
+                        src={friend.profilePicture}
+                        alt={friend.name}
+                        sx={{ width: 32, height: 32 }}
+                      >
+                        {friend.name?.[0]}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {friend.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {friend.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
+
+            {/* Name Field for New Users */}
+            {showNameField && (
+              <TextField
+                fullWidth
+                sx={{ ...styles.searchInput, mt: 2 }}
+                label="Enter Name"
+                variant="outlined"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={handleName}
+                helperText="Press 'Enter' to add name"
+              />
+            )}
+
+            {/* Selected Members Chips */}
+            <Box sx={{ mt: 2, mb: 2 }}>
+              {members?.map((member, index) => (
+                <Chip
+                  key={index}
+                  label={member?.name}
+                  avatar={
+                    <Avatar alt={member?.email} src={member?.profilePicture}>
+                      {member?.email.charAt(0)}
+                    </Avatar>
+                  }
+                  onDelete={() => handleChipDelete(member)}
+                  sx={styles.chip}
+                />
+              ))}
+            </Box>
+          </form>
+
+          {/* Admin Only Warning */}
+          {currentUser?.email !== currentGroupObj?.admin?.email && (
+            <Alert
+              severity="info"
+              sx={{
+                mt: 2,
+                borderRadius: "12px",
+                backgroundColor: "rgba(94, 114, 228, 0.05)",
+                "& .MuiAlert-icon": { color: "#5e72e4" },
+              }}
+            >
+              Only admin can add/remove members
+            </Alert>
+          )}
+        </Box>
+
+        {/* Footer */}
+        <Box sx={styles.footer}>
           <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
+            sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
           >
-            {" "}
-            <Link
+            <Button
+              variant="outlined"
               onClick={resetAddMembers}
-              variant="body2"
-              sx={{ marginLeft: 0.7 }}
+              sx={{
+                borderRadius: "12px",
+                color: "#5e72e4",
+                borderColor: "rgba(94, 114, 228, 0.5)",
+                "&:hover": {
+                  borderColor: "#5e72e4",
+                  backgroundColor: "rgba(94, 114, 228, 0.05)",
+                },
+              }}
             >
               Reset
-            </Link>
+            </Button>
             <Button
               variant="contained"
               type="submit"
-              sx={styles.button}
               disabled={loading || members?.length === 0}
+              onClick={handleSubmit}
+              sx={styles.addButton}
             >
               {loading || emailLoading ? (
-                <CircularProgress size={24} />
+                <CircularProgress size={24} sx={{ color: "white" }} />
               ) : (
                 "Add Members"
               )}
             </Button>
           </Box>
+        </Box>
 
-          {currentUser?.email !== currentGroupObj?.admin?.email && (
-            <Box
-              sx={{
-                display: "flex",
-                justfyContent: "center",
-                alignItems: "center",
-                marginTop: 2,
-                gap: 1,
-                color: "#FF1010",
-              }}
-            >
-              <HelpOutlineIcon fontSize="smaller" />
-              <Typography variant="subtitle2" fontSize={10}>
-                Only admin can add/remove members
-              </Typography>
-            </Box>
-          )}
-        </form>
-
-        {/* Confirmation dialog for deletion of existing members */}
+        {/* Confirmation Dialog */}
         <Dialog
           open={confirmationOpen}
           onClose={() => setConfirmationOpen(false)}
+          PaperProps={{
+            sx: {
+              borderRadius: "16px",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+            },
+          }}
         >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to delete this member?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setConfirmationOpen(false)} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmDelete} color="secondary" autoFocus>
-              Delete
-            </Button>
-          </DialogActions>
+          {/* ...existing dialog content... */}
         </Dialog>
       </Box>
     </Modal>

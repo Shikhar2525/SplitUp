@@ -361,7 +361,7 @@ const GroupTab = () => {
     useEffect(() => {
       const calculateTotalAmount = async () => {
         let totalInCurrentCurrency = 0;
-        let myShare = 0;
+        let myTotalExpenses = 0;
 
         if (selectedGroupDetails?.expenses) {
           for (const expense of selectedGroupDetails.expenses) {
@@ -374,7 +374,17 @@ const GroupTab = () => {
 
               totalInCurrentCurrency += parseFloat(convertedAmount);
 
-              // Calculate if I'm included in the split
+              // Calculate my total expenses (both paid by me and my share in others' expenses)
+              if (expense.paidBy.email === currentUser?.email) {
+                // If I paid, add the amount I won't get back (my share)
+                const splitCount = expense.excludePayer
+                  ? expense.splitBetween.length
+                  : expense.splitBetween.length + 1;
+                const myShare = parseFloat(convertedAmount) / splitCount;
+                myTotalExpenses += myShare;
+              }
+
+              // Add my share if I'm in splitBetween
               if (
                 expense.splitBetween.some(
                   (member) => member.email === currentUser?.email
@@ -383,8 +393,8 @@ const GroupTab = () => {
                 const splitCount = expense.excludePayer
                   ? expense.splitBetween.length
                   : expense.splitBetween.length + 1;
-                const myExpenseShare = parseFloat(convertedAmount) / splitCount;
-                myShare += myExpenseShare;
+                const myShare = parseFloat(convertedAmount) / splitCount;
+                myTotalExpenses += myShare;
               }
             } catch (error) {
               console.error("Currency conversion error:", error);
@@ -393,7 +403,7 @@ const GroupTab = () => {
         }
 
         setConvertedTotal(totalInCurrentCurrency);
-        setMyTotalShare(myShare);
+        setMyTotalShare(myTotalExpenses);
       };
 
       calculateTotalAmount();
