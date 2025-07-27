@@ -508,7 +508,7 @@ const GroupTab = () => {
                   {selectedGroupDetails?.title}
                 </Typography>
                 {/* Active Users Display */}
-                <Box
+                {/* <Box
                   sx={{
                     display: "flex",
                     alignItems: "center",
@@ -559,7 +559,7 @@ const GroupTab = () => {
                       No active users
                     </Typography>
                   )}
-                </Box>
+                </Box> */}
               </Box>
               {selectedGroupDetails?.description && (
                 <Typography
