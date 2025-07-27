@@ -305,40 +305,43 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
     if (selectedMember?.email === currentGroupObj?.admin?.email) {
       setConfirmationOpen(false);
       setError("Cannot remove admin");
-    } else {
-      try {
-        setLinearProgress(true);
-        await GroupService.removeMemberFromGroup(
-          currentGroupID,
-          selectedMember?.email
-        ); // Call API to remove member
+      return;
+    }
 
-        const log = {
-          logId: uuidv4(),
-          logType: "deleteUser",
-          details: {
-            userAffected: {
-              email: selectedMember?.email,
-              name: selectedMember?.name,
-            },
-            performedBy: { email: currentUser?.email, name: currentUser?.name },
-            date: new Date(),
-            groupTitle: currentGroupObj?.title,
-            groupId: currentGroupID,
+    try {
+      setLinearProgress(true);
+      // First close the confirmation dialog
+      setConfirmationOpen(false);
+      
+      // Then remove the member
+      await GroupService.removeMemberFromGroup(
+        currentGroupID,
+        selectedMember?.email
+      );
+
+      const log = {
+        logId: uuidv4(),
+        logType: "deleteUser",
+        details: {
+          userAffected: {
+            email: selectedMember?.email,
+            name: selectedMember?.name,
           },
-        };
+          performedBy: { email: currentUser?.email, name: currentUser?.name },
+          date: new Date(),
+          groupTitle: currentGroupObj?.title,
+          groupId: currentGroupID,
+        },
+      };
 
-        await activityService?.addActivityLog(log);
-
-        refreshAllGroups(); // Refresh groups after deletion
-        setError(""); // Clear any errors
-      } catch (err) {
-        setError("Failed to delete member. Please try again.");
-      } finally {
-        setConfirmationOpen(false); // Close the confirmation dialog
-        setSelectedMember(null); // Clear the selected member
-        setLinearProgress(false);
-      }
+      await activityService?.addActivityLog(log);
+      setError(""); // Clear any errors
+      refreshAllGroups(); // Refresh groups after deletion
+    } catch (err) {
+      setError("Failed to delete member. Please try again.");
+    } finally {
+      setSelectedMember(null); // Clear the selected member
+      setLinearProgress(false);
     }
   };
 
@@ -379,14 +382,17 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
         await activityService?.addActivityLog(log);
       }
 
-      setMembers([]); // Reset members after submission
-      refreshAllGroups(); // Refresh the group members
+      // Reset form fields but keep modal open
+      setMembers([]);
+      setInputEmail("");
+      setShowNameField(false);
+      setName("");
       setError("");
+      refreshAllGroups(); // Refresh the group members
     } catch (error) {
       setError("Failed to add member(s). Please try again.");
     } finally {
       setLoading(false);
-      setError("");
     }
   };
 
@@ -635,7 +641,38 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
             },
           }}
         >
-          {/* ...existing dialog content... */}
+          <DialogTitle sx={{ color: "#32325d" }}>Remove Member</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to remove {selectedMember?.name} from this group?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button
+              onClick={() => setConfirmationOpen(false)}
+              sx={{
+                color: "#5e72e4",
+                "&:hover": {
+                  backgroundColor: "rgba(94, 114, 228, 0.05)",
+                },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              variant="contained"
+              sx={{
+                bgcolor: "#f5365c",
+                color: "white",
+                "&:hover": {
+                  bgcolor: "#f5365c",
+                },
+              }}
+            >
+              Remove
+            </Button>
+          </DialogActions>
         </Dialog>
       </Box>
     </Modal>
