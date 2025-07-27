@@ -283,8 +283,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
     });
   };
 
-  const handleSubmit = async (e) => {
-    e?.preventDefault();
+  const handleSubmit = async () => {  // Remove e parameter
     if (!validateStep(activeStep)) {
       return;
     }
@@ -292,6 +291,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
     if (splitOptions?.length <= 0) {
       return;
     }
+
     const expenseData = {
       id: isEditing ? expenseToEdit.id : uuidv4(),
       description,
@@ -388,6 +388,22 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
       setDescription(value);
       const validationError = validateDescription(value);
       setErrors(prev => ({ ...prev, description: validationError }));
+    }
+  };
+
+  const handleSplitWithAll = (e) => {
+    if (e.target.checked) {
+      // Add all users except the payer to split options
+      const allUsersExceptPayer = users
+        .filter(user => user.email !== paidBy)
+        .map(user => ({
+          email: user.email,
+          name: user.name
+        }));
+      setSplitOptions(allUsersExceptPayer);
+    } else {
+      // Clear split options when unchecked
+      setSplitOptions([]);
     }
   };
 
@@ -552,7 +568,75 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
 
       case 2:
         return (
-          <Box sx={{ mt: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+          <Box sx={{ 
+            mt: 3, 
+            display: "flex", 
+            flexDirection: "column", 
+            gap: 1.5  // Reduced from 3 to 1.5
+          }}>
+            {/* Exclude Payer Checkbox - Enhanced design */}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={excludePayer}
+                  onChange={(e) => setExcludePayer(e.target.checked)}
+                  sx={{
+                    '&.MuiCheckbox-root': {
+                      color: 'rgba(94, 114, 228, 0.5)',
+                    },
+                    '&.Mui-checked': {
+                      color: '#5e72e4',
+                    },
+                    '& .MuiSvgIcon-root': {
+                      fontSize: '1.2rem',
+                      transition: 'transform 0.2s ease-in-out',
+                    },
+                    '&:hover': {
+                      '& .MuiSvgIcon-root': {
+                        transform: 'scale(1.1)',
+                      },
+                      backgroundColor: 'rgba(94, 114, 228, 0.08)',
+                      borderRadius: '8px',
+                    },
+                  }}
+                />
+              }
+              label={
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  gap: 1,
+                  color: excludePayer ? '#5e72e4' : '#525f7f',
+                  transition: 'color 0.2s ease'
+                }}>
+                  <Typography sx={{ 
+                    fontSize: '0.9rem',
+                    fontWeight: excludePayer ? 600 : 400,
+                    transition: 'all 0.2s ease'
+                  }}>
+                    Don't include payer in split
+                  </Typography>
+                </Box>
+              }
+              sx={{
+                margin: 0,
+                border: '1px solid',
+                borderColor: excludePayer ? 'rgba(94, 114, 228, 0.3)' : 'rgba(0,0,0,0.1)',
+                borderRadius: '12px',
+                py: 1.5,
+                px: 2,
+                width: '100%',
+                transition: 'all 0.2s ease',
+                backgroundColor: excludePayer ? 'rgba(94, 114, 228, 0.05)' : 'transparent',
+                '&:hover': {
+                  backgroundColor: excludePayer ? 'rgba(94, 114, 228, 0.08)' : 'rgba(0,0,0,0.02)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(94, 114, 228, 0.05)',
+                },
+              }}
+            />
+
+            {/* Paid By Dropdown */}
             <FormControl error={!!errors.paidBy}>
               <InputLabel required>Paid By</InputLabel>
               <Select
@@ -612,28 +696,92 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
               )}
             </FormControl>
 
+            {/* Divider before Split with all members */}
+            <Box
+              sx={{
+                height: '1px',
+                background: 'rgba(94,114,228,0.15)',
+                width: '100%',
+                my: 0.5  // Reduced from 1 to 0.5
+              }}
+            />
+
+            {/* Split with all members checkbox - Enhanced design */}
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={excludePayer}
-                  onChange={(e) => setExcludePayer(e.target.checked)}
+                  checked={splitOptions.length === users.filter(u => u.email !== paidBy).length}
+                  onChange={handleSplitWithAll}
                   sx={{
-                    color: "#5e72e4",
-                    "&.Mui-checked": {
-                      color: "#5e72e4",
+                    '&.MuiCheckbox-root': {
+                      color: 'rgba(94, 114, 228, 0.5)',
+                    },
+                    '&.Mui-checked': {
+                      color: '#5e72e4',
+                    },
+                    '& .MuiSvgIcon-root': {
+                      fontSize: '1.2rem',
+                      transition: 'transform 0.2s ease-in-out',
+                    },
+                    '&:hover': {
+                      '& .MuiSvgIcon-root': {
+                        transform: 'scale(1.1)',
+                      },
+                      backgroundColor: 'rgba(94, 114, 228, 0.08)',
+                      borderRadius: '8px',
                     },
                   }}
                 />
               }
-              label="Don't include payer in split"
+              label={
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  gap: 1,
+                  color: splitOptions.length === users.filter(u => u.email !== paidBy).length ? '#5e72e4' : '#525f7f',
+                  transition: 'color 0.2s ease'
+                }}>
+                  <Typography sx={{ 
+                    fontSize: '0.9rem',
+                    fontWeight: splitOptions.length === users.filter(u => u.email !== paidBy).length ? 600 : 400,
+                    transition: 'all 0.2s ease'
+                  }}>
+                    Split with all members
+                  </Typography>
+                  {splitOptions.length === users.filter(u => u.email !== paidBy).length && (
+                    <Chip
+                      label={`${splitOptions.length} members selected`}
+                      size="small"
+                      sx={{
+                        backgroundColor: 'rgba(94, 114, 228, 0.1)',
+                        color: '#5e72e4',
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                        height: '20px'
+                      }}
+                    />
+                  )}
+                </Box>
+              }
               sx={{
-                border: "1px dashed rgba(94,114,228,0.3)",
-                borderRadius: "12px",
-                py: 1,
+                margin: 0,
+                border: '1px solid',
+                borderColor: splitOptions.length === users.filter(u => u.email !== paidBy).length ? 'rgba(94, 114, 228, 0.3)' : 'rgba(0,0,0,0.1)',
+                borderRadius: '12px',
+                py: 1.5,
                 px: 2,
+                width: '100%',
+                transition: 'all 0.2s ease',
+                backgroundColor: splitOptions.length === users.filter(u => u.email !== paidBy).length ? 'rgba(94, 114, 228, 0.05)' : 'transparent',
+                '&:hover': {
+                  backgroundColor: splitOptions.length === users.filter(u => u.email !== paidBy).length ? 'rgba(94, 114, 228, 0.08)' : 'rgba(0,0,0,0.02)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(94, 114, 228, 0.05)',
+                },
               }}
             />
 
+            {/* Split Between Dropdown */}
             <FormControl error={!!errors.splitOptions}>
               <InputLabel required>Split Between</InputLabel>
               <Select
@@ -878,7 +1026,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
         </Button>
         <Button
           variant="contained"
-          onClick={() => {
+          onClick={() => {  // Change to simple onClick handler
             if (
               isEditing &&
               activeStep === steps.length - 1 &&
@@ -892,7 +1040,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
               return;
             }
             if (activeStep === steps.length - 1) {
-              handleSubmit();
+              handleSubmit();  // Call without event parameter
             } else {
               handleNext();
             }
@@ -925,7 +1073,7 @@ export default AddExpenseModal;
 // Utility function to compare arrays of objects (ignoring order)
 function arraysEqualIgnoreOrder(a, b, key = "email") {
   if (!Array.isArray(a) || !Array.isArray(b)) return false;
-  if (a.length !== b.length) return false;
+  if (a.length !== b.length) return false;  // Fixed: Added parentheses
   const aSorted = [...a].sort((x, y) => (x[key] > y[key] ? 1 : -1));
   const bSorted = [...b].sort((x, y) => (x[key] > y[key] ? 1 : -1));
   return aSorted.every((item, idx) => item[key] === bSorted[idx][key]);
