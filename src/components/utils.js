@@ -272,66 +272,73 @@ export function formatFirestoreTimestamp(timestamp) {
   return formattedDate;
 }
 
-export async function convertCurrency(amount, toCurrency, fromCurrency) {
-  // Create the API URL dynamically based on the currency pair
-  const apiUrl = `https://raw.githubusercontent.com/WoXy-Sensei/currency-api/main/api/${fromCurrency}_${toCurrency}.json`;
-  console.log(apiUrl);
+export async function convertCurrency(amount, fromCurrency, toCurrency) {
+  // If same currency, return early with rate 1
+  if (fromCurrency === toCurrency) {
+    return {
+      fromCurrency,
+      toCurrency,
+      rate: 1,
+      amount: amount.toFixed(2),
+      lastUpdate: Date.now(),
+    };
+  }
+
+  // Function to fetch rate from Frankfurter API
+  const fetchRate = async (base, target) => {
+    const url = `https://api.frankfurter.app/latest?amount=1&from=${base}&to=${target}`;
+    console.log("Fetching URL:", url);
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Fetch failed: ${response.statusText}`);
+
+    const data = await response.json();
+    return data.rates?.[target];
+  };
 
   try {
-    // Fetch the currency conversion data from the API
-    const response = await fetch(apiUrl);
-    if (!response.ok) {
-      throw new Error(`Error fetching data: ${response.statusText}`);
-    }
-    const currencyData = await response.json();
-
-    // Extract the necessary data
-    const { rate } = currencyData;
-
-    // Convert the amount
-    if (fromCurrency === toCurrency) {
-      return {
-        amount: amount.toFixed(2), // No conversion needed
-        toCurrency: fromCurrency,
-      };
-    }
-
-    const convertedAmount = amount * rate;
+    // Try direct conversion
+    const rate = await fetchRate(fromCurrency, toCurrency);
     return {
-      amount: convertedAmount.toFixed(2), // Format to 2 decimal places
+      fromCurrency,
       toCurrency,
+      rate,
+      amount: (amount * rate).toFixed(2),
+      lastUpdate: Date.now(),
     };
   } catch (error) {
-    console.error("Error fetching currency data:", error);
-
-    // Attempt conversion by switching from and to currencies
-    const fallbackApiUrl = `https://raw.githubusercontent.com/WoXy-Sensei/currency-api/main/api/${toCurrency}_${fromCurrency}.json`;
-    console.log(fallbackApiUrl);
-
+    console.error("Primary conversion failed:", error);
+    
     try {
-      const fallbackResponse = await fetch(fallbackApiUrl);
-      if (!fallbackResponse.ok) {
-        throw new Error(`Error fetching data: ${fallbackResponse.statusText}`);
-      }
-      const fallbackCurrencyData = await fallbackResponse.json();
-      const { rate } = fallbackCurrencyData;
+      // Try reverse conversion
+      const reverseRate = await fetchRate(toCurrency, fromCurrency);
+      const rate = 1 / reverseRate;
 
-      // Convert the amount with the fallback rate
-      const convertedAmount = amount / rate; // Reverse the conversion
       return {
-        amount: convertedAmount.toFixed(2), // Format to 2 decimal places
-        toCurrency: fromCurrency, // Set the toCurrency as the original fromCurrency
+        fromCurrency,
+        toCurrency,
+        rate,
+        amount: (amount * rate).toFixed(2),
+        lastUpdate: Date.now(),
       };
     } catch (fallbackError) {
-      console.error("Error fetching fallback currency data:", fallbackError);
-      // If both attempts fail, return the original amount with the original currency
+      console.error("Fallback conversion failed:", fallbackError);
+      
+      // Return original amount with rate 1 as a last resort
       return {
-        amount: amount.toFixed(2), // Return original amount
-        toCurrency: fromCurrency,
+        fromCurrency,
+        toCurrency,
+        rate: 1,
+        amount: amount.toFixed(2),
+        lastUpdate: Date.now(),
       };
     }
   }
 }
+
+
+
+
 
 export function getCurrencySymbol(value) {
   const currency = currencies.find((currency) => currency.value === value);
