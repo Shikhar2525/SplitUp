@@ -251,7 +251,8 @@ const TransactionCard = ({
                 lineHeight: { xs: 1.2, sm: 1.4 },
               }}
             >
-              {transaction?.description}
+              {transaction?.description?.charAt(0).toUpperCase() +
+                transaction?.description?.slice(1)}
             </Typography>
             <Typography
               sx={{
