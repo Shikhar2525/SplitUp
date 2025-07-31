@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas';
+import html2canvas from "html2canvas";
 import {
   Avatar,
   Box,
@@ -22,19 +22,25 @@ import {
   FormControlLabel,
   Checkbox,
   Switch,
-  Paper
+  Paper,
 } from "@mui/material";
 import React, { useState } from "react";
 import GradingIcon from "@mui/icons-material/Grading";
 import InfoIcon from "@mui/icons-material/Info";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import DownloadIcon from '@mui/icons-material/Download';
+import DownloadIcon from "@mui/icons-material/Download";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatIsoDate, getCurrencySymbol } from "../utils";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import { useCurrentUser } from "../contexts/CurrentUser";
 
-function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = 'group', groupCreatedDate }) {
+function BalanceCard({
+  balances,
+  isSimplified,
+  onSimplifiedChange,
+  groupName = "group",
+  groupCreatedDate,
+}) {
   const [openModal, setOpenModal] = useState(false);
   const [selectedBreakdown, setSelectedBreakdown] = useState([]);
   const [showRelatedToMe, setShowRelatedToMe] = useState(true);
@@ -62,39 +68,43 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
   // Add download handler
   const handleDownloadImage = async () => {
     try {
-      const year = new Date(groupCreatedDate?.seconds * 1000).getFullYear() || new Date().getFullYear();
-      
+      const year =
+        new Date(groupCreatedDate?.seconds * 1000).getFullYear() ||
+        new Date().getFullYear();
+
       // Capitalize first letter of group name and replace spaces with underscores
       const formattedGroupName = groupName
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join('_');
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join("_");
 
-      const originalTable = document.getElementById('balance-table');
+      const originalTable = document.getElementById("balance-table");
       if (!originalTable) return;
 
       // Create container with fixed width
-      const container = document.createElement('div');
-      container.style.width = '800px'; // Fixed width
-      container.style.padding = '20px';
-      container.style.background = '#ffffff';
-      container.style.fontFamily = 'Arial, sans-serif';
+      const container = document.createElement("div");
+      container.style.width = "800px"; // Fixed width
+      container.style.padding = "20px";
+      container.style.background = "#ffffff";
+      container.style.fontFamily = "Arial, sans-serif";
 
       // Create title with split mode info
-      const title = document.createElement('h2');
-      title.style.color = '#353E6C';
-      title.style.marginBottom = '20px';
-      title.style.fontSize = '18px';
-      title.textContent = `${groupName} - Balance Summary (${isSimplified ? 'Advanced' : 'Normal'} Mode)`;
+      const title = document.createElement("h2");
+      title.style.color = "#353E6C";
+      title.style.marginBottom = "20px";
+      title.style.fontSize = "18px";
+      title.textContent = `${groupName} - Balance Summary (${
+        isSimplified ? "Advanced" : "Normal"
+      } Mode)`;
       container.appendChild(title);
 
       // Clone and modify table
       const clonedTable = originalTable.cloneNode(true);
-      
+
       // Remove last column if not simplified
       if (!isSimplified) {
-        const rows = clonedTable.querySelectorAll('tr');
-        rows.forEach(row => {
+        const rows = clonedTable.querySelectorAll("tr");
+        rows.forEach((row) => {
           const cells = row.cells;
           if (cells.length > 0) {
             row.deleteCell(-1);
@@ -103,11 +113,11 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
       }
 
       // Set table styles for better image output
-      clonedTable.style.width = '100%';
-      clonedTable.style.borderCollapse = 'collapse';
-      clonedTable.querySelectorAll('td, th').forEach(cell => {
-        cell.style.padding = '8px 16px';
-        cell.style.fontSize = '14px';
+      clonedTable.style.width = "100%";
+      clonedTable.style.borderCollapse = "collapse";
+      clonedTable.querySelectorAll("td, th").forEach((cell) => {
+        cell.style.padding = "8px 16px";
+        cell.style.fontSize = "14px";
       });
 
       container.appendChild(clonedTable);
@@ -116,20 +126,20 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
       // Capture image
       const canvas = await html2canvas(container, {
         scale: 2,
-        backgroundColor: '#ffffff',
-        logging: false
+        backgroundColor: "#ffffff",
+        logging: false,
       });
 
       // Clean up
       document.body.removeChild(container);
 
-      const image = canvas.toDataURL('image/jpeg', 0.95);
-      const link = document.createElement('a');
+      const image = canvas.toDataURL("image/jpeg", 0.95);
+      const link = document.createElement("a");
       link.download = `${formattedGroupName}_Balance_Summary_${year}.jpg`;
       link.href = image;
       link.click();
     } catch (error) {
-      console.error('Error generating image:', error);
+      console.error("Error generating image:", error);
     }
   };
 
@@ -142,23 +152,55 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
           width: "100%",
           overflow: "hidden",
           fontFamily: "Poppins, sans-serif",
-          backgroundColor: '#ffffff' // Ensure white background for image export
+          backgroundColor: "#ffffff", // Ensure white background for image export
         }}
       >
         {balances?.length > 0 ? (
           <CardContent sx={{ padding: "0 !important" }}>
-            <Alert severity="info">
-              Currency conversion rates may vary; results are approximate.
-            </Alert>
-            <Box sx={{ 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "space-between", 
-              px: 2, 
-              mt: 1,
-              flexDirection: { xs: 'column', sm: 'row' },
-              gap: { xs: 2, sm: 2 }
-            }}>
+           
+
+            {!isSimplified ? (
+              <Alert
+                severity="error"
+                variant="filled"
+                sx={{
+                  mb: 2,
+                  mt: 1,
+                  borderRadius: "8px",
+                  backgroundColor: "#e13c58ff",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                }}
+              >
+                Always settle your final payments considering{" "}
+                <strong>Advance Split Mode</strong>. Normal Split Mode is only
+                for better understanding.
+              </Alert>
+            ): <Alert
+                severity="success"
+                variant="filled"
+                sx={{
+                  mb: 2,
+                  mt: 1,
+                  borderRadius: "8px",
+                  backgroundColor: "#55b13eff",
+                  color: "#fff",
+                  fontSize: "0.8rem",
+                }}
+              >
+               We recommend using <strong>Advance Mode</strong> for accurate final cash settlements.
+              </Alert> }
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                px: 2,
+                mt: 1,
+                flexDirection: { xs: "column", sm: "row" },
+                gap: { xs: 2, sm: 2 },
+              }}
+            >
               {/* View Balances Checkbox - Shown first on mobile */}
               <FormControlLabel
                 control={
@@ -172,30 +214,35 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
                 label="View Balances Involving Me"
                 sx={{
                   "& .MuiFormControlLabel-label": {
-                    fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                    fontSize: { xs: "0.8rem", sm: "0.9rem" },
                   },
-                  width: { xs: '100%', sm: 'auto' },
-                  order: { xs: 1, sm: 1 }
+                  width: { xs: "100%", sm: "auto" },
+                  order: { xs: 1, sm: 1 },
                 }}
               />
 
               {/* Split Mode Toggle - Now aligned right on mobile */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center',
-                gap: { xs: 3, sm: 2 },
-                width: { xs: '100%', sm: 'auto' },
-                order: { xs: 2, sm: 2 },
-                justifyContent: { xs: 'flex-start', sm: 'flex-start' },
-                borderBottom: { xs: '1px solid rgba(94, 114, 228, 0.1)', sm: 'none' },
-                paddingBottom: { xs: 2, sm: 0 }
-              }}>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontSize: { xs: '0.8rem', sm: '0.9rem' },
-                    whiteSpace: 'nowrap',
-                    color: '#525f7f'
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: { xs: 3, sm: 2 },
+                  width: { xs: "100%", sm: "auto" },
+                  order: { xs: 2, sm: 2 },
+                  justifyContent: { xs: "flex-start", sm: "flex-start" },
+                  borderBottom: {
+                    xs: "1px solid rgba(94, 114, 228, 0.1)",
+                    sm: "none",
+                  },
+                  paddingBottom: { xs: 2, sm: 0 },
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: "0.8rem", sm: "0.9rem" },
+                    whiteSpace: "nowrap",
+                    color: "#525f7f",
                   }}
                 >
                   Split Mode:
@@ -220,69 +267,72 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
                           width: 42,
                           height: 26,
                           padding: 0,
-                          '& .MuiSwitch-switchBase': {
+                          "& .MuiSwitch-switchBase": {
                             padding: 0,
-                            margin: '2px',
-                            '&.Mui-checked': {
-                              transform: 'translateX(16px)',
-                              '& + .MuiSwitch-track': {
-                                backgroundColor: 'rgba(94, 114, 228, 0.8) !important',
+                            margin: "2px",
+                            "&.Mui-checked": {
+                              transform: "translateX(16px)",
+                              "& + .MuiSwitch-track": {
+                                backgroundColor:
+                                  "rgba(94, 114, 228, 0.8) !important",
                                 opacity: 1,
                                 border: 0,
                               },
-                              '& .MuiSwitch-thumb': {
-                                backgroundColor: '#5e72e4',
-                                '&::before': {
+                              "& .MuiSwitch-thumb": {
+                                backgroundColor: "#5e72e4",
+                                "&::before": {
                                   content: '"⚡"',
-                                  position: 'absolute',
-                                  width: '100%',
-                                  height: '100%',
+                                  position: "absolute",
+                                  width: "100%",
+                                  height: "100%",
                                   top: 0,
                                   left: 0,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontSize: '10px',
-                                }
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontSize: "10px",
+                                },
                               },
                             },
                           },
-                          '& .MuiSwitch-thumb': {
-                            boxSizing: 'border-box',
+                          "& .MuiSwitch-thumb": {
+                            boxSizing: "border-box",
                             width: 22,
                             height: 22,
-                            '&::before': {
+                            "&::before": {
                               content: '""',
-                              position: 'absolute',
-                              width: '100%',
-                              height: '100%',
+                              position: "absolute",
+                              width: "100%",
+                              height: "100%",
                               left: 0,
                               top: 0,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            },
                           },
-                          '& .MuiSwitch-track': {
+                          "& .MuiSwitch-track": {
                             borderRadius: 26 / 2,
-                            backgroundColor: 'rgba(0,0,0,0.1) !important',
+                            backgroundColor: "rgba(0,0,0,0.1) !important",
                             opacity: 1,
-                            transition: 'background-color 0.2s',
+                            transition: "background-color 0.2s",
                           },
                         }}
                       />
                     }
                     label={
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 0.5,
-                        ml: 1,
-                        color: isSimplified ? '#5e72e4' : 'inherit',
-                        fontWeight: isSimplified ? 600 : 400,
-                        transition: 'all 0.2s',
-                        fontSize: { xs: '0.8rem', sm: '0.9rem' }
-                      }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                          ml: 1,
+                          color: isSimplified ? "#5e72e4" : "inherit",
+                          fontWeight: isSimplified ? 600 : 400,
+                          transition: "all 0.2s",
+                          fontSize: { xs: "0.8rem", sm: "0.9rem" },
+                        }}
+                      >
                         {isSimplified ? "Advanced" : "Normal"}
                         {isSimplified && (
                           <motion.div
@@ -291,15 +341,16 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
                             transition={{
                               type: "spring",
                               stiffness: 260,
-                              damping: 20
+                              damping: 20,
                             }}
                           >
-                            <AutoAwesomeIcon 
-                              sx={{ 
-                                fontSize: { xs: '0.8rem', sm: '1rem' },
-                                color: '#5e72e4',
-                                filter: 'drop-shadow(0 0 2px rgba(94, 114, 228, 0.3))'
-                              }} 
+                            <AutoAwesomeIcon
+                              sx={{
+                                fontSize: { xs: "0.8rem", sm: "1rem" },
+                                color: "#5e72e4",
+                                filter:
+                                  "drop-shadow(0 0 2px rgba(94, 114, 228, 0.3))",
+                              }}
                             />
                           </motion.div>
                         )}
@@ -307,7 +358,7 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
                     }
                     sx={{
                       marginRight: 0,
-                      marginLeft: 0
+                      marginLeft: 0,
                     }}
                   />
                 </Tooltip>
@@ -315,54 +366,91 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
             </Box>
             {filteredBalances.length > 0 ? (
               <>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  padding: 2
-                }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: 2,
+                  }}
+                >
                   <Typography variant="subtitle1" sx={{ color: "#353E6C" }}>
                     Balance summary
                   </Typography>
-                  <Tooltip title="Download balance sheet as image" arrow>
+                  {isSimplified && <Tooltip title="Download balance sheet as image" arrow>
                     <Button
                       variant="outlined"
                       startIcon={<DownloadIcon />}
                       onClick={handleDownloadImage}
                       size="small"
                       sx={{
-                        borderRadius: '12px',
-                        color: '#5e72e4',
-                        borderColor: 'rgba(94, 114, 228, 0.5)',
-                        '&:hover': {
-                          borderColor: '#5e72e4',
-                          backgroundColor: 'rgba(94, 114, 228, 0.05)'
-                        }
+                        borderRadius: "12px",
+                        color: "#5e72e4",
+                        borderColor: "rgba(94, 114, 228, 0.5)",
+                        "&:hover": {
+                          borderColor: "#5e72e4",
+                          backgroundColor: "rgba(94, 114, 228, 0.05)",
+                        },
                       }}
                     >
                       Save as Image
                     </Button>
-                  </Tooltip>
+                  </Tooltip>}
                 </Box>
                 <div id="balance-card-content">
                   <TableContainer>
                     <Table id="balance-table" aria-label="balance table">
                       <TableHead>
                         <TableRow>
-                          <TableCell sx={{ fontWeight: "bold", backgroundColor: "#8675FF", color: "white", padding: "4px 16px" }}>
+                          <TableCell
+                            sx={{
+                              fontWeight: "bold",
+                              backgroundColor: "#8675FF",
+                              color: "white",
+                              padding: "4px 16px",
+                            }}
+                          >
                             Will Give
                           </TableCell>
-                          <TableCell sx={{ fontWeight: "bold", backgroundColor: "#8675FF", color: "white", padding: "4px 16px" }}>
+                          <TableCell
+                            sx={{
+                              fontWeight: "bold",
+                              backgroundColor: "#8675FF",
+                              color: "white",
+                              padding: "4px 16px",
+                            }}
+                          >
                             Will Receive
                           </TableCell>
-                          <TableCell sx={{ fontWeight: "bold", backgroundColor: "#8675FF", color: "white", padding: "4px 16px" }}>
+                          <TableCell
+                            sx={{
+                              fontWeight: "bold",
+                              backgroundColor: "#8675FF",
+                              color: "white",
+                              padding: "4px 16px",
+                            }}
+                          >
                             Amount
                           </TableCell>
-                          <TableCell sx={{ fontWeight: "bold", backgroundColor: "#8675FF", color: "white", padding: "4px 16px" }}>
+                          <TableCell
+                            sx={{
+                              fontWeight: "bold",
+                              backgroundColor: "#8675FF",
+                              color: "white",
+                              padding: "4px 16px",
+                            }}
+                          >
                             Currency
                           </TableCell>
                           {!isSimplified && ( // Only show breakdown column in normal mode
-                            <TableCell sx={{ fontWeight: "bold", backgroundColor: "#8675FF", color: "white", padding: "4px 16px" }}>
+                            <TableCell
+                              sx={{
+                                fontWeight: "bold",
+                                backgroundColor: "#8675FF",
+                                color: "white",
+                                padding: "4px 16px",
+                              }}
+                            >
                               View all transactions
                             </TableCell>
                           )}
@@ -370,17 +458,32 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
                       </TableHead>
                       <TableBody>
                         {filteredBalances?.map(
-                          ({ id, debtor, creditor, amount, breakdown, currency }, index) => (
+                          (
+                            {
+                              id,
+                              debtor,
+                              creditor,
+                              amount,
+                              breakdown,
+                              currency,
+                            },
+                            index
+                          ) => (
                             <TableRow
                               key={id}
                               sx={{
                                 "&:hover": { backgroundColor: "#f5f5f5" },
-                                backgroundColor: index % 2 === 0 ? "#fafafa" : "#ffffff",
+                                backgroundColor:
+                                  index % 2 === 0 ? "#fafafa" : "#ffffff",
                               }}
                             >
                               <TableCell>
                                 <Box display="flex" alignItems="center">
-                                  <Tooltip title={debtor?.name} placement="top" arrow>
+                                  <Tooltip
+                                    title={debtor?.name}
+                                    placement="top"
+                                    arrow
+                                  >
                                     <Typography
                                       variant="body2"
                                       sx={{
@@ -420,7 +523,9 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
                               </TableCell>
                               <TableCell>
                                 <Chip
-                                  label={`${amount} ${getCurrencySymbol(currency)}`}
+                                  label={`${amount} ${getCurrencySymbol(
+                                    currency
+                                  )}`}
                                   variant="outlined"
                                   sx={{
                                     fontSize: "0.85rem",
@@ -509,7 +614,11 @@ function BalanceCard({ balances, isSimplified, onSimplifiedChange, groupName = '
         ) : (
           <Box sx={{ display: "flex", alignItems: "center", pl: 2 }}>
             <GradingIcon fontSize="large" color="success" />
-            <Typography variant="subtitle1" margin={2} sx={{ color: "#353E6C" }}>
+            <Typography
+              variant="subtitle1"
+              margin={2}
+              sx={{ color: "#353E6C" }}
+            >
               All balances are Settled
             </Typography>
           </Box>

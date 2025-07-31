@@ -10,6 +10,7 @@ import {
   Box,
   Select,
   InputLabel,
+  Alert,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -118,6 +119,9 @@ const AccountMenu = () => {
               </MenuItem>
             ))}
           </Select>
+           <Alert severity="info">
+              Currency conversion rates may vary;<br/> results are approximate.
+            </Alert>
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleClose}>
