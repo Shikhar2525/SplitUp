@@ -214,14 +214,28 @@ export async function calculateTotalsAcrossGroups(
             ).amount
           : balance.amount;
 
-      // ✅ You are the one who is owed money
-      if (balance.creditor.email === yourEmail && !amISettled) {
-        totalYouGet += parseFloat(amount);
+      // Get settlement status for both parties
+      const creditorUser = group?.members.find((member) => member?.email === balance.creditor.email);
+      const isCreditorSettled = creditorUser?.userSettled || false;
+
+      const debtorUser = group?.members.find((member) => member?.email === balance.debtor.email);
+      const isDebtorSettled = debtorUser?.userSettled || false;
+
+      // CASE 1: You are owed money (creditor)
+      if (balance.creditor.email === yourEmail) {
+        // Always count money owed to you, regardless of your settlement status
+        // But only if the debtor isn't settled (they don't have to pay if settled)
+        if (!isDebtorSettled) {
+          totalYouGet += parseFloat(amount);
+        }
       }
 
-      // ✅ You are the one who has to pay
-      if (balance.debtor.email === yourEmail && !amISettled) {
-        totalYouGive += parseFloat(amount);
+      // CASE 2: You owe money (debtor)
+      if (balance.debtor.email === yourEmail) {
+        // Only count if you're not settled AND the creditor isn't settled
+        if (!amISettled && !isCreditorSettled) {
+          totalYouGive += parseFloat(amount);
+        }
       }
     }
   }
