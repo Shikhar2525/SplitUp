@@ -165,7 +165,7 @@ function BalanceCard({
                 variant="filled"
                 sx={{
                   mb: 2,
-                  mt: 1,
+                 
                   borderRadius: "8px",
                   backgroundColor: "#e13c58ff",
                   color: "#fff",
@@ -181,7 +181,6 @@ function BalanceCard({
                 variant="filled"
                 sx={{
                   mb: 2,
-                  mt: 1,
                   borderRadius: "8px",
                   backgroundColor: "#55b13eff",
                   color: "#fff",
