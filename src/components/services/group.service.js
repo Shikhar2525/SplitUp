@@ -307,6 +307,38 @@ class GroupService {
     }
   };
 
+  updateAllUserSettledStatus = async (groupIdField, newSettledStatus) => {
+    try {
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.error("No document found with ID:", groupIdField);
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      const groupDocRef = querySnapshot.docs[0].ref;
+      const groupData = querySnapshot.docs[0].data();
+
+      // Update all members' userSettled property
+      const updatedMembers = groupData.members.map((member) => ({
+        ...member,
+        userSettled: newSettledStatus,
+      }));
+
+      // Update the members array in Firestore
+      await updateDoc(groupDocRef, {
+        members: updatedMembers,
+      });
+    } catch (error) {
+      console.error("Error updating all user settled status: ", error);
+      throw error;
+    }
+  };
+
   updateMembersInGroup = async (groupIdField, newMembersArray, newExpenses) => {
     try {
       // Query to find the group by its ID

@@ -1,4 +1,4 @@
-import { Avatar, Box, Tooltip, Typography, ButtonBase, Chip } from "@mui/material";
+import { Avatar, Box, Tooltip, Typography, ButtonBase, Chip, Checkbox, FormControlLabel, Paper } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import React from "react";
 import GroupService from "../services/group.service.js";
@@ -22,7 +22,45 @@ const SettleTab = ({ members, groupID }) => {
 
   const currentGroup = allGroups?.find((item) => item.id === groupID);
 
-  // Toggle settled state for a member
+  const allSettled = members?.every((member) => member?.userSettled);
+
+  // Toggle settled state for all members
+  const handleSettleAllToggle = async () => {
+    const newSettled = !allSettled;
+    setCircularLoader(true);
+
+    try {
+      await GroupService.updateAllUserSettledStatus(groupID, newSettled);
+
+      const log = {
+        logId: uuidv4(),
+        logType: newSettled ? "settleAll" : "unSettleAll",
+        details: {
+          performedBy: { email: currentUser?.email, name: currentUser?.name },
+          date: new Date(),
+          groupTitle: currentGroup?.title,
+          groupId: groupID,
+        },
+      };
+
+      await activityService.addActivityLog(log);
+
+      setSnackBar({
+        isOpen: true,
+        message: `All members ${newSettled ? "settled" : "unsettled"}`,
+      });
+
+      refreshAllGroups();
+    } catch (error) {
+      console.error("Error updating all members settled status:", error);
+      setSnackBar({
+        isOpen: true,
+        message: "Error updating settled status. Please try again.",
+      });
+    } finally {
+      setCircularLoader(false);
+    }
+  };
   const handleSettleToggle = async (
     memberEmail,
     memberName,
@@ -87,26 +125,57 @@ const SettleTab = ({ members, groupID }) => {
         p: { xs: 1, sm: 2 },
       }}
     >
-      <Box sx={{ mb: 2 }}>
-        <Typography
-          variant="h6"
-          sx={{
-            color: "#32325d",
-            fontWeight: 600,
-            fontSize: { xs: "1rem", sm: "1.25rem" },
-          }}
-        >
-          Settlement Status
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{
-            color: "#8898aa",
-            fontSize: { xs: "0.8rem", sm: "0.9rem" },
-          }}
-        >
-          A settled member has no dues to pay but may still receive by others.
-        </Typography>
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "#32325d",
+              fontWeight: 600,
+              fontSize: { xs: "1rem", sm: "1.25rem" },
+            }}
+          >
+            Settlement Status
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#8898aa",
+              fontSize: { xs: "0.8rem", sm: "0.9rem" },
+            }}
+          >
+            A settled member has no dues to pay but may still receive by others.
+          </Typography>
+        </Box>
+        {currentGroup?.admin?.email === currentUser?.email && (
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={allSettled}
+                onChange={handleSettleAllToggle}
+                color="primary"
+                sx={{
+                  color: "#5e72e4",
+                  "&.Mui-checked": {
+                    color: "#5e72e4",
+                  },
+                }}
+              />
+            }
+            label={
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#32325d",
+                  fontSize: { xs: "0.75rem", sm: "0.8rem" },
+                  fontWeight: 500,
+                }}
+              >
+                {allSettled ? "Unsettle All" : "Settle All"}
+              </Typography>
+            }
+          />
+        )}
       </Box>
 
       <Box
