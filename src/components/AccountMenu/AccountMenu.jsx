@@ -100,6 +100,7 @@ const AccountMenu = () => {
           </InputLabel>
           <Select
             fullWidth
+            disabled
             sx={{ height: "2.8rem" }}
             labelId="currency-select-label"
             id="currency-select"
@@ -119,9 +120,10 @@ const AccountMenu = () => {
               </MenuItem>
             ))}
           </Select>
-           <Alert severity="info">
-              Currency conversion rates may vary;<br/> results are approximate.
-            </Alert>
+          <Alert severity="info">
+            Currency conversion are temporarily unavailable
+            {/* rates may vary;<br/> results are approximate. */}
+          </Alert>
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleClose}>
