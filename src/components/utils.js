@@ -298,21 +298,86 @@ export async function convertCurrency(amount, fromCurrency, toCurrency) {
     };
   }
 
-  // Function to fetch rate from Frankfurter API
+  // Cache for rates to avoid repeated API calls
+  const rateCache = {};
+  const cacheKey = `${fromCurrency}${toCurrency}`;
+  
+  // Try multiple API sources with CORS support
+  const apiSources = [
+    // Primary: CORS-enabled Frankfurter
+    async (base, target) => {
+      const url = `https://api.frankfurter.app/latest?amount=1&from=${base}&to=${target}`;
+      const response = await fetch(url, { 
+        headers: { 'Accept': 'application/json' },
+        mode: 'cors'
+      });
+      if (!response.ok) throw new Error(`Frankfurter API: ${response.status}`);
+      const data = await response.json();
+      return data.rates?.[target];
+    },
+    // Secondary: Exchange-rates-api.com (with improved CORS)
+    async (base, target) => {
+      const url = `https://open.er-api.com/v6/latest/${base}`;
+      const response = await fetch(url, {
+        headers: { 'Accept': 'application/json' },
+        mode: 'cors'
+      });
+      if (!response.ok) throw new Error(`ERApi: ${response.status}`);
+      const data = await response.json();
+      return data.rates?.[target];
+    },
+    // Tertiary: Fallback fixed rates (approximate)
+    async (base, target) => {
+      const fixedRates = {
+        'USD': { 'EUR': 0.92, 'GBP': 0.79, 'JPY': 149.50, 'INR': 83.12, 'CAD': 1.36, 'AUD': 1.53, 'CHF': 0.89 },
+        'EUR': { 'USD': 1.09, 'GBP': 0.86, 'JPY': 162.50, 'INR': 90.30, 'CAD': 1.48, 'AUD': 1.66, 'CHF': 0.97 },
+        'GBP': { 'USD': 1.27, 'EUR': 1.16, 'JPY': 189.00, 'INR': 105.00, 'CAD': 1.72, 'AUD': 1.93, 'CHF': 1.13 },
+        'JPY': { 'USD': 0.0067, 'EUR': 0.0062, 'GBP': 0.0053, 'INR': 0.56, 'CAD': 0.0091, 'AUD': 0.010, 'CHF': 0.0060 },
+        'INR': { 'USD': 0.012, 'EUR': 0.011, 'GBP': 0.0095, 'JPY': 1.80, 'CAD': 0.016, 'AUD': 0.018, 'CHF': 0.011 },
+        'CAD': { 'USD': 0.74, 'EUR': 0.68, 'GBP': 0.58, 'JPY': 110.00, 'INR': 61.00, 'AUD': 1.12, 'CHF': 0.65 },
+        'AUD': { 'USD': 0.66, 'EUR': 0.60, 'GBP': 0.52, 'JPY': 98.00, 'INR': 54.50, 'CAD': 0.89, 'CHF': 0.58 },
+        'CHF': { 'USD': 1.13, 'EUR': 1.04, 'GBP': 0.88, 'JPY': 167.00, 'INR': 93.00, 'CAD': 1.53, 'AUD': 1.72 },
+      };
+      const rate = fixedRates[base]?.[target];
+      if (!rate) throw new Error(`No fixed rate for ${base} -> ${target}`);
+      return rate;
+    }
+  ];
+
+  // Function to fetch rate with multiple API fallbacks
   const fetchRate = async (base, target) => {
-    const url = `https://api.frankfurter.app/latest?amount=1&from=${base}&to=${target}`;
-    console.log("Fetching URL:", url);
-
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Fetch failed: ${response.statusText}`);
-
-    const data = await response.json();
-    return data.rates?.[target];
+    console.log(`Fetching rate: ${base} -> ${target}`);
+    
+    for (let i = 0; i < apiSources.length; i++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        
+        const rate = await Promise.race([
+          apiSources[i](base, target),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5500))
+        ]);
+        
+        clearTimeout(timeoutId);
+        
+        if (rate && rate > 0) {
+          console.log(`✓ Rate found (attempt ${i + 1}): ${rate}`);
+          return rate;
+        }
+      } catch (error) {
+        console.warn(`Attempt ${i + 1} failed:`, error.message);
+        if (i === apiSources.length - 1) {
+          throw new Error(`All rate APIs failed: ${error.message}`);
+        }
+      }
+    }
   };
 
   try {
     // Try direct conversion
     const rate = await fetchRate(fromCurrency, toCurrency);
+    console.log("Direct conversion successful:", rate);
+    
     return {
       fromCurrency,
       toCurrency,
@@ -321,12 +386,13 @@ export async function convertCurrency(amount, fromCurrency, toCurrency) {
       lastUpdate: Date.now(),
     };
   } catch (error) {
-    console.error("Primary conversion failed:", error);
+    console.error("Primary conversion failed:", error.message);
     
     try {
       // Try reverse conversion
       const reverseRate = await fetchRate(toCurrency, fromCurrency);
       const rate = 1 / reverseRate;
+      console.log("Reverse conversion successful:", rate);
 
       return {
         fromCurrency,
@@ -336,9 +402,10 @@ export async function convertCurrency(amount, fromCurrency, toCurrency) {
         lastUpdate: Date.now(),
       };
     } catch (fallbackError) {
-      console.error("Fallback conversion failed:", fallbackError);
+      console.error("All conversion attempts failed:", fallbackError.message);
       
-      // Return original amount with rate 1 as a last resort
+      // Return original amount as final fallback
+      console.warn("Using final fallback: no conversion applied");
       return {
         fromCurrency,
         toCurrency,

@@ -95,12 +95,11 @@ const AccountMenu = () => {
             gap: 1,
           }}
         >
-          <InputLabel id="currency-select-label">
-            Select to view converted amounts
+          <InputLabel id="currency-select-label" sx={{ fontWeight: 600 }}>
+            Convert amounts to:
           </InputLabel>
           <Select
             fullWidth
-            disabled
             sx={{ height: "2.8rem" }}
             labelId="currency-select-label"
             id="currency-select"
@@ -121,8 +120,7 @@ const AccountMenu = () => {
             ))}
           </Select>
           <Alert severity="info">
-            Currency conversion are temporarily unavailable
-            {/* rates may vary;<br/> results are approximate. */}
+            Currency conversion rates are approximate.
           </Alert>
         </MenuItem>
         <Divider />
