@@ -387,25 +387,23 @@ const GroupTab = () => {
 
               totalInCurrentCurrency += parseFloat(convertedAmount);
 
-              // Calculate my total expenses (both paid by me and my share in others' expenses)
-              if (expense.paidBy.email === currentUser?.email) {
-                // If I paid, add the amount I won't get back (my share)
-                const splitCount = expense.excludePayer
-                  ? expense.splitBetween.length
-                  : expense.splitBetween.length + 1;
+              // Calculate my total expenses (only count when I'm included in the split)
+              const isInSplit = expense.splitBetween.some(
+                (member) => member.email === currentUser?.email
+              );
+              const payerIsMe = expense.paidBy.email === currentUser?.email;
+
+              const splitCount = expense.excludePayer
+                ? expense.splitBetween.length
+                : expense.splitBetween.length + 1;
+
+              // If I'm explicitly in splitBetween, add my share.
+              // Otherwise, if I'm the payer and the payer is included (excludePayer is false),
+              // add my implicit share. Do not count if payer is excluded from split.
+              if (isInSplit) {
                 const myShare = parseFloat(convertedAmount) / splitCount;
                 myTotalExpenses += myShare;
-              }
-
-              // Add my share if I'm in splitBetween
-              if (
-                expense.splitBetween.some(
-                  (member) => member.email === currentUser?.email
-                )
-              ) {
-                const splitCount = expense.excludePayer
-                  ? expense.splitBetween.length
-                  : expense.splitBetween.length + 1;
+              } else if (payerIsMe && !expense.excludePayer) {
                 const myShare = parseFloat(convertedAmount) / splitCount;
                 myTotalExpenses += myShare;
               }
