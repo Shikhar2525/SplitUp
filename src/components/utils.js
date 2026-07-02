@@ -13,6 +13,30 @@ export const formatDate = (timestamp) => {
   return "N/A";
 };
 
+const getOrdinalSuffix = (day) => {
+  if (day % 10 === 1 && day % 100 !== 11) return "st";
+  if (day % 10 === 2 && day % 100 !== 12) return "nd";
+  if (day % 10 === 3 && day % 100 !== 13) return "rd";
+  return "th";
+};
+
+export const formatDateWithOrdinal = (dateValue) => {
+  if (!dateValue) return "N/A";
+
+  const date =
+    dateValue?.seconds ?
+      new Date(dateValue.seconds * 1000) :
+      new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) return "N/A";
+
+  const day = date.getDate();
+  const month = date.toLocaleString("en-GB", { month: "long" });
+  const year = date.getFullYear();
+
+  return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
+};
+
 export const sortByDate = (arr) => {
   return arr.sort((a, b) => {
     // Convert 'createdDate.seconds' and 'createdDate.nanoseconds' to Date objects

@@ -31,7 +31,7 @@ import { useScreenSize } from "../contexts/ScreenSizeContext";
 import Expenses from "../Expenses/Expenses";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
-import { convertCurrency, formatDate } from "../utils";
+import { convertCurrency, formatDate, formatDateWithOrdinal } from "../utils";
 // import { useAllGroups } from "../contexts/AllGroups"; // Disabled for real-time
 import groupService from "../services/group.service";
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
@@ -599,6 +599,7 @@ const GroupTab = () => {
                 icon={<AccountBalanceWalletIcon sx={{ color: "#2dce89" }} />}
                 label="My Total Expenses"
                 value={`${myTotalShare.toFixed(2)} ${currentCurrency}`}
+                hint="Click to view your debited expenses"
                 color="#2dce89"
                 onClick={openExpensesDialog}
               />
@@ -613,34 +614,75 @@ const GroupTab = () => {
           </AccordionDetails>
         </Accordion>
 
-        <Dialog open={expensesDialogOpen} onClose={closeExpensesDialog} fullWidth maxWidth="sm">
-          <DialogTitle>My Debited Expenses</DialogTitle>
-          <DialogContent>
-            {myDebitedExpenses.length > 0 ? (
-              myDebitedExpenses.map((item) => (
-                <Box key={item.id} sx={{ mb: 2, p: 1.5, borderRadius: 2, backgroundColor: "rgba(248, 250, 252, 0.9)", border: "1px solid rgba(148, 163, 184, 0.25)" }}>
-                  <Typography sx={{ fontWeight: 700 }}>{item.description}</Typography>
-                  <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
-                    Paid by {item.paidByName} • {item.date ? new Date(item.date).toLocaleDateString() : "Date not available"}
-                  </Typography>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 1 }}>
-                    <Typography variant="body2" sx={{ color: "#334155" }}>
-                      Total: {item.totalAmount.toFixed(2)} {item.currency}
-                    </Typography>
-                    <Typography sx={{ fontWeight: 700, color: "#2dce89" }}>
-                      Your share: {item.myShare.toFixed(2)} {item.currency}
-                    </Typography>
-                  </Box>
-                </Box>
-              ))
-            ) : (
-              <Typography sx={{ color: "#64748b" }}>
-                No debited expenses found for your account.
+        <Dialog
+          open={expensesDialogOpen}
+          onClose={closeExpensesDialog}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              borderRadius: 4,
+              overflow: "hidden",
+              boxShadow: "0 24px 48px rgba(15, 23, 42, 0.15)",
+            },
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 3, py: 2, backgroundColor: "#f8fafc" }}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+                My Debited Expenses
               </Typography>
+              <Typography variant="body2" sx={{ color: "#64748b" }}>
+                Review expenses where you were debited and your share amount.
+              </Typography>
+            </Box>
+            <IconButton onClick={closeExpensesDialog} size="small" sx={{ color: "#475569" }}>
+              ×
+            </IconButton>
+          </Box>
+          <Divider />
+          <DialogContent sx={{ p: 0, backgroundColor: "#ffffff" }}>
+            {myDebitedExpenses.length > 0 ? (
+              <Box sx={{ display: "grid", gap: 2, p: 2 }}>
+                {myDebitedExpenses.map((item) => (
+                  <Box
+                    key={item.id}
+                    sx={{
+                      p: 2,
+                      borderRadius: 3,
+                      backgroundColor: "#f9fafb",
+                      border: "1px solid rgba(148, 163, 184, 0.2)",
+                    }}
+                  >
+                    <Typography sx={{ fontWeight: 700, fontSize: "0.95rem", mb: 0.75 }}>
+                      {item.description}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#64748b", mb: 1.5 }}>
+                      Paid by {item.paidByName} • {item.date ? formatDateWithOrdinal(item.date) : "Date not available"}
+                    </Typography>
+                    <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, gap: 1 }}>
+                      <Typography variant="body2" sx={{ color: "#334155", fontWeight: 600 }}>
+                        Total: {item.totalAmount.toFixed(2)} {item.currency}
+                      </Typography>
+                      <Typography sx={{ fontWeight: 700, color: "#16a34a" }}>
+                        Your share: {item.myShare.toFixed(2)} {item.currency}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Box sx={{ p: 3, textAlign: "center" }}>
+                <Typography sx={{ color: "#64748b" }}>
+                  No debited expenses were found for your account.
+                </Typography>
+              </Box>
             )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={closeExpensesDialog}>Close</Button>
+          <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
+            <Button onClick={closeExpensesDialog} variant="contained" sx={{ textTransform: "none", borderRadius: 3, px: 3 }}>
+              Close
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>
@@ -651,7 +693,7 @@ const GroupTab = () => {
     return JSON.stringify(prevProps.selectedGroupDetails) === JSON.stringify(nextProps.selectedGroupDetails);
   });
 
-  const StatItem = ({ icon, label, value, color, onClick }) => (
+  const StatItem = ({ icon, label, value, hint, color, onClick }) => (
     <Box
       onClick={onClick}
       role={onClick ? "button" : undefined}
@@ -661,24 +703,27 @@ const GroupTab = () => {
         alignItems: "center",
         gap: 2,
         p: 1.5,
-        borderRadius: "12px",
-        backgroundColor: "rgba(94, 114, 228, 0.05)",
-        border: "1px solid rgba(94, 114, 228, 0.1)",
+        borderRadius: "16px",
+        backgroundColor: onClick ? "rgba(45, 206, 137, 0.08)" : "rgba(94, 114, 228, 0.05)",
+        border: onClick ? "1px solid rgba(45, 206, 137, 0.25)" : "1px solid rgba(94, 114, 228, 0.1)",
         cursor: onClick ? "pointer" : "default",
-        '&:hover': onClick ? { backgroundColor: "rgba(94, 114, 228, 0.1)" } : {},
+        transition: "all 0.2s ease",
+        '&:hover': onClick ? { backgroundColor: "rgba(45, 206, 137, 0.12)", transform: "translateY(-1px)" } : {},
       }}
     >
       {icon}
-      <Box>
-        <Typography
-          variant="caption"
-          sx={{ color: "#8898aa", display: "block" }}
-        >
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="caption" sx={{ color: "#8898aa", display: "block" }}>
           {label}
         </Typography>
-        <Typography sx={{ color: color, fontWeight: 600, fontSize: "0.9rem" }}>
+        <Typography sx={{ color: color, fontWeight: 700, fontSize: "0.95rem" }}>
           {value}
         </Typography>
+        {hint && (
+          <Typography variant="caption" sx={{ color: "#4b5563", display: "block", mt: 0.5 }}>
+            {hint}
+          </Typography>
+        )}
       </Box>
     </Box>
   );
