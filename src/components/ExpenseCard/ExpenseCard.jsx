@@ -272,7 +272,15 @@ const TransactionCard = ({
                 {transaction?.description?.charAt(0).toUpperCase() +
                   transaction?.description?.slice(1)}
               </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "auto minmax(0, 1fr)",
+                  alignItems: "center",
+                  gap: 0.6,
+                  minWidth: 0,
+                }}
+              >
                 <Avatar
                   src={payerAvatar}
                   alt={payerName}
@@ -292,9 +300,10 @@ const TransactionCard = ({
                     color: "#64748B",
                     fontSize: "0.75rem",
                     fontWeight: 500,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
+                    overflowWrap: "break-word",
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                    minWidth: 0,
                   }}
                 >
                   Paid by {payerName}

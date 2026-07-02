@@ -18,6 +18,10 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import AddExpenseButton from "../AddExpense/AddExpenseModal";
@@ -361,6 +365,8 @@ const GroupTab = () => {
   const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {
     const [convertedTotal, setConvertedTotal] = useState(0);
     const [myTotalShare, setMyTotalShare] = useState(0);
+    const [myDebitedExpenses, setMyDebitedExpenses] = useState([]);
+    const [expensesDialogOpen, setExpensesDialogOpen] = useState(false);
     const { currentCurrency } = useCurrentCurrency();
     const { currentUser } = useCurrentUser();
     const [expanded, setExpanded] = useState(false);
@@ -368,6 +374,9 @@ const GroupTab = () => {
     const handleAccordionChange = (event, isExpanded) => {
       setExpanded(isExpanded);
     };
+
+    const openExpensesDialog = () => setExpensesDialogOpen(true);
+    const closeExpensesDialog = () => setExpensesDialogOpen(false);
     
 
 
@@ -375,6 +384,7 @@ const GroupTab = () => {
       const calculateTotalAmount = async () => {
         let totalInCurrentCurrency = 0;
         let myTotalExpenses = 0;
+        const debited = [];
 
         if (selectedGroupDetails?.expenses) {
           for (const expense of selectedGroupDetails.expenses) {
@@ -403,9 +413,27 @@ const GroupTab = () => {
               if (isInSplit) {
                 const myShare = parseFloat(convertedAmount) / splitCount;
                 myTotalExpenses += myShare;
+                debited.push({
+                  id: expense.id,
+                  description: expense.description || "Untitled expense",
+                  totalAmount: parseFloat(convertedAmount),
+                  myShare,
+                  paidByName: expense.paidBy?.name || expense.paidBy?.email || "Unknown",
+                  date: expense.createdDate || expense.date || "",
+                  currency: currentCurrency,
+                });
               } else if (payerIsMe && !expense.excludePayer) {
                 const myShare = parseFloat(convertedAmount) / splitCount;
                 myTotalExpenses += myShare;
+                debited.push({
+                  id: expense.id,
+                  description: expense.description || "Untitled expense",
+                  totalAmount: parseFloat(convertedAmount),
+                  myShare,
+                  paidByName: expense.paidBy?.name || expense.paidBy?.email || "Unknown",
+                  date: expense.createdDate || expense.date || "",
+                  currency: currentCurrency,
+                });
               }
             } catch (error) {
               console.error("Currency conversion error:", error);
@@ -415,6 +443,7 @@ const GroupTab = () => {
 
         setConvertedTotal(totalInCurrentCurrency);
         setMyTotalShare(myTotalExpenses);
+        setMyDebitedExpenses(debited);
       };
 
       calculateTotalAmount();
@@ -568,9 +597,10 @@ const GroupTab = () => {
 
               <StatItem
                 icon={<AccountBalanceWalletIcon sx={{ color: "#2dce89" }} />}
-                label="My Total Expenses "
+                label="My Total Expenses"
                 value={`${myTotalShare.toFixed(2)} ${currentCurrency}`}
                 color="#2dce89"
+                onClick={openExpensesDialog}
               />
 
               <StatItem
@@ -582,6 +612,37 @@ const GroupTab = () => {
             </Box>
           </AccordionDetails>
         </Accordion>
+
+        <Dialog open={expensesDialogOpen} onClose={closeExpensesDialog} fullWidth maxWidth="sm">
+          <DialogTitle>My Debited Expenses</DialogTitle>
+          <DialogContent>
+            {myDebitedExpenses.length > 0 ? (
+              myDebitedExpenses.map((item) => (
+                <Box key={item.id} sx={{ mb: 2, p: 1.5, borderRadius: 2, backgroundColor: "rgba(248, 250, 252, 0.9)", border: "1px solid rgba(148, 163, 184, 0.25)" }}>
+                  <Typography sx={{ fontWeight: 700 }}>{item.description}</Typography>
+                  <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
+                    Paid by {item.paidByName} • {item.date ? new Date(item.date).toLocaleDateString() : "Date not available"}
+                  </Typography>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 1 }}>
+                    <Typography variant="body2" sx={{ color: "#334155" }}>
+                      Total: {item.totalAmount.toFixed(2)} {item.currency}
+                    </Typography>
+                    <Typography sx={{ fontWeight: 700, color: "#2dce89" }}>
+                      Your share: {item.myShare.toFixed(2)} {item.currency}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))
+            ) : (
+              <Typography sx={{ color: "#64748b" }}>
+                No debited expenses found for your account.
+              </Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeExpensesDialog}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     );
   }, (prevProps, nextProps) => {
@@ -590,8 +651,11 @@ const GroupTab = () => {
     return JSON.stringify(prevProps.selectedGroupDetails) === JSON.stringify(nextProps.selectedGroupDetails);
   });
 
-  const StatItem = ({ icon, label, value, color }) => (
+  const StatItem = ({ icon, label, value, color, onClick }) => (
     <Box
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       sx={{
         display: "flex",
         alignItems: "center",
@@ -600,6 +664,8 @@ const GroupTab = () => {
         borderRadius: "12px",
         backgroundColor: "rgba(94, 114, 228, 0.05)",
         border: "1px solid rgba(94, 114, 228, 0.1)",
+        cursor: onClick ? "pointer" : "default",
+        '&:hover': onClick ? { backgroundColor: "rgba(94, 114, 228, 0.1)" } : {},
       }}
     >
       {icon}

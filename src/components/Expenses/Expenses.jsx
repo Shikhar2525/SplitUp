@@ -129,9 +129,7 @@ const Expenses = () => {
                 <Typography sx={{ fontWeight: 700, color: "#1e293b", fontSize: "0.9rem" }}>
                   Filters
                 </Typography>
-                <Typography variant="caption" sx={{ color: "#64748b" }}>
-                  Narrow by search or view
-                </Typography>
+               
               </Box>
             </Box>
             <Chip
