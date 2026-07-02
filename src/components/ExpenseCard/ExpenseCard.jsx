@@ -6,6 +6,7 @@ import {
   CardContent,
   Typography,
   Grid,
+  Avatar,
   IconButton,
   Box,
   Chip,
@@ -54,6 +55,15 @@ const TransactionCard = ({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const dateShort = formatTransactionDate(transaction?.date);
   const { currentUser } = useCurrentUser();
+  const payerName =
+    transaction?.paidBy?.name || transaction?.paidBy?.email || "Unknown payer";
+  const payerAvatar =
+    transaction?.paidBy?.avatar ||
+    transaction?.paidBy?.profilePicture ||
+    transaction?.paidBy?.photoURL ||
+    transaction?.paidBy?.photo ||
+    transaction?.paidBy?.imageUrl ||
+    "";
   const colors = [
     "#4F46E5", // Indigo
     "#3B82F6", // Blue
@@ -238,22 +248,59 @@ const TransactionCard = ({
               gap: { xs: 1, sm: 2 },
             }}
           >
-            <Typography
+            <Box
               sx={{
-                color: "#1E293B",
-                fontSize: { xs: "0.8rem", sm: "1rem" },
-                fontWeight: 600,
+                display: "flex",
+                flexDirection: "column",
+                gap: 0.25,
                 flexGrow: 1,
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-                lineHeight: { xs: 1.2, sm: 1.4 },
+                minWidth: 0,
               }}
             >
-              {transaction?.description?.charAt(0).toUpperCase() +
-                transaction?.description?.slice(1)}
-            </Typography>
+              <Typography
+                sx={{
+                  color: "#1E293B",
+                  fontSize: { xs: "0.8rem", sm: "1rem" },
+                  fontWeight: 600,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                  lineHeight: { xs: 1.2, sm: 1.4 },
+                }}
+              >
+                {transaction?.description?.charAt(0).toUpperCase() +
+                  transaction?.description?.slice(1)}
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                <Avatar
+                  src={payerAvatar}
+                  alt={payerName}
+                  sx={{
+                    width: 18,
+                    height: 18,
+                    border: "1px solid white",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                    flexShrink: 0,
+                  }}
+                >
+                  {!payerAvatar && payerName?.charAt(0)?.toUpperCase()}
+                </Avatar>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "#64748B",
+                    fontSize: "0.75rem",
+                    fontWeight: 500,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Paid by {payerName}
+                </Typography>
+              </Box>
+            </Box>
             <Typography
               sx={{
                 color: colors[index % colors.length],
@@ -383,7 +430,16 @@ const TransactionCard = ({
                         }}
                       >
                         <Chip
-                          label={transaction?.paidBy?.name}
+                          avatar={
+                            <Avatar
+                              src={payerAvatar}
+                              alt={payerName}
+                              sx={{ width: 24, height: 24 }}
+                            >
+                              {!payerAvatar && payerName?.charAt(0)?.toUpperCase()}
+                            </Avatar>
+                          }
+                          label={payerName}
                           sx={{
                             backgroundColor: `${
                               colors[index % colors.length]
