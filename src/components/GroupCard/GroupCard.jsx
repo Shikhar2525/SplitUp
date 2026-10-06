@@ -3,6 +3,7 @@ import PaidIcon from '@mui/icons-material/Paid';
 import PendingIcon from '@mui/icons-material/Pending';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { useNavigate } from 'react-router-dom';
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 
 const GroupCard = ({ group }) => {
   const navigate = useNavigate();
@@ -106,16 +107,14 @@ const GroupCard = ({ group }) => {
         }}
       >
         {group.members?.map((member, idx) => (
-          <Avatar 
+          <ProfileAvatar
             key={idx} 
-            src={member.profilePicture} 
+            user={member}
             alt={member.name}
             sx={{
               bgcolor: member.userSettled ? '#2dce89' : undefined
             }}
-          >
-            {member.name?.[0]}
-          </Avatar>
+          />
         ))}
       </AvatarGroup>
     </Paper>

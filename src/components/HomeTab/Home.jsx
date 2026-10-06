@@ -18,6 +18,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import PaidIcon from '@mui/icons-material/Paid';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 import VerifiedIcon from '@mui/icons-material/Verified';
 import PendingIcon from '@mui/icons-material/Pending';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -327,13 +328,12 @@ const Home = () => {
             }}
           >
             {group.members?.map((member, idx) => (
-              <Avatar 
+              <ProfileAvatar
                 key={idx} 
-                src={member.profilePicture} 
+                user={member}
                 alt={member.name}
               >
-                {member.name?.[0]}
-              </Avatar>
+              </ProfileAvatar>
             ))}
           </AvatarGroup>
         </Box>

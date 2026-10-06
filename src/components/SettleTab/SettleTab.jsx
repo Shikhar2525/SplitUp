@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 import activityService from "../services/activity.service.js";
 import { useAllUserSettled } from "../contexts/AllUserSettled.js";
 import { useScreenSize } from "../contexts/ScreenSizeContext.js";
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 
 const SettleTab = ({ members, groupID }) => {
   const { setSnackBar } = useTopSnackBar();
@@ -241,16 +242,15 @@ const SettleTab = ({ members, groupID }) => {
                     maxWidth: "100%", // Prevent overflow
                   }}
                 >
-                  <Avatar
-                    src={member?.profilePicture}
+                  <ProfileAvatar
+                    user={member}
+                    name={member?.name}
                     sx={{
                       width: { xs: 35, sm: 40 },
                       height: { xs: 35, sm: 40 },
                       flexShrink: 0,
                     }}
-                  >
-                    {member?.name?.[0]}
-                  </Avatar>
+                  />
 
                   <Box
                     sx={{

@@ -4,7 +4,6 @@ import {
   MenuItem,
   IconButton,
   Typography,
-  Avatar,
   ListItemIcon,
   Divider,
   Box,
@@ -17,6 +16,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { currencies } from "../../constants";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 
 const AccountMenu = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -51,13 +51,11 @@ const AccountMenu = () => {
         onClick={handleMenu}
         color="inherit"
       >
-        <Avatar sx={{ bgcolor: "#8675FF", width: 45, height: 45 }}>
-          <Avatar
-            alt={currentUser?.name}
-            src={currentUser?.profilePicture}
-            sx={{ width: 40, height: 40 }}
-          />
-        </Avatar>
+        <ProfileAvatar
+          alt={currentUser?.name}
+          user={currentUser}
+          sx={{ width: 45, height: 45, bgcolor: "#8675FF", color: "white" }}
+        />
       </IconButton>
       <Menu
         id="menu-appbar"
@@ -76,9 +74,9 @@ const AccountMenu = () => {
       >
         {/* Display User's Name */}
         <MenuItem sx={{ display: "flex", alignItems: "center" }}>
-          <Avatar
+          <ProfileAvatar
             alt={currentUser?.name} // Alt text for accessibility
-            src={currentUser?.profilePicture}
+            user={currentUser}
             sx={{ width: 30, height: 30, marginRight: 1 }}
           />
           <Typography sx={{ color: "#353E6C" }}>

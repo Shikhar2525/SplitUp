@@ -78,6 +78,30 @@ class UserService {
     return { id: querySnapshot.docs[0].id, ...user };
   };
 
+  ensureProfilePicture = async (email, profilePicture) => {
+    if (!email || !profilePicture) return null;
+
+    const q = query(userRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) return null;
+
+    const userDoc = querySnapshot.docs[0];
+    const userData = userDoc.data();
+    const hasProfileImage = [
+      userData.profilePicture,
+      userData.avatar,
+      userData.photoURL,
+      userData.photo,
+      userData.imageUrl,
+      userData.picture,
+    ].some((source) => typeof source === "string" && source.trim());
+
+    if (hasProfileImage) return { id: userDoc.id, ...userData };
+
+    await updateDoc(doc(userRef, userDoc.id), { profilePicture });
+    return { id: userDoc.id, ...userData, profilePicture };
+  };
+
   getAllUsers = async () => {
     try {
       const querySnapshot = await getDocs(userRef);

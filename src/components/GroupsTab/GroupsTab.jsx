@@ -52,6 +52,7 @@ import GroupComponent from "../JoinGroup/JoinGroup";
 import { useAllUserSettled } from "../contexts/AllUserSettled";
 import StickyNote2Icon from "@mui/icons-material/StickyNote2";
 import Notes from "../Notes/Notes";
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 import InfoIcon from "@mui/icons-material/Info";
 import GroupIcon from "@mui/icons-material/Group";
 import CalendarTodayIcon from "@mui/icons-material/AccountBalanceWallet";
@@ -97,8 +98,6 @@ const CustomSelect = styled(Select)(({ theme }) => ({
     },
   },
 }));
-
-
 
 const GroupTab = () => {
   const isMobile = useScreenSize();
@@ -282,7 +281,10 @@ const GroupTab = () => {
     });
 
     // Add Settings tab last if user is admin
-    if (currentGroupAdminEmail === currentUser?.email) {
+    if (
+      (currentGroupAdminEmail || "").trim().toLowerCase() ===
+      (currentUser?.email || "").trim().toLowerCase()
+    ) {
       tabs.push({
         label: "Settings",
         icon: <SettingsIcon />,
@@ -363,19 +365,36 @@ const GroupTab = () => {
 
   // Use React.memo to prevent unnecessary re-renders
   const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {
+    const { currentCurrency } = useCurrentCurrency();
+    const { currentUser } = useCurrentUser();
     const [convertedTotal, setConvertedTotal] = useState(0);
     const [myTotalShare, setMyTotalShare] = useState(0);
     const [myDebitedExpenses, setMyDebitedExpenses] = useState([]);
     const [expensesDialogOpen, setExpensesDialogOpen] = useState(false);
-    const { currentCurrency } = useCurrentCurrency();
-    const { currentUser } = useCurrentUser();
+    const [selectedExpenseEmail, setSelectedExpenseEmail] = useState(currentUser?.email || "");
     const [expanded, setExpanded] = useState(false);
+    /** @type {any[]} */
+    const groupMembers = selectedGroupDetails?.members || [];
+    const isGroupAdmin =
+      (selectedGroupDetails?.admin?.email || "").trim().toLowerCase() ===
+      (currentUser?.email || "").trim().toLowerCase();
+    const selectedExpenseMember = groupMembers.find(
+      /** @param {any} candidate */
+      (candidate) =>
+        (candidate?.email || "").trim().toLowerCase() ===
+        (selectedExpenseEmail || "").trim().toLowerCase()
+    );
+    const selectedExpenseName =
+      selectedExpenseMember?.name || selectedExpenseMember?.email || "you";
     
     const handleAccordionChange = (event, isExpanded) => {
       setExpanded(isExpanded);
     };
 
-    const openExpensesDialog = () => setExpensesDialogOpen(true);
+    const openExpensesDialog = () => {
+      setSelectedExpenseEmail(currentUser?.email || "");
+      setExpensesDialogOpen(true);
+    };
     const closeExpensesDialog = () => setExpensesDialogOpen(false);
     
 
@@ -398,14 +417,18 @@ const GroupTab = () => {
               totalInCurrentCurrency += parseFloat(convertedAmount);
 
               // Calculate my total expenses (only count when I'm included in the split)
-              const isInSplit = expense.splitBetween.some(
-                (member) => member.email === currentUser?.email
+              const memberEmail = (selectedExpenseEmail || "").toLowerCase();
+              const splitBetween = expense.splitBetween || [];
+              const isInSplit = splitBetween.some(
+                (member) => (member?.email || "").toLowerCase() === memberEmail
               );
-              const payerIsMe = expense.paidBy.email === currentUser?.email;
+              const payerIsMe =
+                (expense.paidBy?.email || "").toLowerCase() === memberEmail;
 
               const splitCount = expense.excludePayer
-                ? expense.splitBetween.length
-                : expense.splitBetween.length + 1;
+                ? splitBetween.length
+                : splitBetween.length + 1;
+              if (splitCount <= 0) continue;
 
               // If I'm explicitly in splitBetween, add my share.
               // Otherwise, if I'm the payer and the payer is included (excludePayer is false),
@@ -447,7 +470,7 @@ const GroupTab = () => {
       };
 
       calculateTotalAmount();
-    }, [selectedGroupDetails, currentCurrency, currentUser]);
+    }, [selectedGroupDetails, currentCurrency, currentUser, selectedExpenseEmail]);
 
     return (
       <Box
@@ -627,14 +650,55 @@ const GroupTab = () => {
             },
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 3, py: 2, backgroundColor: "#f8fafc" }}>
-            <Box>
+          <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 2, px: 3, py: 2, backgroundColor: "#f8fafc" }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-                My Debited Expenses
+                {isGroupAdmin ? `${selectedExpenseName}'s Expenses` : "My Debited Expenses"}
               </Typography>
               <Typography variant="body2" sx={{ color: "#64748b" }}>
-                Review expenses where you were debited and your share amount.
+                Review the expenses included in this member’s total and their share amount.
               </Typography>
+              {isGroupAdmin && (
+                <FormControl size="small" fullWidth sx={{ mt: 1.5, maxWidth: 360 }}>
+                  <Select
+                    value={selectedExpenseEmail}
+                    onChange={(event) => setSelectedExpenseEmail(event.target.value)}
+                    displayEmpty
+                    renderValue={(email) => {
+                      const member = groupMembers.find(
+                        (candidate) => candidate?.email === email
+                      );
+
+                      return (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <ProfileAvatar user={member} name={member?.name} sx={{ width: 28, height: 28 }} />
+                          <Typography noWrap>{member?.name || email}</Typography>
+                        </Box>
+                      );
+                    }}
+                    inputProps={{ "aria-label": "Select a group member" }}
+                    sx={{ backgroundColor: "white", borderRadius: 2 }}
+                  >
+                    {groupMembers.map((member) => (
+                      <MenuItem key={member.email} value={member.email}>
+                        <ProfileAvatar
+                          user={member}
+                          name={member?.name}
+                          sx={{ width: 32, height: 32, mr: 1.25 }}
+                        />
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography noWrap>{member.name || member.email}</Typography>
+                          {member.name && (
+                            <Typography variant="caption" color="text.secondary" noWrap>
+                              {member.email}
+                            </Typography>
+                          )}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
             </Box>
             <IconButton onClick={closeExpensesDialog} size="small" sx={{ color: "#475569" }}>
               ×
@@ -642,6 +706,14 @@ const GroupTab = () => {
           </Box>
           <Divider />
           <DialogContent sx={{ p: 0, backgroundColor: "#ffffff" }}>
+            <Box sx={{ m: 2, mb: 0, p: 2, borderRadius: 3, backgroundColor: "rgba(45, 206, 137, 0.08)", border: "1px solid rgba(45, 206, 137, 0.25)" }}>
+              <Typography variant="body2" sx={{ color: "#64748b" }}>
+                {isGroupAdmin ? `${selectedExpenseName}'s total expense` : "Your total expense"}
+              </Typography>
+              <Typography sx={{ color: "#16a34a", fontWeight: 700, fontSize: "1.15rem" }}>
+                {myTotalShare.toFixed(2)} {currentCurrency}
+              </Typography>
+            </Box>
             {myDebitedExpenses.length > 0 ? (
               <Box sx={{ display: "grid", gap: 2, p: 2 }}>
                 {myDebitedExpenses.map((item) => (
@@ -665,7 +737,7 @@ const GroupTab = () => {
                         Total: {item.totalAmount.toFixed(2)} {item.currency}
                       </Typography>
                       <Typography sx={{ fontWeight: 700, color: "#16a34a" }}>
-                        Your share: {item.myShare.toFixed(2)} {item.currency}
+                        {isGroupAdmin ? `${selectedExpenseName}'s share` : "Your share"}: {item.myShare.toFixed(2)} {item.currency}
                       </Typography>
                     </Box>
                   </Box>
@@ -674,7 +746,7 @@ const GroupTab = () => {
             ) : (
               <Box sx={{ p: 3, textAlign: "center" }}>
                 <Typography sx={{ color: "#64748b" }}>
-                  No debited expenses were found for your account.
+                  No debited expenses were found for {isGroupAdmin ? selectedExpenseName : "your account"}.
                 </Typography>
               </Box>
             )}
@@ -1389,23 +1461,17 @@ const GroupTab = () => {
 
 // Memoized AvatarGroup section to prevent re-rendering
 const AvatarGroupSection = React.memo(({ members }) => {
-  // Get the names of members for tooltip display
-  const memberNames = members?.map((member) => ({
-    name: member?.name,
-    picture: member?.profilePicture,
-  }));
-
   // Create tooltip content with new lines and avatars
   const tooltipContent = (
     <div>
-      {memberNames?.map((member, index) => (
+      {members?.map((member, index) => (
         <Box
           key={index}
           sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}
         >
-          <Avatar
+          <ProfileAvatar
+            user={member}
             alt={member.name}
-            src={member.picture}
             sx={{ width: 24, height: 24, marginRight: 1 }} // Small avatar
           />
           <Typography variant="body2" sx={{ margin: 0 }}>
@@ -1421,15 +1487,11 @@ const AvatarGroupSection = React.memo(({ members }) => {
       <Tooltip title={tooltipContent} arrow>
         <AvatarGroup max={4}>
           {members?.slice(0, 4)?.map((member, index) => (
-            <Avatar
+            <ProfileAvatar
               key={index}
+              user={member}
               alt={member?.email ?? "Anonymous"}
-              src={member?.profilePicture}
-            >
-              {member?.name
-                ? member?.name?.charAt(0)
-                : member?.email?.charAt(0)}
-            </Avatar>
+            />
           ))}
         </AvatarGroup>
       </Tooltip>

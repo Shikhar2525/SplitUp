@@ -42,6 +42,7 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import ActivityService from "../services/activity.service";
 import { v4 as uuidv4 } from "uuid";
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 
 const TransactionCard = ({
   transaction,
@@ -57,13 +58,6 @@ const TransactionCard = ({
   const { currentUser } = useCurrentUser();
   const payerName =
     transaction?.paidBy?.name || transaction?.paidBy?.email || "Unknown payer";
-  const payerAvatar =
-    transaction?.paidBy?.avatar ||
-    transaction?.paidBy?.profilePicture ||
-    transaction?.paidBy?.photoURL ||
-    transaction?.paidBy?.photo ||
-    transaction?.paidBy?.imageUrl ||
-    "";
   const colors = [
     "#4F46E5", // Indigo
     "#3B82F6", // Blue
@@ -281,8 +275,8 @@ const TransactionCard = ({
                   minWidth: 0,
                 }}
               >
-                <Avatar
-                  src={payerAvatar}
+                <ProfileAvatar
+                  user={transaction?.paidBy}
                   alt={payerName}
                   sx={{
                     width: 18,
@@ -291,9 +285,7 @@ const TransactionCard = ({
                     boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
                     flexShrink: 0,
                   }}
-                >
-                  {!payerAvatar && payerName?.charAt(0)?.toUpperCase()}
-                </Avatar>
+                />
                 <Typography
                   variant="body2"
                   sx={{
@@ -440,13 +432,11 @@ const TransactionCard = ({
                       >
                         <Chip
                           avatar={
-                            <Avatar
-                              src={payerAvatar}
+                            <ProfileAvatar
+                              user={transaction?.paidBy}
                               alt={payerName}
                               sx={{ width: 24, height: 24 }}
-                            >
-                              {!payerAvatar && payerName?.charAt(0)?.toUpperCase()}
-                            </Avatar>
+                            />
                           }
                           label={payerName}
                           sx={{

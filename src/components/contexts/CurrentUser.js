@@ -29,7 +29,11 @@ export const CurrentUserProvider = ({ children }) => {
     console.log("CurrentUserProvider: Setting up Firestore subscription for:", userEmail);
     const unsubscribe = userService.subscribeToUserByEmail(userEmail, (user) => {
       console.log("CurrentUser subscription fired:", user);
-      setCurrentUser(user);
+      setCurrentUser((previousUser) =>
+        user
+          ? { ...user, picture: user.picture || previousUser?.picture }
+          : user
+      );
     });
     return () => {
       console.log("CurrentUserProvider: Unsubscribing from Firestore for:", userEmail);

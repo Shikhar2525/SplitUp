@@ -21,6 +21,7 @@ import {
   sortLogsByDate,
 } from "../utils";
 import userService from "../services/user.service";
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 
 const Notifications = ({ logs = [], loader }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -309,17 +310,15 @@ const Notifications = ({ logs = [], loader }) => {
                                 } : {},
                               }}
                             >
-                              <Avatar 
-                                src={activity.performedBy?.profilePicture}
+                              <ProfileAvatar
+                                user={activity.performedBy}
                                 alt={activity.performedBy?.name}
                                 sx={{ 
                                   width: 45, 
                                   height: 45,
                                   boxShadow: '0 4px 12px rgba(94, 114, 228, 0.15)'
                                 }}
-                              >
-                                {activity.performedBy?.name?.charAt(0)}
-                              </Avatar>
+                              />
                               <Box sx={{ flex: 1 }}>
                                 <Typography 
                                   variant="body2" 
@@ -391,17 +390,15 @@ const Notifications = ({ logs = [], loader }) => {
                                 } : {},
                               }}
                             >
-                              <Avatar 
-                                src={activity.performedBy?.profilePicture}
+                              <ProfileAvatar
+                                user={activity.performedBy}
                                 alt={activity.performedBy?.name}
                                 sx={{ 
                                   width: 45, 
                                   height: 45,
                                   boxShadow: '0 4px 12px rgba(94, 114, 228, 0.15)'
                                 }}
-                              >
-                                {activity.performedBy?.name?.charAt(0)}
-                              </Avatar>
+                              />
                               <Box sx={{ flex: 1 }}>
                                 <Typography 
                                   variant="body2" 

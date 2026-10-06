@@ -26,6 +26,7 @@ import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { InfoOutlined } from "@mui/icons-material";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 import userService from "../services/user.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useFriends } from "../contexts/FriendsContext";
@@ -444,8 +445,8 @@ const myFriends = Array.isArray(myFriendsRaw) ? myFriendsRaw : [];
                         }}
                       >
                         <ListItemAvatar sx={{ minWidth: { xs: 45, sm: 56 } }}>
-                          <Avatar
-                            src={user.profilePicture || ""}
+                          <ProfileAvatar
+                            user={user}
                             alt={user.name}
                             sx={{
                               width: { xs: 35, sm: 40 },
@@ -456,9 +457,7 @@ const myFriends = Array.isArray(myFriendsRaw) ? myFriendsRaw : [];
                               fontWeight: 600,
                               fontSize: "1rem",
                             }}
-                          >
-                            {getInitials(user.name)}
-                          </Avatar>
+                          />
                         </ListItemAvatar>
                         <ListItemText
                           primary={user.name}
@@ -617,8 +616,8 @@ const myFriends = Array.isArray(myFriendsRaw) ? myFriendsRaw : [];
                 }}
               >
                 <ListItemAvatar>
-                  <Avatar
-                    src={friend.profilePicture || ""}
+                  <ProfileAvatar
+                    user={friend}
                     alt={friend.name}
                     sx={{
                       width: { xs: 40, sm: 50 },
@@ -626,9 +625,7 @@ const myFriends = Array.isArray(myFriendsRaw) ? myFriendsRaw : [];
                       boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
                       border: "3px solid white",
                     }}
-                  >
-                    {getInitials(friend.name)}
-                  </Avatar>
+                  />
                 </ListItemAvatar>
                 <ListItemText
                   primary={friend.name}

@@ -29,6 +29,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import InfoIcon from "@mui/icons-material/Info";
 import PaidIcon from "@mui/icons-material/Paid";
 import GroupIcon from "@mui/icons-material/Group";
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -97,8 +98,15 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
       if (selectedGroup && selectedGroup.members) {
         setUsers(
           selectedGroup.members.map((member) => ({
+            ...member,
             name: member?.name,
-            avatar: member?.profilePicture,
+            avatar:
+              member?.avatar ||
+              member?.profilePicture ||
+              member?.photoURL ||
+              member?.photo ||
+              member?.imageUrl ||
+              member?.picture,
             email: member?.email,
             firstInitial: member?.name?.[0],
           }))
@@ -668,17 +676,16 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
                         py: 1,
                       }}
                     >
-                      <Avatar
-                        src={user.avatar}
+                      <ProfileAvatar
+                        user={user}
+                        name={user?.name}
                         sx={{
                           width: 40,
                           height: 40,
                           border: "2px solid #fff",
                           boxShadow: "0 2px 10px rgba(94,114,228,0.2)",
                         }}
-                      >
-                        {user.firstInitial}
-                      </Avatar>
+                      />
                       <Box>
                         <Typography sx={{ fontWeight: 600 }}>
                           {user.name}
@@ -828,9 +835,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
                           key={value}
                           label={user?.name}
                           avatar={
-                            <Avatar src={user?.avatar}>
-                              {user?.firstInitial}
-                            </Avatar>
+                            <ProfileAvatar user={user} name={user?.name} />
                           }
                           sx={{
                             borderRadius: "12px",
@@ -884,17 +889,16 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
                           },
                         }}
                       />
-                      <Avatar
-                        src={user.avatar}
+                      <ProfileAvatar
+                        user={user}
+                        name={user?.name}
                         sx={{
                           width: 40,
                           height: 40,
                           border: "2px solid #fff",
                           boxShadow: "0 2px 10px rgba(94,114,228,0.2)",
                         }}
-                      >
-                        {user.firstInitial}
-                      </Avatar>
+                      />
                       <Box sx={{ flex: 1 }}>
                         <Typography
                           sx={{

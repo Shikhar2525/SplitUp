@@ -23,6 +23,7 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { v4 as uuidv4 } from "uuid";
 import { useAllUserSettled } from "../contexts/AllUserSettled";
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
 
 const Notes = ({ groupId }) => {
@@ -318,12 +319,11 @@ const Notes = ({ groupId }) => {
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 1 }}
                       >
-                        <Avatar
-                          src={note.createdBy?.picture}
+                        <ProfileAvatar
+                          user={note.createdBy}
+                          name={note.createdBy?.name}
                           sx={{ width: 32, height: 32 }}
-                        >
-                          {note.createdBy?.name?.[0]}
-                        </Avatar>
+                        />
                         <Box>
                           <Typography
                             variant="caption"

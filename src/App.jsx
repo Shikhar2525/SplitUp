@@ -58,7 +58,15 @@ function App() {
 
         // If the user exists, check if they have already entered their name
         if (currentUser) {
-          setCurrentUser(currentUser); // Set currentUser if it exists
+          let resolvedUser = currentUser;
+          try {
+            resolvedUser =
+              (await userService.ensureProfilePicture(user.email, user.picture)) ||
+              currentUser;
+          } catch (error) {
+            console.error("Error syncing profile picture:", error);
+          }
+          setCurrentUser({ ...resolvedUser, picture: user.picture });
           if (currentUser.hasEnteredName) {
             return; // User has already entered their name, no action needed
           }
@@ -90,6 +98,7 @@ function App() {
         name: user?.name,
         joinedDate: new Date(),
         profilePicture: user?.picture,
+        picture: user?.picture,
         email: user.email,
         hasEnteredName: true, // Track name entry
       });

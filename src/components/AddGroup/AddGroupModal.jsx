@@ -33,6 +33,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import CategoryIcon from "@mui/icons-material/Category";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { v4 as uuidv4 } from "uuid";
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 import GroupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
@@ -589,9 +590,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                     key={index}
                     label={member?.name}
                     avatar={
-                      <Avatar alt={member?.email} src={member?.profilePicture}>
-                        {member?.email.charAt(0)}
-                      </Avatar>
+                      <ProfileAvatar user={member} alt={member?.email} />
                     }
                     onDelete={() => handleDeleteMember(member?.email)}
                     sx={{ marginRight: 1, marginTop: 1 }}
@@ -663,8 +662,8 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                         }}
                         onClick={() => handleSelectFriend(friend)}
                       >
-                        <Avatar
-                          src={friend.profilePicture}
+                        <ProfileAvatar
+                          user={friend}
                           alt={friend.name}
                           sx={{
                             width: 40,
@@ -672,9 +671,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                             border: "2px solid #fff",
                             boxShadow: "0 2px 10px rgba(94,114,228,0.2)",
                           }}
-                        >
-                          {friend.name?.[0]}
-                        </Avatar>
+                        />
                         <Box>
                           <Typography sx={{ fontWeight: 600, color: "#32325d" }}>
                             {friend.name}

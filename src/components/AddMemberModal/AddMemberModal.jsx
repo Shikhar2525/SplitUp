@@ -31,6 +31,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import activityService from "../services/activity.service";
 import { v4 as uuidv4 } from "uuid";
 import { useFriends } from "../contexts/FriendsContext";
+import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 
 const styles = {
   modalBox: {
@@ -442,12 +443,10 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                       width: "100%",
                     }}
                   >
-                    <Avatar
+                    <ProfileAvatar
+                      user={member}
                       sx={{ width: 25, height: 25, marginRight: 1 }}
-                      src={member?.profilePicture}
-                    >
-                      {member?.name?.charAt(0)}
-                    </Avatar>
+                    />
                     {/* Tooltip for the email */}
                     <Tooltip title={member?.name} arrow>
                       <Box sx={{ display: "flex", flexDirection: "column" }}>
@@ -525,13 +524,11 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                       sx={styles.suggestionItem}
                       onClick={() => handleSelectFriend(friend)}
                     >
-                      <Avatar
-                        src={friend.profilePicture}
+                      <ProfileAvatar
+                        user={friend}
                         alt={friend.name}
                         sx={{ width: 32, height: 32 }}
-                      >
-                        {friend.name?.[0]}
-                      </Avatar>
+                      />
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
                           {friend.name}
@@ -567,9 +564,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                   key={index}
                   label={member?.name}
                   avatar={
-                    <Avatar alt={member?.email} src={member?.profilePicture}>
-                      {member?.email.charAt(0)}
-                    </Avatar>
+                    <ProfileAvatar user={member} alt={member?.email} />
                   }
                   onDelete={() => handleChipDelete(member)}
                   sx={styles.chip}
