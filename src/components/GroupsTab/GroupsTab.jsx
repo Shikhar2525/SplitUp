@@ -44,7 +44,6 @@ import { useAllGroups } from "../contexts/AllGroups";
 import GroupBalances from "../GroupBalances/GroupBalances";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import SettleTab from "../SettleTab/SettleTab";
-import { useCircularLoader } from "../contexts/CircularLoader";
 import userService from "../services/user.service";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
@@ -153,7 +152,6 @@ const GroupTab = () => {
   const { setLinearProgress } = useLinearProgress();
 
   const [settledMemberStats, setSettledMemberStats] = useState({});
-  const { setCircularLoader } = useCircularLoader();
   const [groupsIDs, setGroupIDs] = useState([]);
   const { currentCurrency, setCurrentCurrency } = useCurrentCurrency();
   const { setSnackBar } = useTopSnackBar();
@@ -184,7 +182,6 @@ const GroupTab = () => {
   const updateMembersIsUserExist = async () => {
     let updated = false;
     try {
-      setCircularLoader(true);
       // Create an array of promises to fetch users
       const memberPromises = currentGroup?.members?.map(async (member) => {
         const user = await fetchUser(member?.email);
@@ -239,8 +236,6 @@ const GroupTab = () => {
       }
     } catch (error) {
       console.error(error.message);
-    } finally {
-      setCircularLoader(false);
     }
   };
 
