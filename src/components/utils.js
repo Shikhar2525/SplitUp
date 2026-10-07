@@ -238,10 +238,7 @@ export async function calculateTotalsAcrossGroups(
             ).amount
           : balance.amount;
 
-      // Get settlement status for both parties
-      const creditorUser = group?.members.find((member) => member?.email === balance.creditor.email);
-      const isCreditorSettled = creditorUser?.userSettled || false;
-
+      // A settled creditor can still receive money from other members.
       const debtorUser = group?.members.find((member) => member?.email === balance.debtor.email);
       const isDebtorSettled = debtorUser?.userSettled || false;
 
@@ -256,8 +253,8 @@ export async function calculateTotalsAcrossGroups(
 
       // CASE 2: You owe money (debtor)
       if (balance.debtor.email === yourEmail) {
-        // Only count if you're not settled AND the creditor isn't settled
-        if (!amISettled && !isCreditorSettled) {
+        // Settling removes your dues, not money owed to a settled creditor.
+        if (!amISettled) {
           totalYouGive += parseFloat(amount);
         }
       }
