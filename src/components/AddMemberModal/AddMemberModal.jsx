@@ -597,7 +597,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                 }
                 onChange={handleEmailChange}
                 onKeyDown={handleEmailAdd}
-                helperText="Choose a friend or enter an email address."
+                size="small"
                 InputProps={{
                   startAdornment: members.length > 0 && (
                     <Box
@@ -679,6 +679,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                 label="Enter Name"
                 variant="outlined"
                 value={name}
+                size="small"
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={handleName}
                 helperText="Press Enter to add this unregistered member."
