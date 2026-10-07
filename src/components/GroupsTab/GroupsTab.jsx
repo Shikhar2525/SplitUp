@@ -1293,23 +1293,6 @@ const GroupTab = () => {
                               />
                             )}
                           </Box>
-                          {group.description && (
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                display: "-webkit-box",
-                                WebkitBoxOrient: "vertical",
-                                WebkitLineClamp: 2,
-                                overflow: "hidden",
-                                color: "#64748b",
-                                lineHeight: 1.25,
-                                mt: 0.4,
-                                maxWidth: { xs: 220, sm: 260 },
-                              }}
-                            >
-                              {group.description}
-                            </Typography>
-                          )}
                           <Box
                             sx={{
                               display: "flex",
