@@ -40,21 +40,26 @@ import { useCurrentUser } from "../contexts/CurrentUser";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import userService from "../services/user.service";
 import ActivityService from "../services/activity.service";
-import { currencies } from "../../constants";
+import { currencies, groupColorPalette } from "../../constants";
 import { Box as MuiBox } from "@mui/material";
 import { useFriends } from "../contexts/FriendsContext";
+import { useAllGroups } from "../contexts/AllGroups";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import debounce from 'lodash/debounce';
-import { createCalculationOnlyMember, formatDisplayName } from "../utils";
+import { createCalculationOnlyMember, formatDisplayName, getAvailableGroupColor, getGroupColor } from "../utils";
 
 const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => {
   const { setCurrentGroupID } = useCurrentGroup();
+  const { allGroups } = useAllGroups();
   const navigate = useNavigate();
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [groupColor, setGroupColor] = useState(
+    () => getAvailableGroupColor(allGroups || [])
+  );
   const [members, setMembers] = useState([]);
   const [inputEmail, setInputEmail] = useState("");
   const [error, setError] = useState("");
@@ -74,6 +79,12 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
     groupName: "",
     category: "",
   });
+  const usedGroupColors = new Set(
+    (allGroups || []).map((group) => getGroupColor(group, allGroups || []).value)
+  );
+  const hasUnusedGroupColors = groupColorPalette.some(
+    (colorOption) => !usedGroupColors.has(colorOption.value)
+  );
 
   // Add new state for group name validation
   const [groupNameError, setGroupNameError] = useState("");
@@ -91,6 +102,10 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
       refreshFriends(currentUser.email);
     }
   }, [open, currentUser]);
+
+  useEffect(() => {
+    if (open) setGroupColor(getAvailableGroupColor(allGroups || []));
+  }, [open]);
 
   useEffect(() => {
     if (suggestions.length > 0 && inputEmail && inputRef.current) {
@@ -116,6 +131,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
     setInputEmail("");
     setError("");
     setDefaultCurrency("INR");
+    setGroupColor(getAvailableGroupColor(allGroups || []));
     setActiveStep(0);
     setShowNameField(false);
     setName("");
@@ -385,6 +401,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
       expenses: [],
       admin: adminUserObject,
       defaultCurrency,
+      color: groupColor,
     };
 
     try {
@@ -571,6 +588,55 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                 <FormHelperText error>{errors.category}</FormHelperText>
               )}
             </FormControl>
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ color: "#32325d", fontWeight: 700, mb: 0.5 }}>
+                Group color
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#64748b", display: "block", mb: 1 }}>
+                Choose an accent to identify this group.
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {groupColorPalette.map((colorOption) => (
+                  <IconButton
+                    key={colorOption.value}
+                    aria-label={`${colorOption.name} group color`}
+                    title={usedGroupColors.has(colorOption.value) ? `${colorOption.name} is used by another group` : colorOption.name}
+                    aria-pressed={groupColor === colorOption.value}
+                    disabled={hasUnusedGroupColors && usedGroupColors.has(colorOption.value)}
+                    onClick={() => setGroupColor(colorOption.value)}
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      border: "2px solid",
+                      borderColor: groupColor === colorOption.value ? "#25324a" : "transparent",
+                      backgroundColor: colorOption.value,
+                      color: "white",
+                      position: "relative",
+                      "&:hover": { backgroundColor: colorOption.value, opacity: 0.88 },
+                      "&.Mui-disabled": { opacity: 1, color: "white" },
+                    }}
+                  >
+                    {groupColor === colorOption.value && <CheckCircleIcon sx={{ fontSize: 20 }} />}
+                    {usedGroupColors.has(colorOption.value) && groupColor !== colorOption.value && (
+                      <Box
+                        component="span"
+                        sx={{
+                          position: "absolute",
+                          right: -2,
+                          bottom: -2,
+                          width: 9,
+                          height: 9,
+                          borderRadius: "50%",
+                          backgroundColor: "#263449",
+                          border: "2px solid #fff",
+                        }}
+                      />
+                    )}
+                  </IconButton>
+                ))}
+              </Box>
+            </Box>
           </Box>
         );
 

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { currencies } from "../constants";
+import { currencies, groupColorPalette } from "../constants";
 
 export const formatDate = (timestamp) => {
   if (timestamp?.seconds) {
@@ -498,6 +498,60 @@ export function createCalculationOnlyMember(name, existingEmails = []) {
     isDummy: true,
     userSettled: false,
   };
+}
+
+export function getGroupColor(group, groups = []) {
+  const groupList = groups.some((item) => item?.id === group?.id)
+    ? groups
+    : [...groups, group];
+  const sortedGroups = groupList.slice().sort((first, second) =>
+    String(first?.id || first?.title || "").localeCompare(
+      String(second?.id || second?.title || "")
+    )
+  );
+  const usedColors = new Set();
+  let resolvedColor;
+  for (const item of sortedGroups) {
+    const seed = String(item?.id || item?.title || "group");
+    let hash = 0;
+    for (const character of seed) {
+      hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+    }
+
+    const savedIndex = groupColorPalette.findIndex(
+      (color) => color.value === item?.color
+    );
+    const startIndex = savedIndex >= 0 ? savedIndex : hash % groupColorPalette.length;
+    let candidateColor;
+    for (let offset = 0; offset < groupColorPalette.length; offset += 1) {
+      const color = groupColorPalette[(startIndex + offset) % groupColorPalette.length];
+      if (!usedColors.has(color.value)) {
+        candidateColor = color;
+        break;
+      }
+    }
+    candidateColor ||= groupColorPalette[startIndex];
+    usedColors.add(candidateColor.value);
+
+    if (item?.id === group?.id || item === group) {
+      resolvedColor = candidateColor;
+    }
+  }
+
+  return resolvedColor || groupColorPalette[0];
+}
+
+export function getAvailableGroupColor(groups = [], excludedGroupId) {
+  const usedColors = new Set(
+    groups
+      .filter((group) => group?.id !== excludedGroupId)
+      .map((group) => getGroupColor(group, groups).value)
+  );
+  const availableColors = groupColorPalette.filter(
+    (color) => !usedColors.has(color.value)
+  );
+  const palette = availableColors.length ? availableColors : groupColorPalette;
+  return palette[Math.floor(Math.random() * palette.length)].value;
 }
 
 export function getCurrencySymbol(value) {

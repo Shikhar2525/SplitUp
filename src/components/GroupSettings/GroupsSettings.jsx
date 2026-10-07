@@ -12,6 +12,7 @@ import {
   DialogContentText,
   DialogActions,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
@@ -21,23 +22,40 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { currencies } from "../../constants";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { currencies, groupColorPalette } from "../../constants";
 import GroupService from "../services/group.service";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useTopSnackBar } from "../contexts/TopSnackBar";
 import { useCircularLoader } from "../contexts/CircularLoader";
 import { useAllUserSettled } from "../contexts/AllUserSettled";
+import { useCurrentUser } from "../contexts/CurrentUser";
+import { getGroupColor } from "../utils";
 
 
 function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   const isMobile = useScreenSize();
+  const { allGroups, refreshAllGroups } = useAllGroups();
   const [openModal, setOpenModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState(groupName);
   const [newDescription, setNewDescription] = useState(group?.description || ''); // Add this
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingDesc, setIsEditingDesc] = useState(false); // Add this
   const [currency, setCurrency] = useState(defaultCurrency);
+  const [groupColor, setGroupColor] = useState(
+    () => getGroupColor(group, allGroups || []).value
+  );
   const [liveGroup, setLiveGroup] = useState(group);
+  const { currentUser } = useCurrentUser();
+  const isGroupAdmin = currentUser?.email === liveGroup?.admin?.email;
+  const otherGroupColors = new Set(
+    (allGroups || [])
+      .filter((candidate) => candidate?.id !== groupID)
+      .map((candidate) => getGroupColor(candidate, allGroups || []).value)
+  );
+  const hasUnusedGroupColors = groupColorPalette.some(
+    (option) => !otherGroupColors.has(option.value)
+  );
   const [errors, setErrors] = useState({
     description: "",
     groupName: ""
@@ -52,13 +70,13 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
         setNewGroupName(data.title || "");
         setNewDescription(data.description || "");
         setCurrency(data.defaultCurrency || "");
+        setGroupColor(getGroupColor(data, allGroups || []).value);
       }
     });
     return () => unsubscribe();
-  }, [groupID]);
+  }, [groupID, allGroups]);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const { refreshAllGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
   const { setCircularLoader } = useCircularLoader();
   const { allUserSettled } = useAllUserSettled();
@@ -152,6 +170,26 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
     }
   };
 
+  const handleSaveGroupColor = async () => {
+    if (!isGroupAdmin) return;
+    if (otherGroupColors.has(groupColor)) {
+      setSnackBar({ isOpen: true, message: "Choose a color not used by another group." });
+      return;
+    }
+
+    try {
+      setCircularLoader(true);
+      await GroupService.updateGroupColor(groupID, groupColor);
+      refreshAllGroups();
+      setSnackBar({ isOpen: true, message: "Group color updated" });
+    } catch (error) {
+      console.error("Error updating group color:", error);
+      setSnackBar({ isOpen: true, message: "Failed to update group color" });
+    } finally {
+      setCircularLoader(false);
+    }
+  };
+
   const handleDelete = async () => {
     try {
       setCircularLoader(true);
@@ -174,6 +212,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
     newGroupName.trim() !== "" && newGroupName !== (liveGroup?.name || groupName);
 
   const isCurrencyChanged = currency !== (liveGroup?.defaultCurrency || defaultCurrency);
+  const isGroupColorChanged = groupColor !== getGroupColor(liveGroup, allGroups || []).value;
 
   // Add description validation
   const isDescriptionValid = newDescription.length <= 100 && 
@@ -411,6 +450,64 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
               </Typography>
             </Box>
           )}
+        </Box>
+      </Paper>
+
+      {/* Group Color Settings Card */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          borderRadius: "12px",
+          background: "#fff",
+          border: "1px solid #e5eaf1",
+          mb: 1.5,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 1 }}>
+          <Box>
+            <Typography variant="subtitle1" sx={{ color: "#32325d", fontWeight: 600 }}>
+              Group color
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#64748b" }}>
+              {groupColorPalette.find((option) => option.value === groupColor)?.name || "Custom"}
+            </Typography>
+          </Box>
+          {isGroupAdmin && (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleSaveGroupColor}
+              disabled={!isGroupColorChanged || otherGroupColors.has(groupColor)}
+              startIcon={<SaveIcon />}
+              sx={{ borderRadius: "9px", textTransform: "none" }}
+            >
+              Save color
+            </Button>
+          )}
+        </Box>
+        <Box role="radiogroup" aria-label="Group accent color" sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+          {groupColorPalette.map((option) => (
+            <IconButton
+              key={option.value}
+              aria-label={`${option.name} group color`}
+              aria-pressed={groupColor === option.value}
+              disabled={!isGroupAdmin || (hasUnusedGroupColors && otherGroupColors.has(option.value))}
+              onClick={() => setGroupColor(option.value)}
+              sx={{
+                width: 36,
+                height: 36,
+                border: "2px solid",
+                borderColor: groupColor === option.value ? "#25324a" : "transparent",
+                backgroundColor: option.value,
+                color: "#fff",
+                "&:hover": { backgroundColor: option.value, opacity: 0.88 },
+                "&.Mui-disabled": { opacity: 0.7 },
+              }}
+            >
+              {groupColor === option.value && <CheckCircleIcon sx={{ fontSize: 20 }} />}
+            </IconButton>
+          ))}
         </Box>
       </Paper>
 

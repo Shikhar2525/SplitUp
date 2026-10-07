@@ -422,6 +422,25 @@ class GroupService {
     }
   };
 
+  updateGroupColor = async (groupIdField, color) => {
+    try {
+      const q = query(
+        collection(db, "Groups"),
+        where("id", "==", groupIdField)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        throw new Error(`No document found with ID: ${groupIdField}`);
+      }
+
+      await updateDoc(querySnapshot.docs[0].ref, { color });
+    } catch (error) {
+      console.error("Error updating group color:", error);
+      throw error;
+    }
+  };
+
   checkGroupNameExists = async (groupName) => {
     try {
       const q = query(groupRef, where("title", "==", groupName));

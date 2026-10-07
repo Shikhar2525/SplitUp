@@ -81,3 +81,22 @@ export const currencies = [
     flag: "https://flagcdn.com/w320/hk.png",
   },
 ];
+
+export const groupColorPalette = [
+  { name: "Cobalt", value: "#4565D7", surface: "#E9EEFF" },
+  { name: "Teal", value: "#168C8C", surface: "#E4F5F3" },
+  { name: "Coral", value: "#D96552", surface: "#FFF0EC" },
+  { name: "Violet", value: "#7957B8", surface: "#F1EBFA" },
+  { name: "Leaf", value: "#52824A", surface: "#EDF5E9" },
+  { name: "Amber", value: "#B77A18", surface: "#FBF2DF" },
+  { name: "Rose", value: "#C34F78", surface: "#FCEBF1" },
+  { name: "Ocean", value: "#347FA8", surface: "#E8F3F8" },
+  { name: "Berry", value: "#9F3F69", surface: "#F9EAF1" },
+  { name: "Moss", value: "#66802E", surface: "#F1F5E5" },
+  { name: "Sky", value: "#287AB5", surface: "#E7F2FC" },
+  { name: "Tangerine", value: "#C96524", surface: "#FFF0E5" },
+  { name: "Grape", value: "#6846A5", surface: "#F0EAFE" },
+  { name: "Jade", value: "#168265", surface: "#E4F5EE" },
+  { name: "Slate", value: "#536779", surface: "#EAF0F4" },
+  { name: "Crimson", value: "#B84245", surface: "#FCEBED" },
+];

@@ -30,7 +30,7 @@ import { useScreenSize } from "../contexts/ScreenSizeContext";
 import Expenses from "../Expenses/Expenses";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
-import { convertCurrency, formatCurrency, formatDisplayName, formatDate, formatDateWithOrdinal, sortByISODate } from "../utils";
+import { convertCurrency, formatCurrency, formatDisplayName, formatDate, formatDateWithOrdinal, getGroupColor, sortByISODate } from "../utils";
 // import { useAllGroups } from "../contexts/AllGroups"; // Disabled for real-time
 import groupService from "../services/group.service";
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
@@ -52,7 +52,6 @@ import { useAllUserSettled } from "../contexts/AllUserSettled";
 import StickyNote2Icon from "@mui/icons-material/StickyNote2";
 import Notes from "../Notes/Notes";
 import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
-import InfoIcon from "@mui/icons-material/Info";
 import GroupIcon from "@mui/icons-material/Group";
 import CalendarTodayIcon from "@mui/icons-material/AccountBalanceWallet";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
@@ -159,6 +158,7 @@ const GroupTab = () => {
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
   const currentGroup = allGroups?.find((group) => group.id === currentGroupID);
+  const currentGroupColor = getGroupColor(currentGroup, allGroups || []);
   const members = allGroups?.find(
     (group) => group.id === currentGroupID
   )?.members;
@@ -325,6 +325,7 @@ const GroupTab = () => {
             groupID={currentGroupID}
             groupName={currentGroup?.title}
             defaultCurrency={currentGroup?.defaultCurrency}
+            group={currentGroup}
           />
         ),
       });
@@ -511,95 +512,10 @@ const GroupTab = () => {
     return (
       <Box
         sx={{
-          p: { xs: 1.5, sm: 2 },
-          backgroundColor: "rgba(94, 114, 228, 0.03)",
-          borderRadius: "12px",
-          border: "1px solid rgba(94, 114, 228, 0.1)",
+          px: { xs: 0.5, sm: 1 },
+          py: 0.75,
         }}
       >
-        {/* Title and Share Section */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 2,
-            mb: 1,
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              flex: 1,
-              minWidth: 0,
-            }}
-          >
-            <Box
-              sx={{
-                backgroundColor: "rgba(94, 114, 228, 0.1)",
-                borderRadius: "12px",
-                width: { xs: 40, sm: 45, md: 50 },
-                height: { xs: 40, sm: 45, md: 50 },
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <InfoIcon
-                sx={{
-                  color: "#5e72e4",
-                  fontSize: { xs: "1.25rem", sm: "1.5rem" },
-                }}
-              />
-            </Box>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    color: "#32325d",
-                    fontSize: { xs: "0.9rem", sm: "1rem" },
-                    fontWeight: 600,
-                    mb: 0.5, // Added margin bottom
-                  }}
-                >
-                  {selectedGroupDetails?.title}
-                </Typography>
-
-              </Box>
-              {selectedGroupDetails?.description && (
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: "#525f7f",
-                    fontSize: { xs: "0.75rem", sm: "0.85rem" },
-                    opacity: 0.85,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    lineHeight: 1.4,
-                    width: "100%",
-                  }}
-                >
-                  {selectedGroupDetails?.description}
-                </Typography>
-              )}
-            </Box>
-            <ShareLink />
-          </Box>
-        </Box>
-
         <Accordion
           expanded={expanded}
           onChange={handleAccordionChange}
@@ -1075,8 +991,9 @@ const GroupTab = () => {
           columnGap: { xs: 0.75, sm: 2 },
           rowGap: { xs: 1, sm: 0 },
           alignItems: "center",
-          borderBottom: "1px solid #e6eaf0",
-          backgroundColor: "#fff",
+          borderBottom: `1px solid ${currentGroupColor.surface}`,
+          borderLeft: `4px solid ${currentGroupColor.value}`,
+          background: `linear-gradient(105deg, ${currentGroupColor.surface} 0%, #f8fafc 100%)`,
         }}
       >
         {allGroups?.length > 0 ? (
@@ -1119,33 +1036,42 @@ const GroupTab = () => {
                     sx={{
                       width: 24,
                       height: 24,
-                      bgcolor: "#edf0ff",
-                      color: "#5364c7",
+                      bgcolor: currentGroupColor.value,
+                      color: "#fff",
                       fontSize: "0.75rem",
                       fontWeight: 600,
                       flexShrink: 0,
-                      border: "1px solid #dce2ff",
+                      border: "1px solid rgba(255,255,255,0.8)",
                     }}
                   >
                     {selectedGroupDetails?.title?.[0] || "G"}
                   </Avatar>
-                  <Typography
-                    sx={{
-                      fontSize: { xs: "0.8rem", sm: "0.875rem" },
-                      fontWeight: 600,
-                      color: "#263449",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      flex: 1,
-                    }}
-                  >
-                    {selectedGroupDetails?.title ?? "Select Group"}
-                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, lineHeight: 1.15 }}>
+                    <Typography
+                      sx={{
+                        fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                        fontWeight: 700,
+                        color: "#263449",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {selectedGroupDetails?.title ?? "Select Group"}
+                    </Typography>
+                    {selectedGroupDetails?.description && (
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", mt: 0.25 }}
+                      >
+                        {selectedGroupDetails.description}
+                      </Typography>
+                    )}
+                  </Box>
                 </Box>
               )}
               sx={{
-                height: { xs: 42, sm: 46 },
+                height: { xs: 52, sm: 56 },
                 borderRadius: "11px",
                 backgroundColor: "#fff",
                 transition: "border-color 150ms ease, box-shadow 150ms ease",
@@ -1289,14 +1215,14 @@ const GroupTab = () => {
                         backdropFilter: "blur(8px)",
                         opacity: category === "Settled" ? 0.8 : 1,
                         "&:hover": {
-                          backgroundColor: getCategoryInfo(category).lightBg,
+                          backgroundColor: getGroupColor(group, allGroups || []).surface,
                           transform: "translateX(8px)",
                           boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
                         },
                         "&.Mui-selected": {
-                          backgroundColor: getCategoryInfo(category).lightBg,
+                          backgroundColor: getGroupColor(group, allGroups || []).surface,
                           "&:hover": {
-                            backgroundColor: getCategoryInfo(category).lightBg,
+                            backgroundColor: getGroupColor(group, allGroups || []).surface,
                             opacity: 0.9,
                           },
                         },
@@ -1315,7 +1241,7 @@ const GroupTab = () => {
                           sx={{
                             width: { xs: 40, sm: 45 },
                             height: { xs: 40, sm: 45 },
-                            background: getCategoryInfo(category).gradient,
+                            backgroundColor: getGroupColor(group, allGroups || []).value,
                             fontSize: { xs: "1rem", sm: "1.2rem" },
                             fontWeight: 600,
                             boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
@@ -1367,6 +1293,23 @@ const GroupTab = () => {
                               />
                             )}
                           </Box>
+                          {group.description && (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                display: "-webkit-box",
+                                WebkitBoxOrient: "vertical",
+                                WebkitLineClamp: 2,
+                                overflow: "hidden",
+                                color: "#64748b",
+                                lineHeight: 1.25,
+                                mt: 0.4,
+                                maxWidth: { xs: 220, sm: 260 },
+                              }}
+                            >
+                              {group.description}
+                            </Typography>
+                          )}
                           <Box
                             sx={{
                               display: "flex",
@@ -1488,6 +1431,7 @@ const GroupTab = () => {
               {isMobile ? selectedGroupDetails?.members?.length || 0 : "Members"}
             </Button>
           )}
+          {allGroups?.length > 0 && <ShareLink />}
         </Box>
       </Box>
 

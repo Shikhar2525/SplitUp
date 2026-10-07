@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Box, Grid, Paper, Typography, Button, Avatar, AvatarGroup, Chip } from "@mui/material";
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
-import { calculateTotalsAcrossGroups, formatCurrency, formatDisplayName } from "../utils";
+import { calculateTotalsAcrossGroups, formatCurrency, formatDisplayName, getGroupColor } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
@@ -159,6 +159,7 @@ const Home = () => {
 
   const RecentGroupCard = ({ group }) => {
     const isGroupSettled = group.members?.every(member => member.userSettled);
+    const groupColor = getGroupColor(group, allGroups || []);
 
     return (
       <Paper
@@ -173,17 +174,18 @@ const Home = () => {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          borderRadius: '24px',
-          background: 'white',
+          borderRadius: '12px',
+          backgroundColor: '#fff',
           position: 'relative',
           overflow: 'visible',
-          border: '1px solid rgba(255, 255, 255, 0.8)',
-          boxShadow: '9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5)',
-          transition: 'all 0.3s ease',
+          border: '1px solid #e4e9f0',
+          borderTop: `4px solid ${groupColor.value}`,
+          boxShadow: '0 2px 8px rgba(31, 45, 61, 0.06)',
+          transition: 'transform 180ms ease, box-shadow 180ms ease',
           cursor: 'pointer',
           '&:hover': {
-            transform: 'translateY(-5px)',
-            boxShadow: '12px 12px 20px rgb(163,177,198,0.8), -12px -12px 20px rgba(255,255,255, 0.8)',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 8px 20px rgba(31, 45, 61, 0.11)',
           },
         }}
       >
@@ -198,7 +200,7 @@ const Home = () => {
             gap: 0.5,
             px: 1.5,
             py: 0.5,
-            borderRadius: '12px',
+                borderRadius: '10px',
             backgroundColor: isGroupSettled ? '#E8F5E9' : '#FFEBEE',
             color: isGroupSettled ? '#2E7D32' : '#C62828',
             border: `1px solid ${isGroupSettled ? '#A5D6A7' : '#FFCDD2'}`,
@@ -235,7 +237,7 @@ const Home = () => {
               sx={{
                 width: { xs: 40, sm: 45 },
                 height: { xs: 40, sm: 45 },
-                bgcolor: '#5e72e4',
+                bgcolor: groupColor.value,
                 fontSize: '1.2rem',
                 fontWeight: 600,
                 flexShrink: 0
@@ -288,14 +290,14 @@ const Home = () => {
               display: 'flex',
               alignItems: 'center',
               gap: 0.5,
-              backgroundColor: 'rgba(94, 114, 228, 0.1)',
+              backgroundColor: groupColor.surface,
               px: 1.5,
               py: 0.5,
-              borderRadius: '8px'
+              borderRadius: '7px'
             }}>
-              <PaidIcon sx={{ color: '#5e72e4', fontSize: '0.9rem' }} />
+              <PaidIcon sx={{ color: groupColor.value, fontSize: '0.9rem' }} />
               <Typography variant="caption" sx={{ 
-                color: '#5e72e4',
+                color: groupColor.value,
                 fontWeight: 600
               }}>
                 {group.expenses?.length || 0} expenses
@@ -306,8 +308,8 @@ const Home = () => {
               label={group.category || 'Other'} 
               size="small"
               sx={{
-                bgcolor: 'rgba(94, 114, 228, 0.1)',
-                color: '#5e72e4',
+                bgcolor: groupColor.surface,
+                color: groupColor.value,
                 fontWeight: 600,
                 height: '24px'
               }}

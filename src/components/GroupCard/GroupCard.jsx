@@ -4,10 +4,13 @@ import PendingIcon from '@mui/icons-material/Pending';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { useNavigate } from 'react-router-dom';
 import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
-import { formatDisplayName } from "../utils";
+import { formatDisplayName, getGroupColor } from "../utils";
+import { useAllGroups } from "../contexts/AllGroups";
 
 const GroupCard = ({ group }) => {
   const navigate = useNavigate();
+  const { allGroups } = useAllGroups();
+  const groupColor = getGroupColor(group, allGroups || []);
   const isSettled = group.members?.every(member => member.userSettled);
 
   return (
@@ -21,9 +24,10 @@ const GroupCard = ({ group }) => {
         flexDirection: 'column',
         justifyContent: 'space-between',
         borderRadius: '20px',
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.8) 100%)',
+        background: `linear-gradient(135deg, ${groupColor.surface} 0%, #ffffff 72%)`,
         backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255,255,255,0.8)',
+        border: `1px solid ${groupColor.surface}`,
+        borderLeft: `4px solid ${groupColor.value}`,
         transition: 'all 0.3s ease',
         cursor: 'pointer',
         position: 'relative',
@@ -59,7 +63,7 @@ const GroupCard = ({ group }) => {
             sx={{
               width: 50,
               height: 50,
-              bgcolor: '#5e72e4',
+              bgcolor: groupColor.value,
               fontSize: '1.4rem',
               fontWeight: 600
             }}
@@ -81,8 +85,8 @@ const GroupCard = ({ group }) => {
             label={group.category || 'Other'} 
             size="small"
             sx={{
-              bgcolor: 'rgba(94, 114, 228, 0.1)',
-              color: '#5e72e4',
+              bgcolor: groupColor.surface,
+              color: groupColor.value,
               fontWeight: 600
             }}
           />
