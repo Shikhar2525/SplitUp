@@ -32,6 +32,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import CategoryIcon from "@mui/icons-material/Category";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { v4 as uuidv4 } from "uuid";
 import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 import GroupService from "../services/group.service";
@@ -46,7 +47,7 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import debounce from 'lodash/debounce';
-import { formatDisplayName } from "../utils";
+import { createCalculationOnlyMember, formatDisplayName } from "../utils";
 
 const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => {
   const { setCurrentGroupID } = useCurrentGroup();
@@ -60,6 +61,8 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
   const [loading, setLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [name, setName] = useState("");
+  const [dummyName, setDummyName] = useState("");
+  const [dummyEntryOpen, setDummyEntryOpen] = useState(false);
   const [showNameField, setShowNameField] = useState(false);
   const { currentUser } = useCurrentUser();
   const { setSnackBar } = useTopSnackBar();
@@ -78,7 +81,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
 
   const steps = ["Group Details", "Currency", "Members"];
 
-  const userObjWithName = { email: inputEmail, name: name };
+  const userObjWithName = { email: inputEmail, name: name, isDummy: true };
 
   const suggestionsRef = useRef(null);
   const inputRef = useRef(null);
@@ -100,6 +103,8 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
     setShowNameField(false);
     setInputEmail("");
     setName("");
+    setDummyName("");
+    setDummyEntryOpen(false);
     setError("");
   };
 
@@ -114,6 +119,8 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
     setActiveStep(0);
     setShowNameField(false);
     setName("");
+    setDummyName("");
+    setDummyEntryOpen(false);
   };
 
   const handleEmailAdd = async (e) => {
@@ -156,6 +163,25 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
       setInputEmail("");
       setError("");
     }
+  };
+
+  const handleAddCalculationOnlyMember = () => {
+    const trimmedName = dummyName.trim();
+    if (!trimmedName) {
+      setError("Enter a name for this calculation-only member.");
+      return;
+    }
+
+    setMembers((previousMembers) => [
+      ...previousMembers,
+      createCalculationOnlyMember(
+        trimmedName,
+        members.map((member) => member?.email || "")
+      ),
+    ]);
+    setDummyName("");
+    setDummyEntryOpen(false);
+    setError("");
   };
 
   const handleDeleteMember = (emailToDelete) => {
@@ -381,7 +407,9 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
       resetForm();
       setSnackBar({
         isOpen: true,
-        message: "Group created",
+        message: members.length
+          ? `Group created with ${members.length} ${members.length === 1 ? "member" : "members"}.`
+          : "Group created.",
       });
       localStorage.setItem("currentGroupID", JSON.stringify(newGroup?.id));
       if (typeof setCurrentGroupID === 'function') setCurrentGroupID(newGroup?.id);
@@ -589,7 +617,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                 {members?.map((member, index) => (
                   <Chip
                     key={index}
-                    label={formatDisplayName(member?.name)}
+                    label={`${formatDisplayName(member?.name)}${member?.isDummy ? " · Calculation only" : ""}`}
                     avatar={
                       <ProfileAvatar user={member} alt={member?.email} />
                     }
@@ -684,6 +712,50 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                       </Box>
                     ))}
                   </MuiBox>
+                )}
+              </Box>
+              <Box sx={{ mt: 1.5 }}>
+                {!dummyEntryOpen ? (
+                  <Button
+                    type="button"
+                    variant="outlined"
+                    size="small"
+                    startIcon={<PersonAddAlt1Icon />}
+                    onClick={() => {
+                      setDummyEntryOpen(true);
+                      setError("");
+                    }}
+                    sx={{ borderRadius: "10px", textTransform: "none", fontWeight: 600 }}
+                  >
+                    Add calculation-only member
+                  </Button>
+                ) : (
+                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                    <TextField
+                      autoFocus
+                      size="small"
+                      fullWidth
+                      label="Guest name"
+                      value={dummyName}
+                      onChange={(event) => setDummyName(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          handleAddCalculationOnlyMember();
+                        }
+                      }}
+                      helperText="No SplitUp account is needed."
+                    />
+                    <Button
+                      type="button"
+                      variant="contained"
+                      disabled={!dummyName.trim()}
+                      onClick={handleAddCalculationOnlyMember}
+                      sx={{ whiteSpace: "nowrap", minHeight: 40 }}
+                    >
+                      Add guest
+                    </Button>
+                  </Box>
                 )}
               </Box>
               {showNameField && (

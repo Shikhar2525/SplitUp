@@ -89,7 +89,7 @@ const ProfileAvatar = (props) => {
   const initial = fallbackName.trim().charAt(0).toUpperCase() || "?";
 
   useEffect(() => {
-    if (!email || currentIndex < sources.length || resolvedEmail === email) return;
+    if (user?.isDummy || !email || currentIndex < sources.length || resolvedEmail === email) return;
     let active = true;
     getProfileByEmail(email).then((profile) => {
       if (!active) return;
@@ -99,7 +99,7 @@ const ProfileAvatar = (props) => {
     return () => {
       active = false;
     };
-  }, [currentIndex, email, resolvedEmail, sources.length]);
+  }, [currentIndex, email, resolvedEmail, sources.length, user?.isDummy]);
 
   const handleImageError = (event) => {
     onError?.(event);

@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import GroupService from "../services/group.service";
 import userService from "../services/user.service";
@@ -27,12 +28,13 @@ import { useAllGroups } from "../contexts/AllGroups";
 import { useLinearProgress } from "../contexts/LinearProgress";
 import groupService from "../services/group.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
+import { useTopSnackBar } from "../contexts/TopSnackBar";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import activityService from "../services/activity.service";
 import { v4 as uuidv4 } from "uuid";
 import { useFriends } from "../contexts/FriendsContext";
 import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
-import { formatDisplayName } from "../utils";
+import { createCalculationOnlyMember, formatDisplayName } from "../utils";
 
 const styles = {
   modalBox: {
@@ -40,28 +42,31 @@ const styles = {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: "95%",
-    maxWidth: 500,
+    width: { xs: "calc(100% - 24px)", sm: "min(540px, calc(100% - 40px))" },
+    maxWidth: 540,
     maxHeight: "90vh",
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
     bgcolor: "#FFF",
-    borderRadius: "24px",
-    boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+    borderRadius: { xs: "18px", sm: "20px" },
+    boxShadow: "0 24px 64px rgba(15, 23, 42, 0.2)",
     p: 0,
   },
   header: {
-    p: 3,
+    p: { xs: 2, sm: 2.5 },
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottom: "1px solid rgba(94, 114, 228, 0.1)",
+    gap: 2,
+    backgroundColor: "#f8fafc",
+    borderBottom: "1px solid #e8edf3",
   },
   content: {
-    p: 3,
+    p: { xs: 2, sm: 2.5 },
     overflowY: "auto",
     flex: 1,
+    backgroundColor: "#fff",
     "&::-webkit-scrollbar": {
       width: "6px",
     },
@@ -71,9 +76,12 @@ const styles = {
     },
   },
   membersList: {
-    maxHeight: "35vh",
+    maxHeight: "30vh",
     overflowY: "auto",
-    mb: 3,
+    mb: 2.5,
+    border: "1px solid #e5eaf1",
+    borderRadius: "12px",
+    backgroundColor: "#fff",
     "&::-webkit-scrollbar": {
       width: "6px",
     },
@@ -86,31 +94,27 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    p: 2,
-    mb: 1,
-    borderRadius: "16px",
-    backgroundColor: "rgba(94, 114, 228, 0.02)",
-    border: "1px solid rgba(94, 114, 228, 0.08)",
-    transition: "all 0.2s ease",
+    px: 1.25,
+    py: 1,
+    borderBottom: "1px solid #edf1f5",
+    transition: "background-color 150ms ease",
     "&:hover": {
-      backgroundColor: "rgba(94, 114, 228, 0.05)",
-      transform: "translateY(-1px)",
-      boxShadow: "0 4px 12px rgba(94, 114, 228, 0.05)",
+      backgroundColor: "#f8fafc",
+    },
+    "&:last-child": {
+      borderBottom: 0,
     },
   },
   searchInput: {
     "& .MuiOutlinedInput-root": {
-      borderRadius: "12px",
-      backgroundColor: "rgba(255,255,255,0.8)",
-      backdropFilter: "blur(10px)",
-      transition: "all 0.2s ease",
+      borderRadius: "10px",
+      backgroundColor: "#fff",
+      transition: "border-color 150ms ease, box-shadow 150ms ease",
       "&:hover": {
-        backgroundColor: "rgba(255,255,255,0.9)",
-        boxShadow: "0 4px 20px rgba(94, 114, 228, 0.1)",
+        backgroundColor: "#fff",
       },
       "&.Mui-focused": {
-        backgroundColor: "white",
-        boxShadow: "0 4px 20px rgba(94, 114, 228, 0.15)",
+        backgroundColor: "#fff",
       },
     },
   },
@@ -134,27 +138,29 @@ const styles = {
     },
   },
   suggestionItem: {
-    p: 2,
+    p: { xs: 1.25, sm: 1.5 },
     cursor: "pointer",
-    transition: "all 0.2s ease",
+    display: "flex",
+    alignItems: "center",
+    gap: 1.25,
+    transition: "background-color 150ms ease",
     "&:hover": {
-      backgroundColor: "rgba(94, 114, 228, 0.08)",
-      transform: "translateX(8px)",
+      backgroundColor: "#f8faff",
     },
   },
   footer: {
-    p: 3,
-    borderTop: "1px solid rgba(94, 114, 228, 0.1)",
-    backgroundColor: "rgba(255,255,255,0.9)",
-    backdropFilter: "blur(10px)",
+    p: { xs: 1.5, sm: 2 },
+    borderTop: "1px solid #e8edf3",
+    backgroundColor: "#fff",
   },
   addButton: {
     bgcolor: "#5e72e4",
     color: "white",
-    borderRadius: "12px",
+    borderRadius: "10px",
     textTransform: "none",
-    px: 3,
-    py: 1,
+    px: 2.5,
+    minHeight: 42,
+    fontWeight: 700,
     "&:hover": {
       bgcolor: "#4b5cc4",
     },
@@ -163,10 +169,10 @@ const styles = {
     },
   },
   chip: {
-    m: 0.5,
-    borderRadius: "10px",
-    backgroundColor: "rgba(94, 114, 228, 0.1)",
-    border: "1px solid rgba(94, 114, 228, 0.2)",
+    m: 0.25,
+    borderRadius: "9px",
+    backgroundColor: "#f1f3ff",
+    border: "1px solid #e0e5ff",
     "& .MuiChip-label": {
       color: "#5e72e4",
       fontWeight: 600,
@@ -183,6 +189,9 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
+  const [dummyName, setDummyName] = useState("");
+  const [dummyEntryOpen, setDummyEntryOpen] = useState(false);
+  const [dummyAdding, setDummyAdding] = useState(false);
   const [showNameField, setShowNameField] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null); // To store selected member for deletion
@@ -192,11 +201,13 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   const { refreshAllGroups } = useAllGroups();
   const { allGroups } = useAllGroups();
   const { currentUser } = useCurrentUser();
+  const { setSnackBar } = useTopSnackBar();
   const { userFriends, refreshFriends } = useFriends();
   const [suggestions, setSuggestions] = useState([]);
   const currentGroupObj = allGroups.find(
     (group) => group?.id === currentGroupID
   );
+  const isCurrentUserAdmin = currentUser?.email === currentGroupObj?.admin?.email;
   const userObjWithName = { email: inputEmail, name: name };
 
   useEffect(() => {
@@ -210,6 +221,8 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
     setShowNameField(false);
     setInputEmail("");
     setName("");
+    setDummyName("");
+    setDummyEntryOpen(false);
     setError("");
   };
 
@@ -350,10 +363,55 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
   const handleName = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      setMembers((prevMembers) => [...prevMembers, userObjWithName]);
+      setMembers((prevMembers) => [
+        ...prevMembers,
+        { ...userObjWithName, isDummy: true },
+      ]);
       setShowNameField(false);
       setInputEmail("");
       setError("");
+    }
+  };
+
+  const handleAddCalculationOnlyMember = async () => {
+    const trimmedName = dummyName.trim();
+    if (!trimmedName) {
+      setError("Enter a name for this calculation-only member.");
+      return;
+    }
+
+    const usedEmails = [
+      ...(existingMembers || []).map((member) => member?.email || ""),
+      ...members.map((member) => member?.email || ""),
+    ];
+    const guest = createCalculationOnlyMember(trimmedName, usedEmails);
+    setDummyAdding(true);
+
+    try {
+      await GroupService.addMemberToGroup(currentGroupID, guest);
+      await activityService.addActivityLog({
+        logId: uuidv4(),
+        logType: "addUser",
+        details: {
+          userAffected: { email: guest.email, name: guest.name },
+          performedBy: { email: currentUser?.email, name: currentUser?.name },
+          date: new Date(),
+          groupTitle: currentGroupObj?.title,
+          groupId: currentGroupID,
+        },
+      });
+      refreshAllGroups();
+      setDummyName("");
+      setDummyEntryOpen(false);
+      setError("");
+      setSnackBar({
+        isOpen: true,
+        message: `Added ${guest.name} as a calculation-only member.`,
+      });
+    } catch (addError) {
+      setError("Could not add this calculation-only member. Please try again.");
+    } finally {
+      setDummyAdding(false);
     }
   };
 
@@ -384,6 +442,11 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
         await activityService?.addActivityLog(log);
       }
 
+      setSnackBar({
+        isOpen: true,
+        message: `Added ${members.length} ${members.length === 1 ? "member" : "members"} to ${currentGroupObj?.title || "the group"}.`,
+      });
+
       // Reset form fields but keep modal open
       setMembers([]);
       setInputEmail("");
@@ -409,12 +472,27 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
       <Box sx={styles.modalBox}>
         {/* Header */}
         <Box sx={styles.header}>
-          <Typography variant="h6" sx={{ color: "#32325d", fontWeight: 600 }}>
-            Manage Members
-          </Typography>
-          <IconButton onClick={handleClose} size="small">
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="overline" sx={{ color: "#5e72e4", fontWeight: 700, lineHeight: 1.4 }}>
+              Group members
+            </Typography>
+            <Typography variant="h6" sx={{ color: "#1e293b", fontWeight: 700, lineHeight: 1.25 }}>
+              Manage members
+            </Typography>
+            <Typography variant="body2" noWrap sx={{ color: "#64748b", mt: 0.35 }}>
+              {currentGroupObj?.title || "Current group"}
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexShrink: 0 }}>
+            <Chip
+              label={`${existingMembers?.length || 0} members`}
+              size="small"
+              sx={{ backgroundColor: "#eef1ff", color: "#4f5fc7", fontWeight: 600 }}
+            />
+          <IconButton onClick={handleClose} size="small" aria-label="Close member manager">
             <CloseIcon />
           </IconButton>
+          </Box>
         </Box>
 
         {/* Content */}
@@ -434,76 +512,83 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
 
           {/* Existing Members Section */}
           {existingMembers?.length > 0 && (
-            <Box sx={styles.membersList}>
-              {existingMembers?.map((member) => (
-                <Box key={member?.email} sx={styles.memberCard}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
-                    }}
-                  >
-                    <ProfileAvatar
-                      user={member}
-                      sx={{ width: 25, height: 25, marginRight: 1 }}
-                    />
-                    {/* Tooltip for the email */}
-                    <Tooltip title={formatDisplayName(member?.name)} arrow>
-                      <Box sx={{ display: "flex", flexDirection: "column" }}>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: "#353E6C",
-                            maxWidth: "150px", // Set a max width for ellipsis to take effect
-                            whiteSpace: "nowrap", // Prevents text from wrapping
-                            overflow: "hidden", // Hides the overflow
-                            textOverflow: "ellipsis", // Shows ellipsis when the text overflows
-                          }}
-                        >
-                          {formatDisplayName(member?.name)}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="textSecondary"
-                          fontSize={10}
-                        >
-                          {member?.email === currentGroupObj?.admin?.email &&
-                            "Admin"}
+            <>
+              <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ color: "#334155", fontWeight: 700 }}>
+                  Current members
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+                  {existingMembers.length} in group
+                </Typography>
+              </Box>
+              <Box sx={styles.membersList}>
+                {existingMembers.map((member) => (
+                  <Box key={member?.email} sx={styles.memberCard}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, minWidth: 0, flex: 1 }}>
+                      <ProfileAvatar
+                        user={member}
+                        name={formatDisplayName(member?.name || member?.email)}
+                        sx={{ width: 38, height: 38, flexShrink: 0 }}
+                      />
+                      <Box sx={{ minWidth: 0 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, minWidth: 0 }}>
+                          <Typography variant="body2" noWrap sx={{ color: "#263449", fontWeight: 600 }}>
+                            {formatDisplayName(member?.name || member?.email)}
+                          </Typography>
+                          {member?.email === currentGroupObj?.admin?.email && (
+                            <Chip
+                              label="Admin"
+                              size="small"
+                              sx={{ height: 20, backgroundColor: "#eef1ff", color: "#4f5fc7", fontSize: "0.65rem", fontWeight: 700 }}
+                            />
+                          )}
+                          {member?.isDummy && (
+                            <Chip
+                              label="Calculation only"
+                              size="small"
+                              sx={{ height: 20, backgroundColor: "#f1f5f9", color: "#475569", fontSize: "0.62rem", fontWeight: 600 }}
+                            />
+                          )}
+                        </Box>
+                        <Typography variant="caption" noWrap sx={{ display: "block", color: "#64748b" }}>
+                          {member?.email}
                         </Typography>
                       </Box>
-                    </Tooltip>
+                    </Box>
+                    {(currentUser?.email === currentGroupObj?.admin?.email ||
+                      currentUser?.email === member?.email) && (
+                      <Tooltip title="Remove member" arrow>
+                        <IconButton
+                          aria-label={`Remove ${formatDisplayName(member?.name || member?.email)}`}
+                          size="small"
+                          onClick={() => handleDeleteClick(member)}
+                          sx={{ color: "#758198", ml: 1, flexShrink: 0, "&:hover": { color: "#d14352", backgroundColor: "#fff1f2" } }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Box>
-                  {/* Delete icon button */}
-                  {(currentUser?.email === currentGroupObj?.admin?.email ||
-                    currentUser?.email === member?.email) && (
-                    <IconButton
-                      sx={{
-                        marginLeft: { xs: 0, sm: 2 },
-                        marginTop: { xs: 1, sm: 0 },
-                      }}
-                      onClick={() => handleDeleteClick(member)} // Open confirmation before deletion
-                    >
-                      <DeleteIcon
-                        sx={{ color: "grey", width: 20, height: 20 }}
-                      />
-                    </IconButton>
-                  )}
-                </Box>
-              ))}
-            </Box>
+                ))}
+              </Box>
+            </>
           )}
 
           {/* Add Members Form */}
           <form onSubmit={handleSubmit}>
+            <Box sx={{ mb: 1.25 }}>
+              <Typography variant="subtitle2" sx={{ color: "#334155", fontWeight: 700 }}>
+                Add people
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#64748b" }}>
+                Search friends by name or enter an email address.
+              </Typography>
+            </Box>
             <Box sx={{ position: "relative" }}>
               <TextField
-                disabled={
-                  currentUser?.email !== currentGroupObj?.admin?.email ||
-                  showNameField
-                }
+                disabled={!isCurrentUserAdmin || showNameField}
                 fullWidth
-                label="Add Members"
+                label="Name or email"
                 variant="outlined"
                 value={
                   currentUser?.email !== currentGroupObj?.admin?.email
@@ -512,8 +597,51 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                 }
                 onChange={handleEmailChange}
                 onKeyDown={handleEmailAdd}
-                helperText="Type to search friends or press 'Enter' to add new member"
-                sx={styles.searchInput}
+                helperText="Choose a friend or enter an email address."
+                InputProps={{
+                  startAdornment: members.length > 0 && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        gap: 0.5,
+                        maxWidth: "100%",
+                        py: 0.25,
+                      }}
+                    >
+                      {members.map((member) => (
+                        <Chip
+                          key={member.email}
+                          size="small"
+                          label={`${formatDisplayName(member?.name || member?.email)}${member?.isDummy ? " · Calculation only" : ""}`}
+                          avatar={
+                            <ProfileAvatar
+                              user={member}
+                              alt={formatDisplayName(member?.name || member?.email)}
+                              sx={{ width: 22, height: 22 }}
+                            />
+                          }
+                          onDelete={() => handleChipDelete(member)}
+                          sx={{ ...styles.chip, maxWidth: "100%", m: 0 }}
+                        />
+                      ))}
+                    </Box>
+                  ),
+                }}
+                sx={{
+                  ...styles.searchInput,
+                  "& .MuiOutlinedInput-root": {
+                    ...styles.searchInput["& .MuiOutlinedInput-root"],
+                    flexWrap: "wrap",
+                    gap: 0.5,
+                    py: 0.5,
+                  },
+                  "& .MuiInputBase-input": {
+                    minWidth: 100,
+                    flex: "1 1 120px",
+                  },
+                }}
               />
 
               {/* Suggestions Dropdown */}
@@ -544,7 +672,6 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
               )}
             </Box>
 
-            {/* Name Field for New Users */}
             {showNameField && (
               <TextField
                 fullWidth
@@ -554,24 +681,70 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={handleName}
-                helperText="Press 'Enter' to add name"
+                helperText="Press Enter to add this unregistered member."
               />
             )}
 
-            {/* Selected Members Chips */}
-            <Box sx={{ mt: 2, mb: 2 }}>
-              {members?.map((member, index) => (
-                <Chip
-                  key={index}
-                  label={formatDisplayName(member?.name)}
-                  avatar={
-                    <ProfileAvatar user={member} alt={member?.email} />
-                  }
-                  onDelete={() => handleChipDelete(member)}
-                  sx={styles.chip}
-                />
-              ))}
-            </Box>
+            {isCurrentUserAdmin && (
+              <Box sx={{ mt: 1.5 }}>
+                {!dummyEntryOpen ? (
+                  <Button
+                    type="button"
+                    variant="outlined"
+                    size="small"
+                    startIcon={<PersonAddAlt1Icon />}
+                    onClick={() => {
+                      setDummyEntryOpen(true);
+                      setError("");
+                    }}
+                    sx={{
+                      minHeight: 40,
+                      borderRadius: "10px",
+                      borderColor: "#c8d0e1",
+                      color: "#4f5fc7",
+                      fontWeight: 650,
+                      textTransform: "none",
+                      "&:hover": { borderColor: "#7d8bd1", backgroundColor: "#f7f8ff" },
+                    }}
+                  >
+                    Add calculation-only member
+                  </Button>
+                ) : (
+                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                    <TextField
+                      autoFocus
+                      size="small"
+                      fullWidth
+                      label="Guest name"
+                      value={dummyName}
+                      onChange={(event) => setDummyName(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          handleAddCalculationOnlyMember();
+                        }
+                      }}
+                      helperText="No SplitUp account is needed."
+                      sx={styles.searchInput}
+                    />
+                    <Button
+                      type="button"
+                      variant="contained"
+                      disabled={!dummyName.trim() || dummyAdding}
+                      onClick={handleAddCalculationOnlyMember}
+                      sx={{ ...styles.addButton, minHeight: 40, px: 1.5, whiteSpace: "nowrap" }}
+                    >
+                      {dummyAdding ? (
+                        <CircularProgress size={18} sx={{ color: "white" }} />
+                      ) : (
+                        "Add guest"
+                      )}
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            )}
+
           </form>
 
           {/* Admin Only Warning */}

@@ -483,6 +483,23 @@ export function formatDisplayName(name) {
     .join(" ");
 }
 
+/** @param {string} name @param {string[]} existingEmails */
+export function createCalculationOnlyMember(name, existingEmails = []) {
+  const emailSet = new Set(existingEmails.map((email) => email.toLowerCase()));
+  let email;
+  do {
+    const shortId = uuidv4().replace(/-/g, "").slice(0, 12);
+    email = `g-${shortId}@guest.local`;
+  } while (emailSet.has(email.toLowerCase()));
+
+  return {
+    email,
+    name: formatDisplayName(name),
+    isDummy: true,
+    userSettled: false,
+  };
+}
+
 export function getCurrencySymbol(value) {
   const currency = currencies.find((currency) => currency.value === value);
   return currency ? currency.label.split(" - ")[0].trim() : null; // Return only the symbol part

@@ -9,7 +9,6 @@ import {
   Divider,
   Chip,
   Avatar,
-  AvatarGroup,
   Tabs,
   Tab,
   Button,
@@ -184,6 +183,7 @@ const GroupTab = () => {
     try {
       // Create an array of promises to fetch users
       const memberPromises = currentGroup?.members?.map(async (member) => {
+        if (member?.isDummy) return member;
         const user = await fetchUser(member?.email);
         console.log(user);
         if (user) {
@@ -205,9 +205,12 @@ const GroupTab = () => {
       const newMembers = await Promise.all(memberPromises);
 
       const expensePromises = currentGroup?.expenses?.map(async (expense) => {
-        const paidByUser = await fetchUser(expense.paidBy.email);
+        const paidByUser = expense.paidBy?.isDummy
+          ? null
+          : await fetchUser(expense.paidBy?.email);
 
         const splitPromises = expense.splitBetween.map(async (splitOption) => {
+          if (splitOption?.isDummy) return splitOption;
           const user = await fetchUser(splitOption.email); // Fetch user by splitOption email
           return user ? { ...user } : splitOption; // Replace with user if found
         });
@@ -1062,10 +1065,18 @@ const GroupTab = () => {
 
       <Box
         sx={{
-          p: 1,
-          display: "flex",
-          justifyContent: "space-between",
+          px: { xs: 1.25, sm: 2 },
+          py: { xs: 1, sm: 1.25 },
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "minmax(0, 1fr)",
+            sm: "minmax(220px, 320px) minmax(0, 1fr)",
+          },
+          columnGap: { xs: 0.75, sm: 2 },
+          rowGap: { xs: 1, sm: 0 },
           alignItems: "center",
+          borderBottom: "1px solid #e6eaf0",
+          backgroundColor: "#fff",
         }}
       >
         {allGroups?.length > 0 ? (
@@ -1073,25 +1084,9 @@ const GroupTab = () => {
             fullWidth
             variant="outlined"
             sx={{
-              width: isMobile ? "60%" : "25%",
-              maxWidth: { xs: "250px", sm: "300px" },
-              minWidth: { xs: "180px", sm: "200px" },
-              "& .MuiOutlinedInput-root": {
-                transition: "all 0.3s ease",
-                borderRadius: "12px",
-                backgroundColor: "rgba(255, 255, 255, 0.8)",
-                backdropFilter: "blur(8px)",
-                border: "1px solid rgba(94, 114, 228, 0.2)",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.95)",
-                  boxShadow: "0 4px 20px rgba(94, 114, 228, 0.15)",
-                },
-                "&.Mui-focused": {
-                  boxShadow: "0 4px 20px rgba(94, 114, 228, 0.2)",
-                  borderColor: "#5e72e4",
-                  backgroundColor: "white",
-                },
-              },
+              width: "100%",
+              maxWidth: "none",
+              minWidth: 0,
             }}
           >
             <CustomSelect
@@ -1124,19 +1119,21 @@ const GroupTab = () => {
                     sx={{
                       width: 24,
                       height: 24,
-                      bgcolor: "#5e72e4",
-                      fontSize: "0.875rem",
+                      bgcolor: "#edf0ff",
+                      color: "#5364c7",
+                      fontSize: "0.75rem",
                       fontWeight: 600,
                       flexShrink: 0,
+                      border: "1px solid #dce2ff",
                     }}
                   >
                     {selectedGroupDetails?.title?.[0] || "G"}
                   </Avatar>
                   <Typography
                     sx={{
-                      fontSize: "0.875rem",
+                      fontSize: { xs: "0.8rem", sm: "0.875rem" },
                       fontWeight: 600,
-                      color: "#525f7f",
+                      color: "#263449",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
@@ -1148,9 +1145,22 @@ const GroupTab = () => {
                 </Box>
               )}
               sx={{
-                height: "45px",
+                height: { xs: 42, sm: 46 },
+                borderRadius: "11px",
+                backgroundColor: "#fff",
+                transition: "border-color 150ms ease, box-shadow 150ms ease",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#d9e0eb",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#9aa8c2",
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#5e72e4",
+                  borderWidth: 1,
+                },
                 "& .MuiSelect-select": {
-                  paddingY: "8px",
+                  py: 0.75,
                   width: "100%",
                 },
               }}
@@ -1414,37 +1424,71 @@ const GroupTab = () => {
             No active Group
           </Typography>
         )}
-        <Button
-          size="small"
-          variant="contained"
-          onClick={() => setModelOpen(true)}
+        <Box
           sx={{
-            fontSize: 12,
-            backgroundColor: "#8675FF",
-            borderRadius: "20px",
-            color: "#FFF",
-            "&:hover": { backgroundColor: "#FD7289" },
+            gridColumn: { xs: "1 / -1", sm: "2" },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: { xs: "space-between", sm: "flex-end" },
+            gap: { xs: 1, sm: 1.5 },
+            minWidth: 0,
+            width: "100%",
           }}
         >
-          Add {!isMobile && "Expense"}
-        </Button>
-        {allGroups?.length > 0 && (
-          <Box
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<PaidIcon />}
+            onClick={() => setModelOpen(true)}
+            aria-label="Add expense"
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 2,
+              flexGrow: 0,
+              minHeight: { xs: 40, sm: 42 },
+              px: { xs: 1.1, sm: 1.5 },
+              whiteSpace: "nowrap",
+              fontSize: { xs: "0.78rem", sm: "0.82rem" },
+              fontWeight: 700,
+              textTransform: "none",
+              backgroundColor: "#5e72e4",
+              borderRadius: "11px",
+              color: "#fff",
+              boxShadow: "0 2px 6px rgba(65, 84, 180, 0.22)",
+              "&:hover": {
+                backgroundColor: "#4f62cb",
+                boxShadow: "0 4px 10px rgba(65, 84, 180, 0.26)",
+              },
+              "& .MuiButton-startIcon": { mr: 0.75 },
             }}
           >
-            {!isMobile && (
-              <AvatarGroupSection members={selectedGroupDetails?.members} />
-            )}
-            <IconButton onClick={toggleMembersModal} sx={{ color: "#1657FF" }}>
-              <Groups2Icon />
-            </IconButton>
-          </Box>
-        )}
+            Add expense
+          </Button>
+          {allGroups?.length > 0 && (
+            <Button
+              onClick={toggleMembersModal}
+              variant="outlined"
+              startIcon={<Groups2Icon />}
+              aria-label={`View ${selectedGroupDetails?.members?.length || 0} group members`}
+              sx={{
+                minWidth: { xs: 42, sm: 112 },
+                minHeight: { xs: 42, sm: 44 },
+                px: { xs: 1, sm: 1.5 },
+                borderRadius: "11px",
+                borderColor: "#d9e0eb",
+                color: "#475569",
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                textTransform: "none",
+                "&:hover": {
+                  borderColor: "#aab5c8",
+                  backgroundColor: "#f8fafc",
+                },
+                "& .MuiButton-startIcon": { mr: { xs: 0, sm: 0.75 } },
+              }}
+            >
+              {isMobile ? selectedGroupDetails?.members?.length || 0 : "Members"}
+            </Button>
+          )}
+        </Box>
       </Box>
 
       {allGroups?.length > 0 ? (
@@ -1511,47 +1555,5 @@ const GroupTab = () => {
     </Box>
   );
 };
-
-// Memoized AvatarGroup section to prevent re-rendering
-const AvatarGroupSection = React.memo(({ members }) => {
-  // Create tooltip content with new lines and avatars
-  const tooltipContent = (
-    <div>
-      {members?.map((member, index) => (
-        <Box
-          key={index}
-          sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}
-        >
-          <ProfileAvatar
-            user={member}
-            alt={formatDisplayName(member.name)}
-            sx={{ width: 24, height: 24, marginRight: 1 }} // Small avatar
-          />
-          <Typography variant="body2" sx={{ margin: 0 }}>
-            {formatDisplayName(member.name)}
-          </Typography>
-        </Box>
-      ))}
-    </div>
-  );
-
-  return (
-    <Box sx={{ display: "flex", alignItems: "center" }}>
-      <Tooltip title={tooltipContent} arrow>
-        <AvatarGroup max={4}>
-          {members?.slice(0, 4)?.map((member, index) => (
-            <ProfileAvatar
-              key={index}
-              user={member}
-              alt={member?.email ?? "Anonymous"}
-            />
-          ))}
-        </AvatarGroup>
-      </Tooltip>
-    </Box>
-  );
-});
-
-
 
 export default GroupTab;
