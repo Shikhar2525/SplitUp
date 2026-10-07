@@ -82,9 +82,6 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
   const usedGroupColors = new Set(
     (allGroups || []).map((group) => getGroupColor(group, allGroups || []).value)
   );
-  const hasUnusedGroupColors = groupColorPalette.some(
-    (colorOption) => !usedGroupColors.has(colorOption.value)
-  );
 
   // Add new state for group name validation
   const [groupNameError, setGroupNameError] = useState("");
@@ -447,6 +444,14 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
       case 0:
         return (
           <Box sx={{ mt: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "minmax(0, 1fr) 190px" },
+                gap: 1.5,
+                alignItems: "start",
+              }}
+            >
             <TextField
               fullWidth
               label="Group Name"
@@ -509,6 +514,44 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                 },
               }}
             />
+
+            <FormControl fullWidth size="small">
+              <InputLabel id="new-group-color-label">Group color</InputLabel>
+              <Select
+                labelId="new-group-color-label"
+                value={groupColor}
+                label="Group color"
+                onChange={(event) => setGroupColor(event.target.value)}
+                renderValue={(value) => {
+                  const selectedColor = groupColorPalette.find((option) => option.value === value);
+                  return (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box sx={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: selectedColor?.value }} />
+                      <Typography variant="body2" fontWeight={600}>{selectedColor?.name}</Typography>
+                    </Box>
+                  );
+                }}
+                sx={{
+                  borderRadius: "12px",
+                  backgroundColor: "rgba(255,255,255,0.9)",
+                  minHeight: 56,
+                }}
+              >
+                {groupColorPalette.map((option) => {
+                  const colorInUse = usedGroupColors.has(option.value);
+                  return (
+                    <MenuItem key={option.value} value={option.value}>
+                      <Box sx={{ display: "flex", alignItems: "center", width: "100%", gap: 1 }}>
+                        <Box sx={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: option.value, flexShrink: 0 }} />
+                        <Typography variant="body2">{option.name}</Typography>
+                        {colorInUse && <Typography variant="caption" sx={{ ml: "auto", color: "text.secondary" }}>In use</Typography>}
+                      </Box>
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+            </Box>
 
             <TextField
               fullWidth
@@ -589,54 +632,6 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
               )}
             </FormControl>
 
-            <Box>
-              <Typography variant="subtitle2" sx={{ color: "#32325d", fontWeight: 700, mb: 0.5 }}>
-                Group color
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", display: "block", mb: 1 }}>
-                Choose an accent to identify this group.
-              </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                {groupColorPalette.map((colorOption) => (
-                  <IconButton
-                    key={colorOption.value}
-                    aria-label={`${colorOption.name} group color`}
-                    title={usedGroupColors.has(colorOption.value) ? `${colorOption.name} is used by another group` : colorOption.name}
-                    aria-pressed={groupColor === colorOption.value}
-                    disabled={hasUnusedGroupColors && usedGroupColors.has(colorOption.value)}
-                    onClick={() => setGroupColor(colorOption.value)}
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      border: "2px solid",
-                      borderColor: groupColor === colorOption.value ? "#25324a" : "transparent",
-                      backgroundColor: colorOption.value,
-                      color: "white",
-                      position: "relative",
-                      "&:hover": { backgroundColor: colorOption.value, opacity: 0.88 },
-                      "&.Mui-disabled": { opacity: 1, color: "white" },
-                    }}
-                  >
-                    {groupColor === colorOption.value && <CheckCircleIcon sx={{ fontSize: 20 }} />}
-                    {usedGroupColors.has(colorOption.value) && groupColor !== colorOption.value && (
-                      <Box
-                        component="span"
-                        sx={{
-                          position: "absolute",
-                          right: -2,
-                          bottom: -2,
-                          width: 9,
-                          height: 9,
-                          borderRadius: "50%",
-                          backgroundColor: "#263449",
-                          border: "2px solid #fff",
-                        }}
-                      />
-                    )}
-                  </IconButton>
-                ))}
-              </Box>
-            </Box>
           </Box>
         );
 

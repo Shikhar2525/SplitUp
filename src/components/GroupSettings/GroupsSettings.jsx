@@ -48,14 +48,6 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
   const [liveGroup, setLiveGroup] = useState(group);
   const { currentUser } = useCurrentUser();
   const isGroupAdmin = currentUser?.email === liveGroup?.admin?.email;
-  const otherGroupColors = new Set(
-    (allGroups || [])
-      .filter((candidate) => candidate?.id !== groupID)
-      .map((candidate) => getGroupColor(candidate, allGroups || []).value)
-  );
-  const hasUnusedGroupColors = groupColorPalette.some(
-    (option) => !otherGroupColors.has(option.value)
-  );
   const [errors, setErrors] = useState({
     description: "",
     groupName: ""
@@ -172,10 +164,6 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
 
   const handleSaveGroupColor = async () => {
     if (!isGroupAdmin) return;
-    if (otherGroupColors.has(groupColor)) {
-      setSnackBar({ isOpen: true, message: "Choose a color not used by another group." });
-      return;
-    }
 
     try {
       setCircularLoader(true);
@@ -478,7 +466,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
               variant="contained"
               size="small"
               onClick={handleSaveGroupColor}
-              disabled={!isGroupColorChanged || otherGroupColors.has(groupColor)}
+              disabled={!isGroupColorChanged}
               startIcon={<SaveIcon />}
               sx={{ borderRadius: "9px", textTransform: "none" }}
             >
@@ -492,7 +480,7 @@ function GroupsSettings({ groupID, groupName, defaultCurrency, group }) {
               key={option.value}
               aria-label={`${option.name} group color`}
               aria-pressed={groupColor === option.value}
-              disabled={!isGroupAdmin || (hasUnusedGroupColors && otherGroupColors.has(option.value))}
+              disabled={!isGroupAdmin}
               onClick={() => setGroupColor(option.value)}
               sx={{
                 width: 36,

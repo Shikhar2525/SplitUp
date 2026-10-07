@@ -501,36 +501,44 @@ export function createCalculationOnlyMember(name, existingEmails = []) {
 }
 
 export function getGroupColor(group, groups = []) {
+  const savedColor = groupColorPalette.find(
+    (paletteColor) => paletteColor.value === group?.color
+  );
+  if (savedColor) return savedColor;
+
   const groupList = groups.some((item) => item?.id === group?.id)
     ? groups
     : [...groups, group];
-  const sortedGroups = groupList.slice().sort((first, second) =>
+  const usedColors = new Set(
+    groupList
+      .filter((item) => groupColorPalette.some((color) => color.value === item?.color))
+      .map((item) => item.color)
+  );
+  const uncoloredGroups = groupList
+    .filter((item) => !groupColorPalette.some((color) => color.value === item?.color))
+    .slice()
+    .sort((first, second) =>
     String(first?.id || first?.title || "").localeCompare(
       String(second?.id || second?.title || "")
     )
   );
-  const usedColors = new Set();
   let resolvedColor;
-  for (const item of sortedGroups) {
+  for (const item of uncoloredGroups) {
     const seed = String(item?.id || item?.title || "group");
     let hash = 0;
     for (const character of seed) {
       hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
     }
 
-    const savedIndex = groupColorPalette.findIndex(
-      (color) => color.value === item?.color
-    );
-    const startIndex = savedIndex >= 0 ? savedIndex : hash % groupColorPalette.length;
     let candidateColor;
     for (let offset = 0; offset < groupColorPalette.length; offset += 1) {
-      const color = groupColorPalette[(startIndex + offset) % groupColorPalette.length];
+      const color = groupColorPalette[(hash + offset) % groupColorPalette.length];
       if (!usedColors.has(color.value)) {
         candidateColor = color;
         break;
       }
     }
-    candidateColor ||= groupColorPalette[startIndex];
+    candidateColor ||= groupColorPalette[hash % groupColorPalette.length];
     usedColors.add(candidateColor.value);
 
     if (item?.id === group?.id || item === group) {
