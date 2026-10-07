@@ -25,6 +25,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useAllUserSettled } from "../contexts/AllUserSettled";
 import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 import { useScreenSize } from "../contexts/ScreenSizeContext";
+import { formatDisplayName } from "../utils";
 
 const Notes = ({ groupId }) => {
   const [notes, setNotes] = useState([]);
@@ -321,7 +322,7 @@ const Notes = ({ groupId }) => {
                       >
                         <ProfileAvatar
                           user={note.createdBy}
-                          name={note.createdBy?.name}
+                          name={formatDisplayName(note.createdBy?.name)}
                           sx={{ width: 32, height: 32 }}
                         />
                         <Box>
@@ -329,7 +330,7 @@ const Notes = ({ groupId }) => {
                             variant="caption"
                             sx={{ color: "#8898aa", display: "block" }}
                           >
-                            {note.createdBy?.name}
+                            {formatDisplayName(note.createdBy?.name)}
                           </Typography>
                           <Typography
                             variant="caption"

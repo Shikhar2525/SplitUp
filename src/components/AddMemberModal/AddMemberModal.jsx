@@ -32,6 +32,7 @@ import activityService from "../services/activity.service";
 import { v4 as uuidv4 } from "uuid";
 import { useFriends } from "../contexts/FriendsContext";
 import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
+import { formatDisplayName } from "../utils";
 
 const styles = {
   modalBox: {
@@ -448,7 +449,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                       sx={{ width: 25, height: 25, marginRight: 1 }}
                     />
                     {/* Tooltip for the email */}
-                    <Tooltip title={member?.name} arrow>
+                    <Tooltip title={formatDisplayName(member?.name)} arrow>
                       <Box sx={{ display: "flex", flexDirection: "column" }}>
                         <Typography
                           variant="caption"
@@ -460,7 +461,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                             textOverflow: "ellipsis", // Shows ellipsis when the text overflows
                           }}
                         >
-                          {member?.name}
+                          {formatDisplayName(member?.name)}
                         </Typography>
                         <Typography
                           variant="caption"
@@ -526,12 +527,12 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
                     >
                       <ProfileAvatar
                         user={friend}
-                        alt={friend.name}
+                        alt={formatDisplayName(friend.name)}
                         sx={{ width: 32, height: 32 }}
                       />
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {friend.name}
+                          {formatDisplayName(friend.name)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           {friend.email}
@@ -562,7 +563,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
               {members?.map((member, index) => (
                 <Chip
                   key={index}
-                  label={member?.name}
+                  label={formatDisplayName(member?.name)}
                   avatar={
                     <ProfileAvatar user={member} alt={member?.email} />
                   }
@@ -639,7 +640,7 @@ const AddMemberModal = ({ open, handleClose, existingMembers }) => {
           <DialogTitle sx={{ color: "#32325d" }}>Remove Member</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Are you sure you want to remove {selectedMember?.name} from this group?
+              Are you sure you want to remove {formatDisplayName(selectedMember?.name)} from this group?
             </DialogContentText>
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>

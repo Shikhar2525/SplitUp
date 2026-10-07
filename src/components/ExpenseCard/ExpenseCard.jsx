@@ -1,8 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   CardContent,
   Typography,
   Grid,
@@ -26,15 +23,14 @@ import {
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CloseIcon from "@mui/icons-material/Close";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
 import PersonIcon from "@mui/icons-material/Person";
-import DescriptionIcon from "@mui/icons-material/Description";
 import SettingsIcon from "@mui/icons-material/Settings";
 import EditIcon from "@mui/icons-material/Edit";
 import AddExpenseModal from "../AddExpense/AddExpenseModal";
-import { formatTransactionDate, getCurrencySymbol } from "../utils";
+import { formatTransactionDate, formatCurrency, formatDisplayName } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import GroupService from "../services/group.service";
 import { useLinearProgress } from "../contexts/LinearProgress";
@@ -43,21 +39,47 @@ import { useTopSnackBar } from "../contexts/TopSnackBar";
 import ActivityService from "../services/activity.service";
 import { v4 as uuidv4 } from "uuid";
 import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import { useScreenSize } from "../contexts/ScreenSizeContext";
 
-const TransactionCard = ({
+export const ExpenseCard = ({
   transaction,
   index,
   groupId,
   groupTitle,
   groupAdmin,
+  autoOpen = false,
+  autoOpenRequestId,
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const dateShort = formatTransactionDate(transaction?.date);
   const { currentUser } = useCurrentUser();
-  const payerName =
-    transaction?.paidBy?.name || transaction?.paidBy?.email || "Unknown payer";
+  const description = transaction?.description || "Untitled expense";
+  const expenseDate = (() => {
+    const value = transaction?.date;
+    if (!value) return "Date unavailable";
+    const parsedDate =
+      typeof value?.toDate === "function"
+        ? value.toDate()
+        : value?.seconds != null
+          ? new Date(value.seconds * 1000)
+          : new Date(value);
+    return Number.isNaN(parsedDate.getTime())
+      ? "Date unavailable"
+      : parsedDate.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+  })();
+  const payerName = formatDisplayName(
+    transaction?.paidBy?.name || transaction?.paidBy?.email || "Unknown payer"
+  );
+  const participantCount =
+    (transaction?.splitBetween?.length || 0) +
+    (transaction?.excludePayer ? 0 : 1);
   const colors = [
     "#4F46E5", // Indigo
     "#3B82F6", // Blue
@@ -67,10 +89,11 @@ const TransactionCard = ({
   const { setLinearProgress } = useLinearProgress();
   const { refreshAllGroups } = useAllGroups();
   const { setSnackBar } = useTopSnackBar();
+  const isMobile = useScreenSize();
 
-  const handleAccordionChange = () => {
-    setExpanded(!expanded);
-  };
+  useEffect(() => {
+    if (autoOpen) setExpanded(true);
+  }, [autoOpen, autoOpenRequestId]);
 
   const handleDeleteExpense = async () => {
     try {
@@ -122,110 +145,85 @@ const TransactionCard = ({
   return (
     <Box
       sx={{
-        mb: { xs: 1, sm: 2 }, // Reduced margin for mobile
-        borderRadius: "20px",
-        background: "#E0E5EC",
-        boxShadow:
-          "9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5)",
+        mb: { xs: 0.75, sm: 1 },
+        borderRadius: "12px",
+        background: "#fff",
+        border: "1px solid rgba(50, 50, 93, 0.12)",
+        boxShadow: "0 1px 4px rgba(50, 50, 93, 0.05)",
         position: "relative",
-        overflow: "hidden",
-        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        overflow: "visible",
+        transition: "border-color 0.2s ease, box-shadow 0.2s ease",
         "&:hover": {
-          transform: "translateY(-3px)",
-          boxShadow:
-            "12px 12px 20px rgb(163,177,198,0.8), -12px -12px 20px rgba(255,255,255, 0.8)",
+          borderColor: "rgba(94, 114, 228, 0.35)",
+          boxShadow: "0 3px 10px rgba(50, 50, 93, 0.09)",
         },
       }}
     >
-      <Accordion
-        expanded={expanded}
-        onChange={handleAccordionChange}
-        elevation={0}
+      <Box
         sx={{
-          background: "transparent",
-          "&:before": {
-            display: "none", // Remove the default accordion line
-          },
-          "& .MuiAccordionSummary-root": {
-            borderRadius: "20px",
-            transition: "all 0.3s ease",
-            minHeight: { xs: "48px", sm: "56px" }, // Reduced height on mobile
-            padding: { xs: "4px 12px", sm: "6px 16px" }, // Reduced padding on mobile
-            "&:hover": {
-              background: "rgba(255, 255, 255, 0.1)",
-            },
-          },
-          "& .MuiAccordionDetails-root": {
-            background: "linear-gradient(145deg, #e6e9ef, #f0f3f9)",
-            borderTop: "1px solid rgba(255, 255, 255, 0.2)",
-            boxShadow:
-              "inset 3px 3px 7px rgba(163,177,198,0.6), inset -3px -3px 7px rgba(255,255,255, 0.5)",
-            padding: { xs: "8px", sm: "16px" }, // Reduced padding on mobile
-            maxHeight: { xs: "60vh", sm: "70vh" }, // Limit max height
-            overflow: "auto",
-          },
-          "& .Mui-expanded": {
-            margin: "0 !important", // Remove default margin when expanded
-          },
+          borderRadius: "12px",
+          overflow: "visible",
         }}
       >
-        <AccordionSummary
-          expandIcon={
-            <ExpandMoreIcon
-              sx={{
-                color: colors[index % colors.length],
-                transition: "transform 0.3s ease",
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-              }}
-            />
-          }
+        <Box
+          component="button"
+          type="button"
+          onClick={() => setExpanded(true)}
+          aria-label={`View details for ${transaction?.description || "expense"}`}
           sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.8)",
-            borderBottom: expanded
-              ? "1px solid rgba(226, 232, 240, 0.8)"
-              : "none",
-            minHeight: { xs: "48px", sm: "56px" }, // Reduced height on mobile
-            padding: { xs: "4px 12px", sm: "6px 16px" }, // Reduced padding on mobile
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "40px minmax(0, 1fr)",
+              sm: "44px minmax(0, 1fr)",
+            },
+            alignItems: "center",
+            gap: { xs: 1, sm: 1.5 },
+            width: "100%",
+            backgroundColor: "#fff",
+            border: 0,
+            borderRadius: "12px",
+            minHeight: { xs: 64, sm: 72 },
+            padding: { xs: "8px 10px", sm: "10px 12px" },
+            textAlign: "left",
+            cursor: "pointer",
+            font: "inherit",
+            transition: "background-color 0.2s ease",
+            "&:hover": { backgroundColor: "#fbfcff" },
+            "&:focus-visible": {
+              outline: "3px solid rgba(94, 114, 228, 0.55)",
+              outlineOffset: 2,
+            },
           }}
         >
           <Box
             sx={{
-              backgroundColor: colors[index % colors.length],
-              width: { xs: 70, sm: 90 }, // Reduced width on mobile
-              height: "100%",
-              position: "absolute",
-              left: 0,
-              top: 0,
+              backgroundColor: "#eef1ff",
+              color: "#4f5fc7",
+              width: { xs: 40, sm: 44 },
+              height: { xs: 40, sm: 44 },
+              borderRadius: "10px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              "&::after": {
-                content: '""',
-                position: "absolute",
-                right: -15,
-                top: "50%",
-                transform: "translateY(-50%)",
-                borderLeft: `15px solid ${colors[index % colors.length]}`,
-                borderTop: "15px solid transparent",
-                borderBottom: "15px solid transparent",
-              },
+              flexShrink: 0,
             }}
           >
             <Typography
               sx={{
-                color: "white",
+                color: "inherit",
                 fontWeight: 600,
-                fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                fontSize: { xs: "0.65rem", sm: "0.7rem" },
               }}
             >
               {dateShort?.month}
             </Typography>
             <Typography
               sx={{
-                color: "white",
-                fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                color: "inherit",
+                fontSize: { xs: "1.05rem", sm: "1.15rem" },
                 fontWeight: 700,
+                lineHeight: 1.1,
               }}
             >
               {dateShort?.day}
@@ -237,16 +235,16 @@ const TransactionCard = ({
               display: "flex",
               justifyContent: "space-between",
               flexGrow: 1,
-              marginLeft: { xs: 10, sm: 14 },
               alignItems: "center",
-              gap: { xs: 1, sm: 2 },
+              minWidth: 0,
+              gap: { xs: 0.75, sm: 2 },
             }}
           >
             <Box
               sx={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 0.25,
+                gap: 0.4,
                 flexGrow: 1,
                 minWidth: 0,
               }}
@@ -254,24 +252,22 @@ const TransactionCard = ({
               <Typography
                 sx={{
                   color: "#1E293B",
-                  fontSize: { xs: "0.8rem", sm: "1rem" },
-                  fontWeight: 600,
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
+                  fontSize: { xs: "0.82rem", sm: "0.9rem" },
+                  fontWeight: 650,
                   overflow: "hidden",
-                  lineHeight: { xs: 1.2, sm: 1.4 },
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  lineHeight: 1.25,
                 }}
               >
-                {transaction?.description?.charAt(0).toUpperCase() +
-                  transaction?.description?.slice(1)}
+                {description.charAt(0).toUpperCase() + description.slice(1)}
               </Typography>
               <Box
                 sx={{
                   display: "grid",
                   gridTemplateColumns: "auto minmax(0, 1fr)",
                   alignItems: "center",
-                  gap: 0.6,
+                  gap: 0.5,
                   minWidth: 0,
                 }}
               >
@@ -279,8 +275,8 @@ const TransactionCard = ({
                   user={transaction?.paidBy}
                   alt={payerName}
                   sx={{
-                    width: 18,
-                    height: 18,
+                    width: 16,
+                    height: 16,
                     border: "1px solid white",
                     boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
                     flexShrink: 0,
@@ -290,107 +286,141 @@ const TransactionCard = ({
                   variant="body2"
                   sx={{
                     color: "#64748B",
-                    fontSize: "0.75rem",
+                    fontSize: { xs: "0.68rem", sm: "0.72rem" },
                     fontWeight: 500,
-                    overflowWrap: "break-word",
-                    wordBreak: "break-word",
-                    whiteSpace: "normal",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                     minWidth: 0,
                   }}
                 >
-                  Paid by {payerName}
+                  Paid by {payerName} · {participantCount} {participantCount === 1 ? "person" : "people"}
                 </Typography>
               </Box>
             </Box>
-            <Typography
-              sx={{
-                color: colors[index % colors.length],
-                fontSize: { xs: "1rem", sm: "1.25rem" },
-                fontWeight: 700,
-                display: "flex",
-                alignItems: "baseline",
-                gap: 0.5,
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {transaction.amount}
-              <span
-                style={{
-                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                  opacity: 0.9,
+            <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.4, sm: 1 }, flexShrink: 0 }}>
+              <Typography
+                sx={{
+                  color: "#263449",
+                  fontSize: { xs: "0.82rem", sm: "1rem" },
+                  fontWeight: 700,
+                  display: "block",
+                  flexShrink: 0,
+                  whiteSpace: "nowrap",
                 }}
               >
-                {getCurrencySymbol(transaction?.currency)}
-              </span>
-            </Typography>
+                {formatCurrency(transaction.amount, transaction?.currency)}
+              </Typography>
+              <OpenInFullIcon sx={{ fontSize: { xs: 15, sm: 17 }, color: "#64748b" }} aria-hidden="true" />
+            </Box>
           </Box>
-        </AccordionSummary>
+        </Box>
 
-        <AccordionDetails>
+        <Dialog
+          open={expanded}
+          onClose={() => setExpanded(false)}
+          fullScreen={isMobile}
+          fullWidth
+          maxWidth="md"
+          aria-labelledby={`expense-detail-title-${transaction?.id || index}`}
+          PaperProps={{
+            sx: {
+              borderRadius: { xs: 0, sm: 3 },
+              maxHeight: { sm: "90vh" },
+              overflow: "hidden",
+              boxShadow: "0 24px 64px rgba(15, 23, 42, 0.2)",
+            },
+          }}
+        >
+          <DialogTitle
+            component="div"
+            id={`expense-detail-title-${transaction?.id || index}`}
+            sx={{ p: 0 }}
+          >
+            <Box sx={{ px: { xs: 2, sm: 3 }, pt: { xs: 2, sm: 2.5 }, pb: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 2 }}>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="overline" sx={{ color: "#5e72e4", fontWeight: 700, lineHeight: 1.4 }}>
+                    Expense details
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{ color: "#1e293b", fontWeight: 700, lineHeight: 1.25, overflowWrap: "anywhere" }}
+                  >
+                    {description}
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 1 }}>
+                    <ProfileAvatar user={transaction?.paidBy} alt={payerName} sx={{ width: 24, height: 24 }} />
+                    <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                      Paid by {payerName}
+                    </Typography>
+                  </Box>
+                </Box>
+                <IconButton
+                  onClick={() => setExpanded(false)}
+                  aria-label="Close expense details"
+                  size="small"
+                  sx={{ color: "#64748b", flexShrink: 0, mt: 0.25 }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+          </DialogTitle>
+          <DialogContent dividers sx={{ p: { xs: 1.5, sm: 2.5 }, overflow: "auto", backgroundColor: "#f8fafc" }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, color: "#334155", fontWeight: 700 }}>
+            Expense breakdown
+          </Typography>
           <TableContainer
             sx={{
-              borderRadius: "8px",
-              border: "1px solid rgba(224, 224, 224, 1)",
+              borderRadius: 2,
+              border: "1px solid #e2e8f0",
               overflow: "hidden",
-              "& .MuiTableCell-root": {
-                border: "1px solid rgba(224, 224, 224, 1)",
-                borderCollapse: "collapse",
-                padding: { xs: "6px 8px", sm: "8px 16px" },
-              },
-              "& .MuiTable-root": {
-                borderCollapse: "separate",
-                borderSpacing: 0,
-                "& td, & th": {
-                  border: "1px solid rgba(224, 224, 224, 1)",
-                },
-              },
+              backgroundColor: "#fff",
             }}
           >
             <Table
               sx={{
                 tableLayout: "fixed",
+                width: "100%",
+                borderCollapse: "collapse",
                 "& .MuiTableCell-root": {
-                  padding: { xs: "6px 8px", sm: "8px 16px" },
-                  fontSize: { xs: "0.75rem", sm: "0.85rem" },
-                  borderColor: "#E9ECEF",
-                  height: { xs: "auto", sm: "48px" },
-                  minHeight: { xs: "36px", sm: "48px" },
+                  boxSizing: "border-box",
+                  px: { xs: 1, sm: 1.75 },
+                  py: { xs: 1, sm: 1.25 },
+                  fontSize: { xs: "0.78rem", sm: "0.85rem" },
+                  borderColor: "#e8edf3",
+                  verticalAlign: "middle",
                   overflowWrap: "break-word",
                   wordWrap: "break-word",
                   hyphens: "auto",
                 },
                 "& .MuiChip-root": {
-                  height: { xs: "24px", sm: "32px" },
+                  height: { xs: 28, sm: 32 },
+                  maxWidth: "100%",
                   "& .MuiChip-label": {
-                    fontSize: { xs: "0.7rem", sm: "0.8rem" },
-                    padding: { xs: "0 6px", sm: "0 12px" },
+                    fontSize: { xs: "0.68rem", sm: "0.75rem" },
+                    px: { xs: 0.75, sm: 1 },
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   },
                 },
-                "& .MuiTableCell-head": {
-                  backgroundColor: "#F8FAFC",
-                  fontWeight: 600,
-                },
-                "& tr:last-child td": {
+                "& tr:last-child > *": {
                   borderBottom: "none",
                 },
-                "& tr td:first-of-type": {
-                  width: { xs: "40%", sm: "30%" },
-                  backgroundColor: "#F8FAFC",
-                  borderRight: "1px solid #E9ECEF",
-                  position: "sticky",
-                  left: 0,
+                "& tr > :first-child": {
+                  width: { xs: "38%", sm: "32%" },
+                  backgroundColor: "#f8fafc",
+                  borderRight: "1px solid #edf1f5",
                 },
-                "& tr td:last-child": {
-                  width: { xs: "60%", sm: "70%" },
+                "& tr > :last-child": {
+                  width: { xs: "62%", sm: "68%" },
                 },
                 "& .split-between-box": {
                   display: "flex",
                   flexWrap: "wrap",
-                  gap: 0.5,
-                  maxHeight: { xs: "none", sm: "80px" },
+                  gap: 0.75,
                   "& .MuiChip-root": {
-                    margin: "2px",
                     flexGrow: 0,
                     flexShrink: 0,
                   },
@@ -400,25 +430,11 @@ const TransactionCard = ({
               <TableBody>
                 {[
                   {
-                    id: "description",
-                    label: "Title",
-                    icon: (
-                      <DescriptionIcon
-                        sx={{ color: colors[index % colors.length] }}
-                      />
-                    ),
-                    content: (
-                      <Typography sx={{ fontWeight: 500 }}>
-                        {transaction.description}
-                      </Typography>
-                    ),
-                  },
-                  {
                     id: "paidBy",
                     label: "Paid by",
                     icon: (
                       <ReceiptIcon
-                        sx={{ color: colors[index % colors.length] }}
+                        sx={{ color: "#64748b" }}
                       />
                     ),
                     content: (
@@ -434,17 +450,17 @@ const TransactionCard = ({
                           avatar={
                             <ProfileAvatar
                               user={transaction?.paidBy}
+                              name={payerName}
                               alt={payerName}
                               sx={{ width: 24, height: 24 }}
                             />
                           }
                           label={payerName}
                           sx={{
-                            backgroundColor: `${
-                              colors[index % colors.length]
-                            }15`,
-                            color: colors[index % colors.length],
+                            backgroundColor: "#eef1ff",
+                            color: "#4f5fc7",
                             fontWeight: 500,
+                            border: "1px solid #e0e5ff",
                           }}
                         />
                         <Chip
@@ -472,60 +488,63 @@ const TransactionCard = ({
                     label: "Payment Date",
                     icon: (
                       <AccessTimeIcon
-                        sx={{ color: colors[index % colors.length] }}
+                        sx={{ color: "#64748b" }}
                       />
                     ),
                     content: (
                       <Chip
-                        label={new Date(transaction.date).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          }
-                        )}
-                        variant="outlined"
-                        sx={{ fontWeight: 500 }}
+                        label={expenseDate}
+                        size="small"
+                        sx={{ color: "#334155", backgroundColor: "#f8fafc", fontWeight: 500 }}
                       />
                     ),
                   },
                   {
                     id: "amount",
-                    label: "Spent Amount",
-                    icon: (
-                      <MonetizationOnIcon
-                        sx={{ color: colors[index % colors.length] }}
-                      />
+                    label: "Total spent",
+                    icon: <MonetizationOnIcon sx={{ color: "#64748b" }} />,
+                    content: (
+                      <Typography sx={{ color: "#27356d", fontWeight: 700 }}>
+                        {formatCurrency(transaction.amount, transaction?.currency)}
+                      </Typography>
                     ),
-                    content: `${transaction.amount} ${getCurrencySymbol(
-                      transaction?.currency
-                    )}`,
                   },
                   {
                     id: "splitBetween",
                     label: "Split Between",
                     icon: (
                       <AltRouteIcon
-                        sx={{ color: colors[index % colors.length] }}
+                        sx={{ color: "#64748b" }}
                       />
                     ),
                     content: (
                       <Box className="split-between-box">
-                        {transaction.splitBetween?.map((item, idx) => (
+                        {transaction.splitBetween?.length ? transaction.splitBetween.map((item, idx) => (
                           <Chip
-                            key={idx}
-                            label={item?.name}
+                            key={item?.email || `${item?.name || "member"}-${idx}`}
+                            size="small"
+                            avatar={
+                              <ProfileAvatar
+                                user={item}
+                                name={item?.name || item?.email}
+                                alt={item?.name || item?.email}
+                                sx={{ width: 24, height: 24 }}
+                              />
+                            }
+                            label={formatDisplayName(item?.name || item?.email)}
                             sx={{
-                              backgroundColor: `${
-                                colors[index % colors.length]
-                              }15`,
-                              color: colors[index % colors.length],
+                              backgroundColor: "#fff",
+                              color: "#334155",
                               fontWeight: 600,
-                              borderRadius: "6px",
+                              border: "1px solid #e2e8f0",
+                              borderRadius: "8px",
                             }}
                           />
-                        ))}
+                        )) : (
+                          <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+                            No participants listed
+                          </Typography>
+                        )}
                       </Box>
                     ),
                   },
@@ -534,18 +553,28 @@ const TransactionCard = ({
                     label: "Expense added by",
                     icon: (
                       <PersonIcon
-                        sx={{ color: colors[index % colors.length] }}
+                        sx={{ color: "#64748b" }}
                       />
                     ),
                     content: (
                       <Chip
                         key={transaction?.createdBy?.name}
-                        label={transaction?.createdBy?.name}
+                        size="small"
+                        avatar={
+                          <ProfileAvatar
+                            user={transaction?.createdBy}
+                            name={transaction?.createdBy?.name || transaction?.createdBy?.email || "Unknown"}
+                            alt={transaction?.createdBy?.name || transaction?.createdBy?.email || "Unknown"}
+                            sx={{ width: 24, height: 24 }}
+                          />
+                        }
+                        label={formatDisplayName(transaction?.createdBy?.name || transaction?.createdBy?.email || "Unknown")}
                         sx={{
-                          backgroundColor: `${colors[index % colors.length]}15`,
-                          color: colors[index % colors.length],
+                          backgroundColor: "#fff",
+                          color: "#334155",
                           fontWeight: 600,
-                          borderRadius: "6px",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "8px",
                         }}
                       />
                     ),
@@ -558,7 +587,7 @@ const TransactionCard = ({
                           label: "Actions",
                           icon: (
                             <SettingsIcon
-                              sx={{ color: colors[index % colors.length] }}
+                              sx={{ color: "#64748b" }}
                             />
                           ),
                           content: (
@@ -566,6 +595,7 @@ const TransactionCard = ({
                               <IconButton
                                 onClick={handleEditClick}
                                 size="small"
+                                aria-label="Edit expense"
                                 sx={{
                                   color: "#5e72e4",
                                   "&:hover": {
@@ -581,7 +611,7 @@ const TransactionCard = ({
                                 onClick={handleOpenConfirmDialog}
                                 size="small"
                                 sx={{
-                                  color: "#f5365c",
+                                  color: "#e05260",
                                   "&:hover": {
                                     backgroundColor: "rgba(245, 54, 92, 0.1)",
                                   },
@@ -599,16 +629,29 @@ const TransactionCard = ({
                     <TableCell
                       component="th"
                       scope="row"
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        fontWeight: 500,
-                        color: "#2D3748",
-                      }}
+                      sx={{ fontWeight: 600, color: "#475569" }}
                     >
-                      {row.icon}
-                      {row.label}
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                        <Box
+                          sx={{
+                            width: 28,
+                            height: 28,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            borderRadius: 1,
+                            color: "#5e72e4",
+                            backgroundColor: "#eef1ff",
+                            "& svg": { fontSize: 17, color: "inherit" },
+                          }}
+                        >
+                          {row.icon}
+                        </Box>
+                        <Typography component="span" sx={{ fontSize: "inherit", fontWeight: "inherit", lineHeight: 1.25 }}>
+                          {row.label}
+                        </Typography>
+                      </Box>
                     </TableCell>
                     <TableCell>{row.content}</TableCell>
                   </TableRow>
@@ -616,8 +659,9 @@ const TransactionCard = ({
               </TableBody>
             </Table>
           </TableContainer>
-        </AccordionDetails>
-      </Accordion>
+          </DialogContent>
+        </Dialog>
+      </Box>
 
       {/* Confirmation Dialog */}
       <Dialog
@@ -662,4 +706,3 @@ const TransactionCard = ({
   );
 };
 
-export default TransactionCard;

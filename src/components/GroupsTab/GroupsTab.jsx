@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import {
   AppBar,
   Box,
@@ -31,7 +31,7 @@ import { useScreenSize } from "../contexts/ScreenSizeContext";
 import Expenses from "../Expenses/Expenses";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import NoDataScreen from "../NoDataScreen/NoDataScreen";
-import { convertCurrency, formatDate, formatDateWithOrdinal } from "../utils";
+import { convertCurrency, formatCurrency, formatDisplayName, formatDate, formatDateWithOrdinal, sortByISODate } from "../utils";
 // import { useAllGroups } from "../contexts/AllGroups"; // Disabled for real-time
 import groupService from "../services/group.service";
 import AddMemberModal from "../AddMemberModal/AddMemberModal";
@@ -47,6 +47,7 @@ import SettleTab from "../SettleTab/SettleTab";
 import { useCircularLoader } from "../contexts/CircularLoader";
 import userService from "../services/user.service";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
+import { useTopSnackBar } from "../contexts/TopSnackBar";
 import ShareLink from "../ShareLink/ShareLink";
 import GroupComponent from "../JoinGroup/JoinGroup";
 import { useAllUserSettled } from "../contexts/AllUserSettled";
@@ -134,12 +135,29 @@ const GroupTab = () => {
   // --- END real-time Firestore group subscription ---
 
   const [tabIndex, setTabIndex] = useState(0);
+  const [expenseNavigation, setExpenseNavigation] = useState(
+    /** @type {{ expenseId: string, requestId: number } | null} */ (null)
+  );
+
+  const handleExpenseNavigation = useCallback(
+    /** @type {(expenseId: string) => void} */
+    (expenseId) => {
+      setExpenseNavigation((previous) => ({
+        expenseId,
+        requestId: (previous?.requestId || 0) + 1,
+      }));
+      setTabIndex(0);
+    },
+    []
+  );
   const { setLinearProgress } = useLinearProgress();
 
   const [settledMemberStats, setSettledMemberStats] = useState({});
   const { setCircularLoader } = useCircularLoader();
   const [groupsIDs, setGroupIDs] = useState([]);
-  const { setCurrentCurrency } = useCurrentCurrency();
+  const { currentCurrency, setCurrentCurrency } = useCurrentCurrency();
+  const { setSnackBar } = useTopSnackBar();
+  const appliedGroupCurrency = useRef("");
   const { allUserSettled, setAllUserSettled } = useAllUserSettled();
 
   const title = allGroups?.find((group) => group.id === currentGroupID)?.title;
@@ -250,13 +268,29 @@ const GroupTab = () => {
   }, [currentGroupID]);
 
   useEffect(() => {
-    if (currentGroup)
-      setCurrentCurrency(currentGroup?.defaultCurrency || "INR");
-  }, [currentGroup, allGroups]);
+    if (!currentGroup) return;
+
+    const groupCurrency = currentGroup.defaultCurrency || "INR";
+    const groupCurrencyKey = `${currentGroup.id}:${groupCurrency}`;
+    if (appliedGroupCurrency.current === groupCurrencyKey) return;
+
+    appliedGroupCurrency.current = groupCurrencyKey;
+    if (currentCurrency !== groupCurrency) {
+      setCurrentCurrency(groupCurrency);
+      setSnackBar({
+        isOpen: true,
+        message: `Currency changed to ${groupCurrency} for ${currentGroup.title || "this group"}.`,
+      });
+    }
+  }, [currentGroup?.id, currentGroup?.defaultCurrency, currentCurrency, setCurrentCurrency, setSnackBar]);
 
   const dynamicTabs = useMemo(() => {
     const tabs = [
-      { label: "Expenses", icon: <PaidIcon />, component: <Expenses /> },
+      {
+        label: "Expenses",
+        icon: <PaidIcon />,
+        component: <Expenses targetExpense={expenseNavigation} />,
+      },
     ];
 
     if (currentGroup?.expenses?.length > 0) {
@@ -304,6 +338,7 @@ const GroupTab = () => {
     currentGroup,
     currentGroupAdminEmail,
     currentUser?.email,
+    expenseNavigation,
   ]);
 
   useEffect(() => {
@@ -364,7 +399,7 @@ const GroupTab = () => {
   );
 
   // Use React.memo to prevent unnecessary re-renders
-  const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {
+    const GroupInfoBar = React.memo(({ selectedGroupDetails }) => {
     const { currentCurrency } = useCurrentCurrency();
     const { currentUser } = useCurrentUser();
     const [convertedTotal, setConvertedTotal] = useState(0);
@@ -385,7 +420,7 @@ const GroupTab = () => {
         (selectedExpenseEmail || "").trim().toLowerCase()
     );
     const selectedExpenseName =
-      selectedExpenseMember?.name || selectedExpenseMember?.email || "you";
+      formatDisplayName(selectedExpenseMember?.name || selectedExpenseMember?.email || "you");
     
     const handleAccordionChange = (event, isExpanded) => {
       setExpanded(isExpanded);
@@ -406,7 +441,10 @@ const GroupTab = () => {
         const debited = [];
 
         if (selectedGroupDetails?.expenses) {
-          for (const expense of selectedGroupDetails.expenses) {
+          const expensesInTabOrder = sortByISODate([
+            ...selectedGroupDetails.expenses,
+          ]);
+          for (const expense of expensesInTabOrder) {
             try {
               const { amount: convertedAmount } = await convertCurrency(
                 expense.amount,
@@ -614,14 +652,14 @@ const GroupTab = () => {
               <StatItem
                 icon={<AccountBalanceWalletIcon sx={{ color: "#5e72e4" }} />}
                 label="Total Amount"
-                value={`${convertedTotal.toFixed(2)} ${currentCurrency}`}
+                value={formatCurrency(convertedTotal, currentCurrency)}
                 color="#5e72e4"
               />
 
               <StatItem
                 icon={<AccountBalanceWalletIcon sx={{ color: "#2dce89" }} />}
                 label="My Total Expenses"
-                value={`${myTotalShare.toFixed(2)} ${currentCurrency}`}
+                value={formatCurrency(myTotalShare, currentCurrency)}
                 hint="Click to view your debited expenses"
                 color="#2dce89"
                 onClick={openExpensesDialog}
@@ -671,8 +709,8 @@ const GroupTab = () => {
 
                       return (
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <ProfileAvatar user={member} name={member?.name} sx={{ width: 28, height: 28 }} />
-                          <Typography noWrap>{member?.name || email}</Typography>
+                          <ProfileAvatar user={member} name={formatDisplayName(member?.name)} sx={{ width: 28, height: 28 }} />
+                          <Typography noWrap>{formatDisplayName(member?.name || email)}</Typography>
                         </Box>
                       );
                     }}
@@ -683,11 +721,11 @@ const GroupTab = () => {
                       <MenuItem key={member.email} value={member.email}>
                         <ProfileAvatar
                           user={member}
-                          name={member?.name}
+                          name={formatDisplayName(member?.name)}
                           sx={{ width: 32, height: 32, mr: 1.25 }}
                         />
                         <Box sx={{ minWidth: 0 }}>
-                          <Typography noWrap>{member.name || member.email}</Typography>
+                          <Typography noWrap>{formatDisplayName(member.name || member.email)}</Typography>
                           {member.name && (
                             <Typography variant="caption" color="text.secondary" noWrap>
                               {member.email}
@@ -711,19 +749,39 @@ const GroupTab = () => {
                 {isGroupAdmin ? `${selectedExpenseName}'s total expense` : "Your total expense"}
               </Typography>
               <Typography sx={{ color: "#16a34a", fontWeight: 700, fontSize: "1.15rem" }}>
-                {myTotalShare.toFixed(2)} {currentCurrency}
+                {formatCurrency(myTotalShare, currentCurrency)}
               </Typography>
             </Box>
             {myDebitedExpenses.length > 0 ? (
               <Box sx={{ display: "grid", gap: 2, p: 2 }}>
                 {myDebitedExpenses.map((item) => (
                   <Box
+                    component="button"
                     key={item.id}
+                    type="button"
+                    onClick={() => {
+                      closeExpensesDialog();
+                      handleExpenseNavigation(item.id);
+                    }}
+                    aria-label={`Open expense ${item.description}`}
                     sx={{
+                      width: "100%",
                       p: 2,
                       borderRadius: 3,
                       backgroundColor: "#f9fafb",
                       border: "1px solid rgba(148, 163, 184, 0.2)",
+                      textAlign: "left",
+                      font: "inherit",
+                      cursor: "pointer",
+                      transition: "background-color 150ms ease, border-color 150ms ease",
+                      "&:hover": {
+                        backgroundColor: "#f1f5f9",
+                        borderColor: "rgba(94, 114, 228, 0.35)",
+                      },
+                      "&:focus-visible": {
+                        outline: "3px solid rgba(94, 114, 228, 0.35)",
+                        outlineOffset: 2,
+                      },
                     }}
                   >
                     <Typography sx={{ fontWeight: 700, fontSize: "0.95rem", mb: 0.75 }}>
@@ -734,10 +792,10 @@ const GroupTab = () => {
                     </Typography>
                     <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, gap: 1 }}>
                       <Typography variant="body2" sx={{ color: "#334155", fontWeight: 600 }}>
-                        Total: {item.totalAmount.toFixed(2)} {item.currency}
+                        Total: {formatCurrency(item.totalAmount, item.currency)}
                       </Typography>
                       <Typography sx={{ fontWeight: 700, color: "#16a34a" }}>
-                        {isGroupAdmin ? `${selectedExpenseName}'s share` : "Your share"}: {item.myShare.toFixed(2)} {item.currency}
+                        {isGroupAdmin ? `${selectedExpenseName}'s share` : "Your share"}: {formatCurrency(item.myShare, item.currency)}
                       </Typography>
                     </Box>
                   </Box>
@@ -1471,11 +1529,11 @@ const AvatarGroupSection = React.memo(({ members }) => {
         >
           <ProfileAvatar
             user={member}
-            alt={member.name}
+            alt={formatDisplayName(member.name)}
             sx={{ width: 24, height: 24, marginRight: 1 }} // Small avatar
           />
           <Typography variant="body2" sx={{ margin: 0 }}>
-            {member.name}
+            {formatDisplayName(member.name)}
           </Typography>
         </Box>
       ))}

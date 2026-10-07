@@ -43,6 +43,7 @@ import ActivityService from "../services/activity.service";
 import { currencies } from "../../constants";
 import { useRefetchLogs } from "../contexts/RefetchLogs";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
+import { formatDisplayName, getCurrencySymbol } from "../utils";
 
 const steps = [
   { label: "Description", icon: <InfoIcon /> },
@@ -367,11 +368,6 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
     setActiveStep((prev) => prev - 1);
   };
 
-  const getCurrencySymbol = (currency) => {
-    const currencyObj = currencies.find((c) => c.value === currency);
-    return currencyObj ? currencyObj.symbol : currency;
-  };
-
   const validateDescription = (desc) => {
     if (!desc.trim()) {
       return "Description is required";
@@ -678,7 +674,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
                     >
                       <ProfileAvatar
                         user={user}
-                        name={user?.name}
+                        name={formatDisplayName(user?.name)}
                         sx={{
                           width: 40,
                           height: 40,
@@ -688,7 +684,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
                       />
                       <Box>
                         <Typography sx={{ fontWeight: 600 }}>
-                          {user.name}
+                          {formatDisplayName(user.name)}
                         </Typography>
                         <Typography variant="caption" color="textSecondary">
                           {user.email}
@@ -833,9 +829,9 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
                       return (
                         <Chip
                           key={value}
-                          label={user?.name}
+                          label={formatDisplayName(user?.name)}
                           avatar={
-                            <ProfileAvatar user={user} name={user?.name} />
+                            <ProfileAvatar user={user} name={formatDisplayName(user?.name)} />
                           }
                           sx={{
                             borderRadius: "12px",
@@ -891,7 +887,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
                       />
                       <ProfileAvatar
                         user={user}
-                        name={user?.name}
+                        name={formatDisplayName(user?.name)}
                         sx={{
                           width: 40,
                           height: 40,
@@ -907,7 +903,7 @@ const AddExpenseModal = ({ open, handleClose, isEditing = false, expenseToEdit =
                             fontSize: "0.9rem",
                           }}
                         >
-                          {user.name}
+                          {formatDisplayName(user.name)}
                         </Typography>
                         <Typography variant="caption" sx={{ color: "#8898aa" }}>
                           {user.email}

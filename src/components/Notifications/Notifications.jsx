@@ -18,6 +18,8 @@ import { useCurrentGroup } from "../contexts/CurrentGroup"; // Add this import
 import {
   convertCurrency,
   formatFirestoreTimestamp,
+  formatCurrency,
+  formatDisplayName,
   sortLogsByDate,
 } from "../utils";
 import userService from "../services/user.service";
@@ -87,7 +89,10 @@ const Notifications = ({ logs = [], loader }) => {
           }
 
           let description = "";
-          let amountDescription = `${log?.details?.amount} Rs`;
+          let amountDescription = formatCurrency(
+            log?.details?.amount,
+            log?.details?.currency || "INR"
+          );
 
           if (log?.logType === "addExpense" || log?.logType === "deleteExpense") {
             try {
@@ -96,13 +101,14 @@ const Notifications = ({ logs = [], loader }) => {
                 log?.details?.currency,
                 currentCurrency
               );
-              amountDescription = `${amount} ${currentCurrency}`;
+              amountDescription = formatCurrency(amount, currentCurrency);
             } catch (error) {
               console.error("Currency conversion error:", error);
             }
           }
 
-          const performedByName = log?.details.performedBy?.name;
+          const performedByName = formatDisplayName(log?.details.performedBy?.name);
+          const affectedUserName = formatDisplayName(log?.details?.userAffected?.name);
 
           switch (log?.logType) {
             case "addExpense":
@@ -118,16 +124,16 @@ const Notifications = ({ logs = [], loader }) => {
               description = `${performedByName} deleted group ${log?.details?.groupTitle}`;
               break;
             case "addUser":
-              description = `${performedByName} added ${log.details.userAffected?.name} to ${log?.details?.groupTitle}`;
+              description = `${performedByName} added ${affectedUserName} to ${log?.details?.groupTitle}`;
               break;
             case "deleteUser":
-              description = `${performedByName} removed ${log.details.userAffected?.name} from ${log?.details?.groupTitle}`;
+              description = `${performedByName} removed ${affectedUserName} from ${log?.details?.groupTitle}`;
               break;
             case "settle":
-              description = `${performedByName} settled all balances of ${log.details.userAffected?.name} in ${log?.details?.groupTitle}`;
+              description = `${performedByName} settled all balances of ${affectedUserName} in ${log?.details?.groupTitle}`;
               break;
             case "unSettle":
-              description = `${performedByName} unsettled all balances of ${log.details.userAffected?.name} in ${log?.details?.groupTitle}`;
+              description = `${performedByName} unsettled all balances of ${affectedUserName} in ${log?.details?.groupTitle}`;
               break;
           }
 
@@ -312,7 +318,7 @@ const Notifications = ({ logs = [], loader }) => {
                             >
                               <ProfileAvatar
                                 user={activity.performedBy}
-                                alt={activity.performedBy?.name}
+                                alt={formatDisplayName(activity.performedBy?.name)}
                                 sx={{ 
                                   width: 45, 
                                   height: 45,
@@ -392,7 +398,7 @@ const Notifications = ({ logs = [], loader }) => {
                             >
                               <ProfileAvatar
                                 user={activity.performedBy}
-                                alt={activity.performedBy?.name}
+                                alt={formatDisplayName(activity.performedBy?.name)}
                                 sx={{ 
                                   width: 45, 
                                   height: 45,

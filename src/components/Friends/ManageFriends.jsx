@@ -30,6 +30,7 @@ import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
 import userService from "../services/user.service";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useFriends } from "../contexts/FriendsContext";
+import { formatDisplayName } from "../utils";
 
 const StyledSearchResults = styled(Box)(({ theme }) => ({
   width: "100%",
@@ -447,7 +448,7 @@ const myFriends = Array.isArray(myFriendsRaw) ? myFriendsRaw : [];
                         <ListItemAvatar sx={{ minWidth: { xs: 45, sm: 56 } }}>
                           <ProfileAvatar
                             user={user}
-                            alt={user.name}
+                            alt={formatDisplayName(user.name)}
                             sx={{
                               width: { xs: 35, sm: 40 },
                               height: { xs: 35, sm: 40 },
@@ -460,7 +461,7 @@ const myFriends = Array.isArray(myFriendsRaw) ? myFriendsRaw : [];
                           />
                         </ListItemAvatar>
                         <ListItemText
-                          primary={user.name}
+                          primary={formatDisplayName(user.name)}
                           secondary={user.email}
                           sx={{
                             flex: '1 1 auto',
@@ -618,7 +619,7 @@ const myFriends = Array.isArray(myFriendsRaw) ? myFriendsRaw : [];
                 <ListItemAvatar>
                   <ProfileAvatar
                     user={friend}
-                    alt={friend.name}
+                    alt={formatDisplayName(friend.name)}
                     sx={{
                       width: { xs: 40, sm: 50 },
                       height: { xs: 40, sm: 50 },
@@ -628,7 +629,7 @@ const myFriends = Array.isArray(myFriendsRaw) ? myFriendsRaw : [];
                   />
                 </ListItemAvatar>
                 <ListItemText
-                  primary={friend.name}
+                  primary={formatDisplayName(friend.name)}
                   secondary={friend.email}
                   primaryTypographyProps={{
                     fontWeight: 600,

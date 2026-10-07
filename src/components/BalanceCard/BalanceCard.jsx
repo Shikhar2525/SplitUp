@@ -30,7 +30,7 @@ import InfoIcon from "@mui/icons-material/Info";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import DownloadIcon from "@mui/icons-material/Download";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatIsoDate, getCurrencySymbol } from "../utils";
+import { formatIsoDate, formatCurrency, formatDisplayName } from "../utils";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import { useCurrentUser } from "../contexts/CurrentUser";
 
@@ -479,7 +479,7 @@ function BalanceCard({
                               <TableCell>
                                 <Box display="flex" alignItems="center">
                                   <Tooltip
-                                    title={debtor?.name}
+                                    title={formatDisplayName(debtor?.name)}
                                     placement="top"
                                     arrow
                                   >
@@ -493,7 +493,7 @@ function BalanceCard({
                                         maxWidth: "160px",
                                       }}
                                     >
-                                      {debtor?.name}
+                                      {formatDisplayName(debtor?.name)}
                                     </Typography>
                                   </Tooltip>
                                 </Box>
@@ -501,7 +501,7 @@ function BalanceCard({
                               <TableCell>
                                 <Box display="flex" alignItems="center">
                                   <Tooltip
-                                    title={creditor?.name}
+                                    title={formatDisplayName(creditor?.name)}
                                     placement="top"
                                     arrow
                                   >
@@ -515,16 +515,14 @@ function BalanceCard({
                                         maxWidth: "160px",
                                       }}
                                     >
-                                      {creditor?.name}
+                                      {formatDisplayName(creditor?.name)}
                                     </Typography>
                                   </Tooltip>
                                 </Box>
                               </TableCell>
                               <TableCell>
                                 <Chip
-                                  label={`${amount} ${getCurrencySymbol(
-                                    currency
-                                  )}`}
+                                  label={formatCurrency(amount, currency)}
                                   variant="outlined"
                                   sx={{
                                     fontSize: "0.85rem",
@@ -693,12 +691,9 @@ function BalanceCard({
                 {selectedBreakdown?.map((transaction, index) => (
                   <TableRow key={index}>
                     <TableCell>{transaction.description}</TableCell>
-                    <TableCell>{transaction.owedBy?.name}</TableCell>
-                    <TableCell>{transaction.paidBy?.name}</TableCell>
-                    <TableCell>
-                      {transaction.amount}{" "}
-                      {getCurrencySymbol(transaction.currency)}
-                    </TableCell>
+                    <TableCell>{formatDisplayName(transaction.owedBy?.name)}</TableCell>
+                    <TableCell>{formatDisplayName(transaction.paidBy?.name)}</TableCell>
+                    <TableCell>{formatCurrency(transaction.amount, transaction.currency)}</TableCell>
                     <TableCell>
                       {formatIsoDate(transaction.createdDate)}
                     </TableCell>

@@ -2,11 +2,10 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Box, Grid, Paper, Typography, Button, Avatar, AvatarGroup, Chip } from "@mui/material";
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
-import { calculateTotalsAcrossGroups } from "../utils";
+import { calculateTotalsAcrossGroups, formatCurrency, formatDisplayName } from "../utils";
 import { useCurrentUser } from "../contexts/CurrentUser";
 import { useAllGroups } from "../contexts/AllGroups";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
-import { getCurrencySymbol } from "../utils";
 import { useNavigate } from "react-router-dom";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import AddGroupModal from "../AddGroup/AddGroupModal";
@@ -114,7 +113,7 @@ const Home = () => {
                   You'll Get
                 </Typography>
                 <Typography sx={{ fontWeight: 600, color: '#2dce89' }}>
-                  {getCurrencySymbol(currentCurrency)} {hoverDetails.youGet.toFixed(2)}
+                  {formatCurrency(hoverDetails.youGet, currentCurrency)}
                 </Typography>
               </div>
               <div className="amount-row">
@@ -122,7 +121,7 @@ const Home = () => {
                   You'll Give
                 </Typography>
                 <Typography sx={{ fontWeight: 600, color: '#fb6340' }}>
-                  {getCurrencySymbol(currentCurrency)} {hoverDetails.youGive.toFixed(2)}
+                  {formatCurrency(hoverDetails.youGive, currentCurrency)}
                 </Typography>
               </div>
             </Box>
@@ -331,7 +330,7 @@ const Home = () => {
               <ProfileAvatar
                 key={idx} 
                 user={member}
-                alt={member.name}
+                alt={formatDisplayName(member.name)}
               >
               </ProfileAvatar>
             ))}
@@ -412,7 +411,7 @@ const Home = () => {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                Welcome back, {currentUser?.name?.split(' ')[0]}!
+                Welcome back, {formatDisplayName(currentUser?.name).split(" ")[0]}!
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
                 Here's what's happening with your splitting journey.
@@ -422,7 +421,7 @@ const Home = () => {
             {/* Balance Card */}
             <StatCard
               title="Overall Balance"
-              value={`${Number(totals?.balance || 0).toFixed(2)} ${getCurrencySymbol(currentCurrency)} `}
+              value={formatCurrency(Number(totals?.balance || 0), currentCurrency)}
               icon={<AccountBalanceIcon />}
               color={totals?.balance?.startsWith('-') ? '#fb6340' : '#2dce89'}
               onClick={() => navigate('/groups')} // Add onClick to enable hover

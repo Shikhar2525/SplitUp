@@ -442,6 +442,47 @@ export async function convertCurrency(amount, fromCurrency, toCurrency) {
 
 
 
+/** @param {unknown} amount @param {string | null | undefined} currencyValue */
+export function formatCurrency(amount, currencyValue) {
+  const currencyCode = (currencyValue || "INR").toUpperCase();
+  const numericAmount = Number(amount);
+
+  if (!Number.isFinite(numericAmount)) return String(amount ?? "");
+
+  try {
+    return new Intl.NumberFormat(currencyCode === "INR" ? "en-IN" : "en-US", {
+      style: "currency",
+      currency: currencyCode,
+    }).format(numericAmount);
+  } catch {
+    return `${numericAmount.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} ${currencyCode}`;
+  }
+}
+
+/** @param {unknown} name */
+export function formatDisplayName(name) {
+  if (typeof name !== "string") return "";
+  const trimmedName = name.trim();
+  if (!trimmedName || trimmedName.includes("@")) return trimmedName;
+
+  return trimmedName
+    .split(/\s+/)
+    .map((word) =>
+      word
+        .split(/([-’'])/)
+        .map((part) => {
+          if (!part || part === "-" || part === "'" || part === "’") return part;
+          const characters = Array.from(part.toLocaleLowerCase());
+          return characters[0].toLocaleUpperCase() + characters.slice(1).join("");
+        })
+        .join("")
+    )
+    .join(" ");
+}
+
 export function getCurrencySymbol(value) {
   const currency = currencies.find((currency) => currency.value === value);
   return currency ? currency.label.split(" - ")[0].trim() : null; // Return only the symbol part

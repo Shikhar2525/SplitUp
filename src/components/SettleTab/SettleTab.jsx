@@ -11,6 +11,7 @@ import activityService from "../services/activity.service.js";
 import { useAllUserSettled } from "../contexts/AllUserSettled.js";
 import { useScreenSize } from "../contexts/ScreenSizeContext.js";
 import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
+import { formatDisplayName } from "../utils";
 
 const SettleTab = ({ members, groupID }) => {
   const { setSnackBar } = useTopSnackBar();
@@ -95,7 +96,7 @@ const SettleTab = ({ members, groupID }) => {
       // Show success message in the snackbar
       setSnackBar({
         isOpen: true,
-        message: `${memberName} is ${
+        message: `${formatDisplayName(memberName)} is ${
           isCurrentlySettled ? "unsettled" : "setlled"
         }`,
       });
@@ -244,7 +245,7 @@ const SettleTab = ({ members, groupID }) => {
                 >
                   <ProfileAvatar
                     user={member}
-                    name={member?.name}
+                    name={formatDisplayName(member?.name)}
                     sx={{
                       width: { xs: 35, sm: 40 },
                       height: { xs: 35, sm: 40 },
@@ -277,7 +278,7 @@ const SettleTab = ({ members, groupID }) => {
                           maxWidth: { xs: "120px", sm: "150px" },
                         }}
                       >
-                        {member?.name}
+                        {formatDisplayName(member?.name)}
                       </Typography>
                       {isCurrentUser && (
                         <Chip

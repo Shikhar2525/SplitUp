@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Avatar } from "@mui/material";
 import userService from "../services/user.service";
+import { formatDisplayName } from "../utils";
 
 const profileLookupCache = new Map();
 
@@ -84,7 +85,7 @@ const ProfileAvatar = (props) => {
   const sourceKey = sources.join("|");
   const [attempt, setAttempt] = useState({ key: "", index: 0 });
   const currentIndex = attempt.key === sourceKey ? attempt.index : 0;
-  const fallbackName = name || user?.name || user?.email || "?";
+  const fallbackName = formatDisplayName(name || user?.name || user?.email || "?");
   const initial = fallbackName.trim().charAt(0).toUpperCase() || "?";
 
   useEffect(() => {
@@ -108,7 +109,7 @@ const ProfileAvatar = (props) => {
   return (
     <Avatar
       {...avatarProps}
-      alt={alt || fallbackName}
+      alt={formatDisplayName(alt || fallbackName)}
       src={sources[currentIndex]}
       slotProps={{ img: { onError: handleImageError } }}
     >

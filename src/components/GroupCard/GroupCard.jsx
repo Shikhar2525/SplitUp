@@ -4,6 +4,7 @@ import PendingIcon from '@mui/icons-material/Pending';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { useNavigate } from 'react-router-dom';
 import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
+import { formatDisplayName } from "../utils";
 
 const GroupCard = ({ group }) => {
   const navigate = useNavigate();
@@ -110,7 +111,7 @@ const GroupCard = ({ group }) => {
           <ProfileAvatar
             key={idx} 
             user={member}
-            alt={member.name}
+            alt={formatDisplayName(member.name)}
             sx={{
               bgcolor: member.userSettled ? '#2dce89' : undefined
             }}

@@ -17,12 +17,15 @@ import { useCurrentUser } from "../contexts/CurrentUser";
 import { currencies } from "../../constants";
 import { useCurrentCurrency } from "../contexts/CurrentCurrency";
 import ProfileAvatar from "../ProfileAvatar/ProfileAvatar";
+import { formatDisplayName } from "../utils";
+import { useTopSnackBar } from "../contexts/TopSnackBar";
 
 const AccountMenu = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const { logout } = useAuth0();
   const { currentUser } = useCurrentUser();
+  const { setSnackBar } = useTopSnackBar();
 
   const { currentCurrency, setCurrentCurrency } = useCurrentCurrency();
 
@@ -80,7 +83,7 @@ const AccountMenu = () => {
             sx={{ width: 30, height: 30, marginRight: 1 }}
           />
           <Typography sx={{ color: "#353E6C" }}>
-            {currentUser?.name || "User"}
+            {formatDisplayName(currentUser?.name || "User")}
           </Typography>
         </MenuItem>
         <Divider />
@@ -102,7 +105,17 @@ const AccountMenu = () => {
             labelId="currency-select-label"
             id="currency-select"
             value={currentCurrency}
-            onChange={(e) => setCurrentCurrency(e.target.value)}
+            onChange={(e) => {
+              const selectedCurrency = e.target.value;
+              if (selectedCurrency !== currentCurrency) {
+                setCurrentCurrency(selectedCurrency);
+                setSnackBar({
+                  isOpen: true,
+                  message: `Currency changed to ${selectedCurrency}.`,
+                });
+              }
+              setAnchorEl(null);
+            }}
           >
             {currencies.map((option) => (
               <MenuItem key={option.value} value={option.value}>

@@ -46,6 +46,7 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useCurrentGroup } from "../contexts/CurrentGroup";
 import debounce from 'lodash/debounce';
+import { formatDisplayName } from "../utils";
 
 const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => {
   const { setCurrentGroupID } = useCurrentGroup();
@@ -588,7 +589,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                 {members?.map((member, index) => (
                   <Chip
                     key={index}
-                    label={member?.name}
+                    label={formatDisplayName(member?.name)}
                     avatar={
                       <ProfileAvatar user={member} alt={member?.email} />
                     }
@@ -664,7 +665,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                       >
                         <ProfileAvatar
                           user={friend}
-                          alt={friend.name}
+                          alt={formatDisplayName(friend.name)}
                           sx={{
                             width: 40,
                             height: 40,
@@ -674,7 +675,7 @@ const AddGroupModal = ({ open, handleClose, refreshGroups, onGroupCreated }) => 
                         />
                         <Box>
                           <Typography sx={{ fontWeight: 600, color: "#32325d" }}>
-                            {friend.name}
+                            {formatDisplayName(friend.name)}
                           </Typography>
                           <Typography variant="caption" sx={{ color: "#8898aa" }}>
                             {friend.email}
